@@ -7,6 +7,46 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<script src="https://www.gstatic.com/firebasejs/3.7.4/firebase.js">
+    const firebaseConfig = {
+    apiKey: "AIzaSyAg-9Z2IYRw8NxT6cPLMIMLxeKK_lpgckM",
+    authDomain: "onlinebloodconnect-6ac9a.firebaseapp.com",
+    databaseURL: "https://onlinebloodconnect-6ac9a-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "onlinebloodconnect-6ac9a",
+    storageBucket: "onlinebloodconnect-6ac9a.firebasestorage.app",
+    messagingSenderId: "764983731406",
+    appId: "1:764983731406:web:7ac0e6590a19a3a4af5c9f"
+  };
+  firebase.initializeApp(firebaseConfig);
+var messagesRef = firebase.database().ref();
+document.getElementById('contact').addEventListener('submit',submitForm);
+
+function submitForm(e){
+    e.preventDefault();
+    
+    var email = getInputVal('email');
+    var message = getInputVal('message');
+    var name = getInputVal('name');
+    var subject = getInputVal('subject');
+
+    saveMessage('email','message','name','subject');
+    document.getElementById('contact').reset();
+
+    function getInputVal(id){
+        return document.getElementById(id).value;
+    }
+    function saveMessage(email,message,name,subject){
+        var newMessageRef = messagesRef.push();
+        newMessageRef.set({
+            email:  email,
+            message: message,
+            name: name,
+            subject: subject,
+        });
+    }
+}
+</script>
+
     <header>
         <div class="logo">
             <h1>BloodConnect</h1>
