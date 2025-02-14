@@ -1,10 +1,9 @@
-<?php include('contact-form.php'); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BloodConnect - Home</title>
+    <title>About Us - BloodConnect</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,10 +21,10 @@
         </nav>
     </header>
 
-    <!-- Home Section -->
-    <section id="home" class="section">
-        <h2>Welcome to BloodConnect</h2>
-        <p>Your reliable platform for blood donation and requests. Join us to save lives!</p>
+    <!-- About Us Section -->
+    <section id="about" class="section">
+        <h2>About Us</h2>
+        <p>BloodConnect is an online blood bank dedicated to connecting donors with people in need of blood donations. We work to bridge the gap between availability and demand for blood across the world.</p>
     </section>
 
     <footer>
