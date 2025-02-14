@@ -5,48 +5,24 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/3.7.4/firebase.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyAg-9Z2IYRw8NxT6cPLMIMLxeKK_lpgckM",
+        authDomain: "onlinebloodconnect-6ac9a.firebaseapp.com",
+        databaseURL: "https://onlinebloodconnect-6ac9a-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "onlinebloodconnect-6ac9a",
+        storageBucket: "onlinebloodconnect-6ac9a.firebasestorage.app",
+        messagingSenderId: "764983731406",
+        appId: "1:764983731406:web:7ac0e6590a19a3a4af5c9f"
+      };
+      firebase.initializeApp(firebaseConfig);
+      var messagesRef = firebase.database().ref();
+    </script>
 </head>
 <body>
-<script src="https://www.gstatic.com/firebasejs/3.7.4/firebase.js">
-    const firebaseConfig = {
-    apiKey: "AIzaSyAg-9Z2IYRw8NxT6cPLMIMLxeKK_lpgckM",
-    authDomain: "onlinebloodconnect-6ac9a.firebaseapp.com",
-    databaseURL: "https://onlinebloodconnect-6ac9a-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "onlinebloodconnect-6ac9a",
-    storageBucket: "onlinebloodconnect-6ac9a.firebasestorage.app",
-    messagingSenderId: "764983731406",
-    appId: "1:764983731406:web:7ac0e6590a19a3a4af5c9f"
-  };
-  firebase.initializeApp(firebaseConfig);
-var messagesRef = firebase.database().ref();
-document.getElementById('contact').addEventListener('submit',submitForm);
-
-function submitForm(e){
-    e.preventDefault();
-    
-    var email = getInputVal('email');
-    var message = getInputVal('message');
-    var name = getInputVal('name');
-    var subject = getInputVal('subject');
-
-    saveMessage('email','message','name','subject');
-    document.getElementById('contact').reset();
-
-    function getInputVal(id){
-        return document.getElementById(id).value;
-    }
-    function saveMessage(email,message,name,subject){
-        var newMessageRef = messagesRef.push();
-        newMessageRef.set({
-            email:  email,
-            message: message,
-            name: name,
-            subject: subject,
-        });
-    }
-}
-</script>
-
     <header>
         <div class="logo">
             <h1>BloodConnect</h1>
@@ -59,13 +35,14 @@ function submitForm(e){
             </ul>
         </nav>
     </header>
+
     <h1>Contact Us</h1>
     
-    <form method="post" id = "contact">
+    <form method="post" id="contact">
         <label for="name">Name</label>
         <input type="text" name="name" id="name" required>
         
-        <label for="email">email</label>
+        <label for="email">Email</label>
         <input type="email" name="email" id="email" required>
         
         <label for="subject">Subject</label>
@@ -78,6 +55,35 @@ function submitForm(e){
         
         <button>Send</button>
     </form>
-    
+
+    <script>
+      document.getElementById('contact').addEventListener('submit', submitForm);
+
+      function submitForm(e) {
+        e.preventDefault();
+
+        var email = getInputVal('email');
+        var message = getInputVal('message');
+        var name = getInputVal('name');
+        var subject = getInputVal('subject');
+
+        saveMessage(email, message, name, subject);
+        document.getElementById('contact').reset();
+      }
+
+      function getInputVal(id) {
+        return document.getElementById(id).value;
+      }
+
+      function saveMessage(email, message, name, subject) {
+        var newMessageRef = messagesRef.push();
+        newMessageRef.set({
+          email: email,
+          message: message,
+          name: name,
+          subject: subject,
+        });
+      }
+    </script>
 </body>
 </html>
