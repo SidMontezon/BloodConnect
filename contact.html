@@ -6,21 +6,64 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
     <link rel="stylesheet" href="style.css">
     
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/3.7.4/firebase.js"></script>
-    <script>
+    <script type="module">
+      // Firebase v9+ SDK
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+      import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+    
+      // Your Firebase configuration
       const firebaseConfig = {
-        apiKey: "AIzaSyAg-9Z2IYRw8NxT6cPLMIMLxeKK_lpgckM",
-        authDomain: "onlinebloodconnect-6ac9a.firebaseapp.com",
-        databaseURL: "https://onlinebloodconnect-6ac9a-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "onlinebloodconnect-6ac9a",
-        storageBucket: "onlinebloodconnect-6ac9a.firebasestorage.app",
-        messagingSenderId: "764983731406",
-        appId: "1:764983731406:web:7ac0e6590a19a3a4af5c9f"
+        apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
+        authDomain: "bloodconnect-b5142.firebaseapp.com",
+        databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
+        projectId: "bloodconnect-b5142",
+        storageBucket: "bloodconnect-b5142.firebasestorage.app",
+        messagingSenderId: "631993835929",
+        appId: "1:631993835929:web:75554aca166e9058473308"
       };
-      firebase.initializeApp(firebaseConfig);
-      var messagesRef = firebase.database().ref();
+    
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+    
+      // Handle form submission
+      document.getElementById('contact').addEventListener('submit', submitForm);
+    
+      function submitForm(e) {
+        e.preventDefault();
+    
+        var email = getInputVal('email');
+        var message = getInputVal('message');
+        var name = getInputVal('name');
+        var subject = getInputVal('subject');
+    
+        saveMessage(email, message, name, subject);
+        document.getElementById('contact').reset();
+      }
+    
+      function getInputVal(id) {
+        return document.getElementById(id).value;
+      }
+    
+      function saveMessage(email, message, name, subject) {
+        const messagesRef = ref(database, 'messages');
+        const newMessageRef = push(messagesRef);
+        
+        set(newMessageRef, {
+          email: email,
+          message: message,
+          name: name,
+          subject: subject
+        })
+        .then(() => {
+          console.log("Message saved successfully.");
+        })
+        .catch((error) => {
+          console.error("Error saving message: ", error);
+        });
+      }
     </script>
+    
 </head>
 <body>
     <header>
