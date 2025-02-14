@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
     <link rel="stylesheet" href="style.css">
-<<<<<<< HEAD
     
     <script type="module">
       // Firebase v9+ SDK
@@ -64,9 +63,6 @@
         });
       }
     </script>
-    
-=======
->>>>>>> 512aa574b8b7a2134b1c72108027d692fcd3c335
 </head>
 <body>
     <header>
@@ -99,54 +95,8 @@
         
         <br>
         
-        <button>Send</button>
+        <button type="submit">Send</button>
     </form>
 
-    <!-- Firebase SDK v9 -->
-    <script src="https://www.gstatic.com/firebasejs/9.12.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.12.1/firebase-database.js"></script>
-
-    <script>
-      // Initialize Firebase
-      const firebaseConfig = {
-        apiKey: "AIzaSyAg-9Z2IYRw8NxT6cPLMIMLxeKK_lpgckM",
-        authDomain: "onlinebloodconnect-6ac9a.firebaseapp.com",
-        databaseURL: "https://onlinebloodconnect-6ac9a-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "onlinebloodconnect-6ac9a",
-        storageBucket: "onlinebloodconnect-6ac9a.firebasestorage.app",
-        messagingSenderId: "764983731406",
-        appId: "1:764983731406:web:7ac0e6590a19a3a4af5c9f"
-      };
-      const app = firebase.initializeApp(firebaseConfig);
-      const db = firebase.database(app);
-
-      document.getElementById('contact').addEventListener('submit', submitForm);
-
-      function submitForm(e) {
-        e.preventDefault();
-
-        var email = getInputVal('email');
-        var message = getInputVal('message');
-        var name = getInputVal('name');
-        var subject = getInputVal('subject');
-
-        saveMessage(email, message, name, subject);
-        document.getElementById('contact').reset();
-      }
-
-      function getInputVal(id) {
-        return document.getElementById(id).value;
-      }
-
-      function saveMessage(email, message, name, subject) {
-        var newMessageRef = db.ref().push();
-        newMessageRef.set({
-          email: email,
-          message: message,
-          name: name,
-          subject: subject,
-        });
-      }
-    </script>
 </body>
 </html>
