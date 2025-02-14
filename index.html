@@ -1,30 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Contact</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloodConnect - Home</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+    <style>
+        body {
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #e63946;
+        }
+
+        .hero-section {
+            background-color: #f1faee;
+            padding: 50px;
+            margin: 20px 0;
+        }
+
+        .hero-section h2 {
+            font-size: 2.5em;
+            color: #457b9d;
+        }
+
+        .button {
+            background-color: #457b9d;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .button:hover {
+            background-color: #1d3557;
+        }
+    </style>
 </head>
 <body>
-    <h1>Contact Us</h1>
-    
-    <form method="post" action="send-email.php">
-        <label for="name">Name</label>
-        <input type="text" name="name" id="name" required>
-        
-        <label for="email">email</label>
-        <input type="email" name="email" id="email" required>
-        
-        <label for="subject">Subject</label>
-        <input type="text" name="subject" id="subject" required>
-        
-        <label for="message">Message</label>
-        <textarea name="message" id="message" required></textarea>
-        
-        <br>
-        
-        <button>Send</button>
-    </form>
-    
+    <header>
+        <h1>Welcome to BloodConnect</h1>
+        <p>Your platform to connect donors and patients in need of blood</p>
+    </header>
+
+    <div class="hero-section">
+        <h2>Save Lives. Donate Blood.</h2>
+        <p>BloodConnect is committed to making blood donation easier for both donors and recipients. Join us in our mission to save lives.</p>
+        <a href="contact.html" class="button">Contact Us</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 BloodConnect. All rights reserved.</p>
+    </footer>
 </body>
 </html>
