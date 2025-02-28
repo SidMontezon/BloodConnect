@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Contact Us</title>
+    <title>Contact Us - BloodConnect</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,6 +12,63 @@
         .form-container { max-width: 600px; margin: auto; padding: 30px; background: white; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); border-radius: 8px; }
         .navbar-brand i { color: white; margin-right: 10px; }
     </style>
+    <script type="module">
+      // Firebase v9+ SDK
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+      import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+  
+      // Your Firebase configuration
+      const firebaseConfig = {
+          apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
+          authDomain: "bloodconnect-b5142.firebaseapp.com",
+          databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
+          projectId: "bloodconnect-b5142",
+          storageBucket: "bloodconnect-b5142.firebasestorage.app",
+          messagingSenderId: "631993835929",
+          appId: "1:631993835929:web:75554aca166e9058473308"
+      };
+  
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+  
+      // Handle form submission
+      document.getElementById('contact').addEventListener('submit', submitForm);
+  
+      function submitForm(e) {
+          e.preventDefault();
+  
+          var email = getInputVal('email');
+          var message = getInputVal('message');
+          var name = getInputVal('name');
+          var subject = getInputVal('subject');
+  
+          saveMessage(email, message, name, subject);
+          document.getElementById('contact').reset();
+      }
+  
+      function getInputVal(id) {
+          return document.getElementById(id).value;
+      }
+  
+      function saveMessage(email, message, name, subject) {
+          const messagesRef = ref(database, 'messages');
+          const newMessageRef = push(messagesRef);
+          
+          set(newMessageRef, {
+              email: email,
+              message: message,
+              name: name,
+              subject: subject
+          })
+          .then(() => {
+              console.log("Message saved successfully.");
+          })
+          .catch((error) => {
+              console.error("Error saving message: ", error);
+          });
+      }
+  </script>
 </head>
 <body>
 
@@ -31,7 +88,7 @@
                 <li class="nav-item"><a class="nav-link" href="why-donate.html">Why Donate?</a></li>
                 <li class="nav-item"><a class="nav-link" href="about.html">About Us</a></li>
                 <li class="nav-item"><a class="nav-link active" href="contact.html">Contact Us</a></li>
-                <li class="nav-item"><a class="nav-link" href="faqs.html">FAQs</a></li>
+                <li class="nav-item"><a class="nav-link" href="faq.html">FAQs</a></li>
             </ul>
         </div>
     </div>
