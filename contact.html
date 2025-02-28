@@ -1,102 +1,139 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Contact</title>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
-    <link rel="stylesheet" href="style.css">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Contact Us</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
     <script type="module">
-      // Firebase v9+ SDK
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-      import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        // Firebase v9+ SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
     
-      // Your Firebase configuration
-      const firebaseConfig = {
-        apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
-        authDomain: "bloodconnect-b5142.firebaseapp.com",
-        databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
-        projectId: "bloodconnect-b5142",
-        storageBucket: "bloodconnect-b5142.firebasestorage.app",
-        messagingSenderId: "631993835929",
-        appId: "1:631993835929:web:75554aca166e9058473308"
-      };
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
+            authDomain: "bloodconnect-b5142.firebaseapp.com",
+            databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
+            projectId: "bloodconnect-b5142",
+            storageBucket: "bloodconnect-b5142.firebasestorage.app",
+            messagingSenderId: "631993835929",
+            appId: "1:631993835929:web:75554aca166e9058473308"
+        };
     
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const database = getDatabase(app);
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
     
-      // Handle form submission
-      document.getElementById('contact').addEventListener('submit', submitForm);
+        // Handle form submission
+        document.getElementById('contact').addEventListener('submit', submitForm);
     
-      function submitForm(e) {
-        e.preventDefault();
+        function submitForm(e) {
+            e.preventDefault();
     
-        var email = getInputVal('email');
-        var message = getInputVal('message');
-        var name = getInputVal('name');
-        var subject = getInputVal('subject');
+            var email = getInputVal('email');
+            var message = getInputVal('message');
+            var name = getInputVal('name');
+            var subject = getInputVal('subject');
     
-        saveMessage(email, message, name, subject);
-        document.getElementById('contact').reset();
-      }
+            saveMessage(email, message, name, subject);
+            document.getElementById('contact').reset();
+        }
     
-      function getInputVal(id) {
-        return document.getElementById(id).value;
-      }
+        function getInputVal(id) {
+            return document.getElementById(id).value;
+        }
     
-      function saveMessage(email, message, name, subject) {
-        const messagesRef = ref(database, 'messages');
-        const newMessageRef = push(messagesRef);
-        
-        set(newMessageRef, {
-          email: email,
-          message: message,
-          name: name,
-          subject: subject
-        })
-        .then(() => {
-          console.log("Message saved successfully.");
-        })
-        .catch((error) => {
-          console.error("Error saving message: ", error);
-        });
-      }
+        function saveMessage(email, message, name, subject) {
+            const messagesRef = ref(database, 'messages');
+            const newMessageRef = push(messagesRef);
+            
+            set(newMessageRef, {
+                email: email,
+                message: message,
+                name: name,
+                subject: subject
+            })
+            .then(() => {
+                console.log("Message saved successfully.");
+            })
+            .catch((error) => {
+                console.error("Error saving message: ", error);
+            });
+        }
     </script>
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <h1>BloodConnect</h1>
-        </div>
-        <nav>
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="about.html">About Us</a></li>
-                <li><a href="contact.html">Contact Us</a></li>
-            </ul>
-        </nav>
+
+    <!-- Navbar (same as Home page) -->
+    <div class="w3-top">
+      <div class="w3-bar w3-red w3-card w3-left-align w3-large">
+        <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+        <a href="index.html" class="w3-bar-item w3-button w3-padding-large w3-white">Home</a>
+        <a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Donate</a>
+        <a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Why Donate?</a>
+        <a href="about.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">About Us</a>
+        <a href="contact.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Contact Us</a>
+      </div>
+    
+      <div id="navDemo" class="w3-bar-block w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
+        <a href="#" class="w3-bar-item w3-button w3-padding-large">Donate</a>
+        <a href="#" class="w3-bar-item w3-button w3-padding-large">Why Donate?</a>
+        <a href="about.html" class="w3-bar-item w3-button w3-padding-large">About Us</a>
+        <a href="contact.html" class="w3-bar-item w3-button w3-padding-large">Contact Us</a>
+      </div>
+    </div>
+
+    <!-- Contact Header -->
+    <header class="w3-container w3-red w3-center" style="padding:128px 16px">
+        <h1 class="w3-margin w3-jumbo">Contact Us</h1>
+        <p class="w3-xlarge">We are here to help you</p>
     </header>
 
-    <h1>Contact Us</h1>
-    
-    <form method="post" id="contact">
-        <label for="name">Name</label>
-        <input type="text" name="name" id="name" required>
-        
-        <label for="email">Email</label>
-        <input type="email" name="email" id="email" required>
-        
-        <label for="subject">Subject</label>
-        <input type="text" name="subject" id="subject" required>
-        
-        <label for="message">Message</label>
-        <textarea name="message" id="message" required></textarea>
-        
-        <br>
-        
-        <button type="submit">Send</button>
-    </form>
+    <!-- Contact Form Section -->
+    <div class="w3-container w3-padding-64">
+        <form id="contact" class="w3-container w3-card-4 w3-light-grey w3-padding-large">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" class="w3-input w3-border w3-margin-bottom" required>
 
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" class="w3-input w3-border w3-margin-bottom" required>
+
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" name="subject" class="w3-input w3-border w3-margin-bottom" required>
+
+            <label for="message">Message</label>
+            <textarea id="message" name="message" class="w3-input w3-border w3-margin-bottom" required></textarea>
+
+            <button type="submit" class="w3-button w3-block w3-black w3-padding-large w3-large w3-margin-top">Send</button>
+        </form>
+    </div>
+
+    <!-- Footer -->
+    <footer class="w3-container w3-padding-64 w3-center w3-opacity">  
+        <div class="w3-xlarge w3-padding-32">
+            <i class="fa fa-facebook-official w3-hover-opacity"></i>
+            <i class="fa fa-instagram w3-hover-opacity"></i>
+            <i class="fa fa-snapchat w3-hover-opacity"></i>
+            <i class="fa fa-pinterest-p w3-hover-opacity"></i>
+            <i class="fa fa-twitter w3-hover-opacity"></i>
+            <i class="fa fa-linkedin w3-hover-opacity"></i>
+        </div>
+        
+    </footer>
+
+    <script>
+    // Used to toggle the menu on small screens when clicking on the menu button
+    function myFunction() {
+        var x = document.getElementById("navDemo");
+        if (x.className.indexOf("w3-show") == -1) {
+            x.className += " w3-show";
+        } else { 
+            x.className = x.className.replace(" w3-show", "");
+        }
+    }
+    </script>
 </body>
 </html>

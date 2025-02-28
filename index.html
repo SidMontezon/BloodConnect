@@ -1,34 +1,99 @@
-<?php include('contact-form.php'); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BloodConnect - Home</title>
-    <link rel="stylesheet" href="style.css">
+<title>BloodConnect</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
+.w3-bar,h1,button {font-family: "Montserrat", sans-serif}
+.fa-heartbeat, .fa-tint {font-size:200px}
+</style>
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <h1>BloodConnect</h1>
+
+    <div class="w3-top">
+        <div class="w3-bar w3-red w3-card w3-left-align w3-large">
+          <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+          <a href="index.html" class="w3-bar-item w3-button w3-padding-large w3-white">Home</a>
+          <a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Donate</a>
+          <a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Why Donate?</a>
+          <a href="about.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">About Us</a>
+          <a href="contact.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Contact Us</a>
         </div>
-        <nav>
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="about.html">About Us</a></li>
-                <li><a href="contact.html">Contact Us</a></li>
-            </ul>
-        </nav>
-    </header>
+      
+        <div id="navDemo" class="w3-bar-block w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
+          <a href="#" class="w3-bar-item w3-button w3-padding-large">Donate</a>
+          <a href="#" class="w3-bar-item w3-button w3-padding-large">Why Donate?</a>
+          <a href="about.html" class="w3-bar-item w3-button w3-padding-large">About Us</a>
+          <a href="contact.html" class="w3-bar-item w3-button w3-padding-large">Contact Us</a>
+        </div>
+      </div>
 
-    <!-- Home Section -->
-    <section id="home" class="section">
-        <h2>Welcome to BloodConnect</h2>
-        <p>Your reliable platform for blood donation and requests. Join us to save lives!</p>
-    </section>
+<header class="w3-container w3-red w3-center" style="padding:128px 16px">
+  <h1 class="w3-margin w3-jumbo">Save Lives - Donate Blood</h1>
+  <p class="w3-xlarge">Your donation can make a difference!</p>
+  <button class="w3-button w3-black w3-padding-large w3-large w3-margin-top">Get Involved</button>
+</header>
 
-    <footer>
-        <p>&copy; 2025 BloodConnect. All rights reserved.</p>
-    </footer>
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="w3-twothird">
+      <h1>Why Donate Blood?</h1>
+      <h5 class="w3-padding-32">Donating blood is a simple and effective way to help others in need. Every year, millions of people rely on blood donations to survive surgeries, accidents, and medical conditions.</h5>
+      <p class="w3-text-grey">By donating blood, you not only save lives but also contribute to the overall health of your community. It’s a selfless act that costs you nothing but provides hope to those in need. Your donation could help save up to three lives at once!</p>
+    </div>
+
+    <div class="w3-third w3-center">
+      <i class="fa fa-tint w3-padding-64 w3-text-red"></i>
+    </div>
+  </div>
+</div>
+
+<div class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="w3-third w3-center">
+      <i class="fa fa-heartbeat w3-padding-64 w3-text-red w3-margin-right"></i>
+    </div>
+
+    <div class="w3-twothird">
+      <h1>Benefits of Blood Donation</h1>
+      <h5 class="w3-padding-32">Apart from saving lives, blood donation also benefits your health. Regular blood donations help reduce the risk of certain diseases, improve blood circulation, and even help in the production of new blood cells.</h5>
+      <p class="w3-text-grey">Each time you donate blood, you're making a lasting impact on those in need. Plus, it's a great way to give back to your community while taking care of your own health. Many people donate every 8 weeks and find it to be a fulfilling experience.</p>
+    </div>
+  </div>
+</div>
+
+<div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
+    <h1 class="w3-margin w3-xlarge">Quote of the day: "The best way to find yourself is to lose yourself in the service of others."</h1>
+</div>
+
+<footer class="w3-container w3-padding-64 w3-center w3-opacity">  
+  <div class="w3-xlarge w3-padding-32">
+    <i class="fa fa-facebook-official w3-hover-opacity"></i>
+    <i class="fa fa-instagram w3-hover-opacity"></i>
+    <i class="fa fa-snapchat w3-hover-opacity"></i>
+    <i class="fa fa-pinterest-p w3-hover-opacity"></i>
+    <i class="fa fa-twitter w3-hover-opacity"></i>
+    <i class="fa fa-linkedin w3-hover-opacity"></i>
+ </div>
+ 
+</footer>
+
+<script>
+function myFunction() {
+  var x = document.getElementById("navDemo");
+  if (x.className.indexOf("w3-show") == -1) {
+    x.className += " w3-show";
+  } else { 
+    x.className = x.className.replace(" w3-show", "");
+  }
+}
+</script>
+
 </body>
 </html>

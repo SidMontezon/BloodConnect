@@ -2,33 +2,91 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us - BloodConnect</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>About Us</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
 </head>
 <body>
-    <!-- Navbar -->
-    <header>
-        <div class="logo">
-            <h1>BloodConnect</h1>
+
+    <!-- Navbar (same as Home and Contact Us page) -->
+    <div class="w3-top">
+        <div class="w3-bar w3-red w3-card w3-left-align w3-large">
+          <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+          <a href="index.html" class="w3-bar-item w3-button w3-padding-large w3-white">Home</a>
+          <a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Donate</a>
+          <a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Why Donate?</a>
+          <a href="about.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">About Us</a>
+          <a href="contact.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Contact Us</a>
         </div>
-        <nav>
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="about.html">About Us</a></li>
-                <li><a href="contact.html">Contact Us</a></li>
-            </ul>
-        </nav>
+      
+        <div id="navDemo" class="w3-bar-block w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
+          <a href="#" class="w3-bar-item w3-button w3-padding-large">Donate</a>
+          <a href="#" class="w3-bar-item w3-button w3-padding-large">Why Donate?</a>
+          <a href="about.html" class="w3-bar-item w3-button w3-padding-large">About Us</a>
+          <a href="contact.html" class="w3-bar-item w3-button w3-padding-large">Contact Us</a>
+        </div>
+      </div>
+
+    <!-- About Us Header -->
+    <header class="w3-container w3-red w3-center" style="padding:128px 16px">
+        <h1 class="w3-margin w3-jumbo">About Us</h1>
+        <p class="w3-xlarge">Learn more about our mission, vision, and values</p>
     </header>
 
-    <!-- About Us Section -->
-    <section id="about" class="section">
-        <h2>About Us</h2>
-        <p>BloodConnect is an online blood bank dedicated to connecting donors with people in need of blood donations. We work to bridge the gap between availability and demand for blood across the world.</p>
-    </section>
+    <!-- About Us Content -->
+    <div class="w3-row-padding w3-padding-64 w3-container">
+        <div class="w3-content">
+            <div class="w3-twothird">
+                <h1>Our Mission</h1>
+                <h5 class="w3-padding-32">Our mission is to create a strong network of blood donors and recipients to save lives and ensure that blood is available when needed most.</h5>
+                <p class="w3-text-grey">At BloodConnect, we aim to bridge the gap between blood donors and those who need it, through an easy-to-use platform. We strive to make blood donation accessible, reliable, and impactful. Our goal is to increase awareness and participation in blood donation drives to help save countless lives worldwide.</p>
+            </div>
+            <div class="w3-third w3-center">
+                <i class="fa fa-heart w3-padding-64 w3-text-red"></i>
+            </div>
+        </div>
+    </div>
 
-    <footer>
-        <p>&copy; 2025 BloodConnect. All rights reserved.</p>
+    <!-- Vision Section -->
+    <div class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
+        <div class="w3-content">
+            <div class="w3-third w3-center">
+                <i class="fa fa-eye w3-padding-64 w3-text-red"></i>
+            </div>
+
+            <div class="w3-twothird">
+                <h1>Our Vision</h1>
+                <h5 class="w3-padding-32">To be the leading platform that connects blood donors with recipients globally, ensuring access to life-saving blood anytime, anywhere.</h5>
+                <p class="w3-text-grey">Our vision is to create a future where no one has to wait for blood when they need it. We want to empower individuals and communities to take control of their health by making blood donation a regular and trusted practice. Through technology and community engagement, we aim to make a significant impact on the global blood supply system.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="w3-container w3-padding-64 w3-center w3-opacity">  
+        <div class="w3-xlarge w3-padding-32">
+            <i class="fa fa-facebook-official w3-hover-opacity"></i>
+            <i class="fa fa-instagram w3-hover-opacity"></i>
+            <i class="fa fa-snapchat w3-hover-opacity"></i>
+            <i class="fa fa-pinterest-p w3-hover-opacity"></i>
+            <i class="fa fa-twitter w3-hover-opacity"></i>
+            <i class="fa fa-linkedin w3-hover-opacity"></i>
+        </div>
+        
     </footer>
+
+    <script>
+    // Used to toggle the menu on small screens when clicking on the menu button
+    function myFunction() {
+        var x = document.getElementById("navDemo");
+        if (x.className.indexOf("w3-show") == -1) {
+            x.className += " w3-show";
+        } else { 
+            x.className = x.className.replace(" w3-show", "");
+        }
+    }
+    </script>
 </body>
 </html>
