@@ -69,24 +69,18 @@
             messagingSenderId: "631993835929",
             appId: "1:631993835929:web:75554aca166e9058473308"
         };
-
+    
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-
-        // Prevent back navigation after logout
-        window.history.pushState(null, null, window.location.href);
-        window.onpopstate = function () {
-            history.go(1);
-        };
-
-        // Restrict access to logged-in users
+    
+        // ✅ Prevent users from accessing the dashboard if not logged in
         firebase.auth().onAuthStateChanged((user) => {
             if (!user) {
-                sessionStorage.clear();
+                sessionStorage.clear(); // Remove session
                 window.location.href = "login.html";
             }
         });
-
+    
         function logoutUser() {
             auth.signOut().then(() => {
                 sessionStorage.clear();
@@ -95,6 +89,13 @@
                 alert(error.message);
             });
         }
+    
+        // ✅ Prevent back navigation after logout
+        window.history.pushState(null, null, window.location.href);
+        window.onpopstate = function () {
+            history.go(1);
+        };
     </script>
+    
 </body>
 </html>
