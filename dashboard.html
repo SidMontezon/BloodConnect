@@ -3,7 +3,6 @@
 <head>
     <title>Blood Bank Management - Dashboard</title>
     <meta charset="UTF-8">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -28,6 +27,9 @@
                     <li class="nav-item"><a class="nav-link" href="dashboard.html">Home</a></li>
                     <li class="nav-item"><a class="nav-link active" href="donor.html">Donors</a></li>
                     <li class="nav-item"><a class="nav-link" href="blooddonation.html">Blood Donations</a></li>
+                    <li class="nav-item"><a class="nav-link" href="requests.html">Requests</a></li>
+                    <li class="nav-item"><a class="nav-link" href="handedover.html">Handed Over</a></li>
+                    <li class="nav-item"><a class="nav-link" href="users.html">Users</a></li>
                     <li class="nav-item"><a class="nav-link btn btn-light text-dark" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
                 </ul>
             </div>
@@ -36,6 +38,13 @@
 
     <div class="container mt-4">
         <h2 class="text-center">Welcome back, Administrator!</h2>
+        <h4 class="text-center">Available Blood per group in Liters</h4>
+        <div class="row">
+            <div class="col-md-3"><div class="card">A+ <i class="fas fa-tint text-danger"></i> <p id="Aplus">0</p></div></div>
+            <div class="col-md-3"><div class="card">B+ <i class="fas fa-tint text-danger"></i> <p id="Bplus">0</p></div></div>
+            <div class="col-md-3"><div class="card">O+ <i class="fas fa-tint text-danger"></i> <p id="Oplus">0</p></div></div>
+            <div class="col-md-3"><div class="card">AB+ <i class="fas fa-tint text-danger"></i> <p id="ABplus">0</p></div></div>
+        </div>
     </div>
 
     <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
@@ -56,24 +65,25 @@
         </div>
     </div>
 
-    <!-- Firebase Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
-            authDomain: "bloodconnect-b5142.firebaseapp.com",
-            databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
-            projectId: "bloodconnect-b5142",
-            storageBucket: "bloodconnect-b5142.appspot.com", // ✅ Fixed!
-            messagingSenderId: "631993835929",
-            appId: "1:631993835929:web:75554aca166e9058473308"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
-        
+
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-    
-        // ✅ Ensure only logged-in users can access the dashboard
+        const database = firebase.database();
+
         auth.onAuthStateChanged((user) => {
             if (!user) {
                 sessionStorage.clear();
@@ -81,7 +91,7 @@
                 window.location.href = "login.html";
             }
         });
-    
+
         function logoutUser() {
             auth.signOut().then(() => {
                 sessionStorage.clear();
@@ -91,12 +101,18 @@
                 alert(error.message);
             });
         }
-    
-        // ✅ Prevent Back Navigation to Dashboard After Logout
-        window.history.pushState(null, null, window.location.href);
-        window.onpopstate = function () {
-            history.go(1);
-        };
+
+        function loadDashboardData() {
+            database.ref("bloodInventory").once("value", (snapshot) => {
+                const data = snapshot.val() || {};
+                document.getElementById("Aplus").innerText = data.Aplus || 0;
+                document.getElementById("Bplus").innerText = data.Bplus || 0;
+                document.getElementById("Oplus").innerText = data.Oplus || 0;
+                document.getElementById("ABplus").innerText = data.ABplus || 0;
+            });
+        }
+
+        window.onload = loadDashboardData;
     </script>
-    </body>
+</body>
 </html>
