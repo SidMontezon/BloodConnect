@@ -65,23 +65,23 @@
             authDomain: "bloodconnect-b5142.firebaseapp.com",
             databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
             projectId: "bloodconnect-b5142",
-            storageBucket: "bloodconnect-b5142.firebasestorage.app",
+            storageBucket: "bloodconnect-b5142.appspot.com", // ✅ Fixed!
             messagingSenderId: "631993835929",
             appId: "1:631993835929:web:75554aca166e9058473308"
         };
-
+        
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-
-        // ✅ Prevent access if not logged in
-        firebase.auth().onAuthStateChanged((user) => {
+    
+        // ✅ Ensure only logged-in users can access the dashboard
+        auth.onAuthStateChanged((user) => {
             if (!user) {
                 sessionStorage.clear();
                 localStorage.clear();
                 window.location.href = "login.html";
             }
         });
-
+    
         function logoutUser() {
             auth.signOut().then(() => {
                 sessionStorage.clear();
@@ -91,12 +91,12 @@
                 alert(error.message);
             });
         }
-
-        // ✅ Prevent Back Navigation After Logout
+    
+        // ✅ Prevent Back Navigation to Dashboard After Logout
         window.history.pushState(null, null, window.location.href);
         window.onpopstate = function () {
             history.go(1);
         };
     </script>
-</body>
+    </body>
 </html>
