@@ -8,19 +8,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background: #f8f9fa;
-        }
-        .navbar {
-            background: #c0392b;
-        }
-        .navbar-brand, .nav-link {
-            color: white !important;
-        }
-        .card {
-            text-align: center;
-            padding: 20px;
-        }
+        body { background: #f8f9fa; }
+        .navbar { background: #c0392b; }
+        .navbar-brand, .nav-link { color: white !important; }
+        .card { text-align: center; padding: 20px; }
     </style>
 </head>
 <body>
@@ -37,9 +28,6 @@
                     <li class="nav-item"><a class="nav-link" href="dashboard.html">Home</a></li>
                     <li class="nav-item"><a class="nav-link active" href="donor.html">Donors</a></li>
                     <li class="nav-item"><a class="nav-link" href="blooddonation.html">Blood Donations</a></li>
-                    <li class="nav-item"><a class="nav-link" href="requests.html">Requests</a></li>
-                    <li class="nav-item"><a class="nav-link" href="handed_over.html">Handed Over</a></li>
-                    <li class="nav-item"><a class="nav-link" href="users.html">Users</a></li>
                     <li class="nav-item"><a class="nav-link btn btn-light text-dark" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
                 </ul>
             </div>
@@ -48,20 +36,6 @@
 
     <div class="container mt-4">
         <h2 class="text-center">Welcome back, Administrator!</h2>
-        <h4 class="text-center">Available Blood per group in Liters</h4>
-        <div class="row">
-            <div class="col-md-3"><div class="card">A+ <i class="fas fa-tint text-danger"></i> <p id="Aplus">0</p></div></div>
-            <div class="col-md-3"><div class="card">B+ <i class="fas fa-tint text-danger"></i> <p id="Bplus">0</p></div></div>
-            <div class="col-md-3"><div class="card">O+ <i class="fas fa-tint text-danger"></i> <p id="Oplus">0</p></div></div>
-            <div class="col-md-3"><div class="card">AB+ <i class="fas fa-tint text-danger"></i> <p id="ABplus">0</p></div></div>
-        </div>
-        <h4 class="mt-4 text-center">Dashboard Summary</h4>
-        <div class="row">
-            <div class="col-md-3"><div class="card"><i class="fas fa-users"></i> Total Donors <p id="totalDonors">0</p></div></div>
-            <div class="col-md-3"><div class="card"><i class="fas fa-hand-holding-medical"></i> Total Donated Today <p id="donatedToday">0</p></div></div>
-            <div class="col-md-3"><div class="card"><i class="fas fa-file-medical"></i> Today's Requests <p id="todaysRequests">0</p></div></div>
-            <div class="col-md-3"><div class="card"><i class="fas fa-check-circle"></i> Approved Requests <p id="approvedRequests">0</p></div></div>
-        </div>
     </div>
 
     <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
@@ -82,9 +56,9 @@
         </div>
     </div>
 
+    <!-- Firebase Scripts -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script>
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
@@ -98,39 +72,23 @@
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const database = firebase.database();
+
+        // Restrict access to logged-in users
+        firebase.auth().onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = "login.html"; // Redirect if not logged in
+            }
+        });
 
         function logoutUser() {
             auth.signOut().then(() => {
+                sessionStorage.removeItem("user"); // Remove session
                 window.location.href = "login.html";
             }).catch((error) => {
                 alert(error.message);
             });
         }
-
-        function loadDashboardData() {
-            database.ref("bloodInventory").once("value", (snapshot) => {
-                const data = snapshot.val() || {};
-                document.getElementById("Aplus").innerText = data.Aplus || 0;
-                document.getElementById("Bplus").innerText = data.Bplus || 0;
-                document.getElementById("Oplus").innerText = data.Oplus || 0;
-                document.getElementById("ABplus").innerText = data.ABplus || 0;
-            });
-            database.ref("donors").once("value", (snapshot) => {
-                document.getElementById("totalDonors").innerText = snapshot.numChildren();
-            });
-            database.ref("donationsToday").once("value", (snapshot) => {
-                document.getElementById("donatedToday").innerText = snapshot.numChildren();
-            });
-            database.ref("requests").once("value", (snapshot) => {
-                document.getElementById("todaysRequests").innerText = snapshot.numChildren();
-            });
-            database.ref("approvedRequests").once("value", (snapshot) => {
-                document.getElementById("approvedRequests").innerText = snapshot.numChildren();
-            });
-        }
-
-        window.onload = loadDashboardData;
     </script>
+
 </body>
 </html>
