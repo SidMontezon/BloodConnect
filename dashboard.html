@@ -61,35 +61,40 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
+            apiKey: "YOUR_API_KEY",
             authDomain: "bloodconnect-b5142.firebaseapp.com",
             databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
             projectId: "bloodconnect-b5142",
-            storageBucket: "bloodconnect-b5142.appspot.com", // FIXED!
+            storageBucket: "bloodconnect-b5142.appspot.com",
             messagingSenderId: "631993835929",
             appId: "1:631993835929:web:75554aca166e9058473308"
-          };
-          
+        };
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
+        // Prevent back navigation after logout
+        window.history.pushState(null, null, window.location.href);
+        window.onpopstate = function () {
+            history.go(1);
+        };
+
         // Restrict access to logged-in users
         firebase.auth().onAuthStateChanged((user) => {
             if (!user) {
-                window.location.href = "login.html"; // Redirect if not logged in
+                sessionStorage.clear();
+                window.location.href = "login.html";
             }
         });
 
         function logoutUser() {
             auth.signOut().then(() => {
-                sessionStorage.removeItem("user"); // Remove session
+                sessionStorage.clear();
                 window.location.href = "login.html";
             }).catch((error) => {
                 alert(error.message);
             });
         }
     </script>
-
 </body>
 </html>
