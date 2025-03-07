@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Donors - Blood Bank Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <i class="fa-solid fa-droplet"></i> BloodConnect
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="dashboard.html">Home</a></li>
+                <li class="nav-item"><a class="nav-link active" href="donor.html">Donors</a></li>
+                <li class="nav-item"><a class="nav-link" href="blooddonation.html">Blood Donations</a></li>
+                <li class="nav-item"><a class="nav-link" href="requests.html">Requests</a></li>
+                <li class="nav-item"><a class="nav-link" href="handed_over.html">Handed Over</a></li>
+                <li class="nav-item"><a class="nav-link" href="users.html">Users</a></li>
+                <li class="nav-item"><a class="nav-link btn btn-light text-dark" href="#" onclick="logoutUser()">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h2 class="text-center">Registered Donors</h2>
+    <table class="table table-bordered mt-4">
+        <thead class="table-danger">
+            <tr>
+                <th>Name</th>
+                <th>Blood Type</th>
+                <th>Contact</th>
+                <th>Last Donation Date</th>
+            </tr>
+        </thead>
+        <tbody id="donorTableBody">
+            <!-- Donor data will be inserted here -->
+        </tbody>
+    </table>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script>
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        databaseURL: "YOUR_DATABASE_URL",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    
+    function loadDonors() {
+        database.ref("donors").on("value", (snapshot) => {
+            const donorTableBody = document.getElementById("donorTableBody");
+            donorTableBody.innerHTML = "";
+            snapshot.forEach((childSnapshot) => {
+                const donor = childSnapshot.val();
+                const row = `<tr>
+                    <td>${donor.name}</td>
+                    <td>${donor.bloodType}</td>
+                    <td>${donor.contact}</td>
+                    <td>${donor.lastDonationDate || 'N/A'}</td>
+                </tr>`;
+                donorTableBody.innerHTML += row;
+            });
+        });
+    }
+    
+    window.onload = loadDonors;
+
+    function logoutUser() {
+        firebase.auth().signOut().then(() => {
+            alert("Logged out successfully!");
+            window.location.href = "login.html";
+        }).catch((error) => {
+            alert(error.message);
+        });
+    }
+</script>
+
+</body>
+</html>

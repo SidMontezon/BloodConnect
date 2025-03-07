@@ -1,67 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>BloodConnect - Dashboard</title>
+    <title>Blood Bank Management - Dashboard</title>
     <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8f9fa;
+        }
+        .navbar {
+            background: #c0392b;
+        }
+        .navbar-brand, .nav-link {
+            color: white !important;
+        }
+        .card {
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fa-solid fa-droplet"></i> BloodConnect
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="dashboard.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="donor.html">Donors</a></li>
+                    <li class="nav-item"><a class="nav-link" href="blooddonation.html">Blood Donations</a></li>
+                    <li class="nav-item"><a class="nav-link" href="requests.html">Requests</a></li>
+                    <li class="nav-item"><a class="nav-link" href="handed_over.html">Handed Over</a></li>
+                    <li class="nav-item"><a class="nav-link" href="users.html">Users</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-light text-dark" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
-    <div class="container">
-        <a class="navbar-brand" href="index.html">
-            <i class="fa-solid fa-droplet"></i> BloodConnect
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="donate.html">Donate</a></li>
-                <li class="nav-item"><a class="nav-link" href="why-donate.html">Why Donate?</a></li>
-                <li class="nav-item"><a class="nav-link" href="about.html">About Us</a></li>
-                <li class="nav-item"><a class="nav-link" href="contact.html">Contact Us</a></li>
-                <li class="nav-item"><a class="nav-link" href="faqs.html">FAQs</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-light text-dark" href="#" onclick="logoutUser()">Logout</a></li>
-            </ul>
+    <div class="container mt-4">
+        <h2 class="text-center">Welcome back, Administrator!</h2>
+        <h4 class="text-center">Available Blood per group in Liters</h4>
+        <div class="row">
+            <div class="col-md-3"><div class="card">A+ <i class="fas fa-tint text-danger"></i> <p id="Aplus">0</p></div></div>
+            <div class="col-md-3"><div class="card">B+ <i class="fas fa-tint text-danger"></i> <p id="Bplus">0</p></div></div>
+            <div class="col-md-3"><div class="card">O+ <i class="fas fa-tint text-danger"></i> <p id="Oplus">0</p></div></div>
+            <div class="col-md-3"><div class="card">AB+ <i class="fas fa-tint text-danger"></i> <p id="ABplus">0</p></div></div>
+        </div>
+        <h4 class="mt-4 text-center">Dashboard Summary</h4>
+        <div class="row">
+            <div class="col-md-3"><div class="card"><i class="fas fa-users"></i> Total Donors <p id="totalDonors">0</p></div></div>
+            <div class="col-md-3"><div class="card"><i class="fas fa-hand-holding-medical"></i> Total Donated Today <p id="donatedToday">0</p></div></div>
+            <div class="col-md-3"><div class="card"><i class="fas fa-file-medical"></i> Today's Requests <p id="todaysRequests">0</p></div></div>
+            <div class="col-md-3"><div class="card"><i class="fas fa-check-circle"></i> Approved Requests <p id="approvedRequests">0</p></div></div>
         </div>
     </div>
-</nav>
 
-<div class="container mt-5">
-    <h2 class="text-center">Admin Dashboard</h2>
-</div>
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to log out?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="logoutUser()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
-        authDomain: "bloodconnect-b5142.firebaseapp.com",
-        databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
-        projectId: "bloodconnect-b5142",
-        storageBucket: "bloodconnect-b5142.appspot.com",
-        messagingSenderId: "631993835929",
-        appId: "1:631993835929:web:75554aca166e9058473308"
-    };
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
 
-    function logoutUser() {
-        auth.signOut().then(() => {
-            alert("Logged out successfully!");
-            window.location.href = "login.html";
-        }).catch((error) => {
-            alert(error.message);
-        });
-    }
-</script>
+        function logoutUser() {
+            auth.signOut().then(() => {
+                window.location.href = "login.html";
+            }).catch((error) => {
+                alert(error.message);
+            });
+        }
 
+        function loadDashboardData() {
+            database.ref("bloodInventory").once("value", (snapshot) => {
+                const data = snapshot.val() || {};
+                document.getElementById("Aplus").innerText = data.Aplus || 0;
+                document.getElementById("Bplus").innerText = data.Bplus || 0;
+                document.getElementById("Oplus").innerText = data.Oplus || 0;
+                document.getElementById("ABplus").innerText = data.ABplus || 0;
+            });
+            database.ref("donors").once("value", (snapshot) => {
+                document.getElementById("totalDonors").innerText = snapshot.numChildren();
+            });
+            database.ref("donationsToday").once("value", (snapshot) => {
+                document.getElementById("donatedToday").innerText = snapshot.numChildren();
+            });
+            database.ref("requests").once("value", (snapshot) => {
+                document.getElementById("todaysRequests").innerText = snapshot.numChildren();
+            });
+            database.ref("approvedRequests").once("value", (snapshot) => {
+                document.getElementById("approvedRequests").innerText = snapshot.numChildren();
+            });
+        }
+
+        window.onload = loadDashboardData;
+    </script>
 </body>
 </html>
-
