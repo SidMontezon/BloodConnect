@@ -16,7 +16,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
         <div class="container">
-            <a class="navbar-brand" href="index.html">
+            <a class="navbar-brand" href="dashboard.html">
                 <i class="fa-solid fa-droplet"></i> BloodConnect
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -30,7 +30,7 @@
                     <li class="nav-item"><a class="nav-link" href="requests.html">Requests</a></li>
                     <li class="nav-item"><a class="nav-link" href="handedover.html">Handed Over</a></li>
                     <li class="nav-item"><a class="nav-link" href="users.html">Users</a></li>
-                    <li class="nav-item"><a class="nav-link btn btn-light text-dark" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-light text-dark" href="logout.html">Logout</a></li>
                 </ul>
             </div>
         </div>
@@ -44,24 +44,6 @@
             <div class="col-md-3"><div class="card">B+ <i class="fas fa-tint text-danger"></i> <p id="Bplus">0</p></div></div>
             <div class="col-md-3"><div class="card">O+ <i class="fas fa-tint text-danger"></i> <p id="Oplus">0</p></div></div>
             <div class="col-md-3"><div class="card">AB+ <i class="fas fa-tint text-danger"></i> <p id="ABplus">0</p></div></div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Are you sure you want to log out?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" onclick="logoutUser()">Logout</button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -91,16 +73,6 @@
                 window.location.href = "login.html";
             }
         });
-
-        function logoutUser() {
-            auth.signOut().then(() => {
-                sessionStorage.clear();
-                localStorage.clear();
-                window.location.href = "login.html";
-            }).catch((error) => {
-                alert(error.message);
-            });
-        }
 
         function loadDashboardData() {
             database.ref("bloodInventory").once("value", (snapshot) => {
