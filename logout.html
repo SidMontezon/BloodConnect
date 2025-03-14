@@ -47,6 +47,8 @@
 
             document.getElementById("confirmLogout").addEventListener("click", () => {
                 auth.signOut().then(() => {
+                    sessionStorage.clear(); // Clear session storage
+                    localStorage.clear();  // Clear local storage
                     document.querySelector(".modal-body").textContent = "Logged out successfully!";
                     setTimeout(() => {
                         window.location.href = "login.html";
