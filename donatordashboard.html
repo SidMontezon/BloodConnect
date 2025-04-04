@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Blood Donor Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Prevent Back Navigation Cache -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    <!-- Firebase, Bootstrap & FontAwesome -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <style>
+        body { background-color: #f8f9fa; }
+        .dashboard-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .btn i { margin-right: 5px; }
+        .navbar { background: #c0392b; }
+        .navbar-brand, .nav-link { color: white !important; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+        <div class="container">
+            <a class="navbar-brand" href="dashboard.html">
+                <i class="fa-solid fa-droplet"></i> BloodConnect
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="donatordashboard.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="donate.html">Donate</a></li>
+                    <li class="nav-item"><a class="nav-link" href="request.html">Request</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-light text-dark" href="logout.html">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="dashboard-container">
+            <h2><i class="fa-solid fa-droplet"></i> Blood Donor Dashboard</h2>
+            <p>Welcome to BloodConnect. You can donate or request blood.</p>
+            <button class="btn btn-danger w-100 mb-2" onclick="donateBlood()"><i class="fa-solid fa-hand-holding-medical"></i> Donate Blood</button>
+            <button class="btn btn-primary w-100" onclick="requestBlood()"><i class="fa-solid fa-hand-holding-droplet"></i> Request Blood</button>
+            <hr>
+            <button class="btn btn-secondary w-100" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+        apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
+        authDomain: "bloodconnect-b5142.firebaseapp.com",
+        databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
+        projectId: "bloodconnect-b5142",
+        storageBucket: "bloodconnect-b5142.appspot.com",
+        messagingSenderId: "631993835929",
+        appId: "1:631993835929:web:75554aca166e9058473308"
+    };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // Redirect to login if user is not authenticated
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = "login.html";
+            }
+        });
+
+        function donateBlood() {
+            alert("Redirecting to the blood donation page...");
+            window.location.href = "donate.html";
+        }
+
+        function requestBlood() {
+            alert("Redirecting to the blood request page...");
+            window.location.href = "request.html";
+        }
+
+        function logout() {
+            auth.signOut().then(() => {
+                window.location.href = "logout.html";
+            });
+        }
+    </script>
+</body>
+</html>
