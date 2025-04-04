@@ -59,15 +59,6 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Ensure Firebase does not remember the session
-    auth.setPersistence(firebase.auth.Auth.Persistence.NONE)
-        .then(() => {
-            console.log("Session persistence set to NONE");
-        })
-        .catch((error) => {
-            console.error("Error setting persistence:", error);
-        });
-
     document.getElementById("loginForm").addEventListener("submit", function(event) {
         event.preventDefault();
         const email = document.getElementById("email").value;
@@ -80,13 +71,6 @@
             .catch((error) => {
                 alert(error.message);
             });
-    });
-
-    // Redirect logged-in users to the dashboard
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            window.location.href = "dashboard.html";
-        }
     });
 </script>
 
