@@ -88,10 +88,14 @@
             .then((userCredential) => {
                 // Retrieve the user's role from Firestore using the path /users/{userID}
                 const user = userCredential.user;
+                console.log("Authenticated user:", user); // Log the authenticated user
+
+                // Now try to get the user's data from Firestore
                 db.collection("users").doc(user.uid).get()
                     .then((doc) => {
                         if (doc.exists) {
                             const role = doc.data().role;
+                            console.log("User role:", role); // Log the role value
 
                             // Redirect based on user role
                             if (role === "admin") {
@@ -104,16 +108,18 @@
                                 window.location.href = "index.html";  // Default redirect if role is undefined
                             }
                         } else {
-                            // If user data doesn't exist in Firestore
-                            errorMessageElement.textContent = "User data not found.";
+                            console.error("No user document found in Firestore.");
+                            errorMessageElement.textContent = "User data not found in Firestore.";
                         }
                     })
                     .catch((error) => {
+                        console.error("Error retrieving user data:", error);
                         errorMessageElement.textContent = "Error retrieving user data: " + error.message;
                     });
             })
             .catch((error) => {
                 // Display error message to the user
+                console.error("Error signing in:", error);
                 errorMessageElement.textContent = error.message;
             });
     });
