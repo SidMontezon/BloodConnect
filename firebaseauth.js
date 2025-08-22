@@ -12,13 +12,13 @@ import {
     doc
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-// Firebase configuration
+// Firebase config
 const firebaseConfig = {
     apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
     authDomain: "bloodconnect-b5142.firebaseapp.com",
     databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
     projectId: "bloodconnect-b5142",
-    storageBucket: "bloodconnect-b5142.firebasestorage.app",
+    storageBucket: "bloodconnect-b5142.appspot.com",
     messagingSenderId: "631993835929",
     appId: "1:631993835929:web:75554aca166e9058473308"
 };
@@ -28,7 +28,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Utility: Show messages on the screen
+// Utility function to display messages
 function showMessage(message, divId) {
     const messageDiv = document.getElementById(divId);
     if (messageDiv) {
@@ -43,11 +43,11 @@ function showMessage(message, divId) {
             }, 1000);
         }, 5000);
     } else {
-        console.warn(`Message div with ID '${divId}' not found. Cannot display message: "${message}"`);
+        console.warn(`Message div with ID '${divId}' not found.`);
     }
 }
 
-// --- Sign Up with Email Verification ---
+// --- Sign-Up Handler ---
 const signUpButton = document.getElementById('submitSignUp');
 if (signUpButton) {
     signUpButton.addEventListener('click', async (event) => {
@@ -67,7 +67,7 @@ if (signUpButton) {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            await sendEmailVerification(user); // Send verification email
+            await sendEmailVerification(user);
 
             const userData = {
                 email,
@@ -79,14 +79,12 @@ if (signUpButton) {
             await setDoc(doc(db, "users", user.uid), userData);
 
             showMessage('Account created! Please verify your email before logging in.', 'signUpMessage');
-            // No redirect here to ensure they verify first
-
         } catch (error) {
-            console.error("Error during sign-up:", error);
+            console.error("Sign-up error:", error);
             let errorMessage = 'Unable to create account. Please try again.';
             switch (error.code) {
                 case 'auth/email-already-in-use':
-                    errorMessage = 'This email address is already registered.';
+                    errorMessage = 'This email is already registered.';
                     break;
                 case 'auth/invalid-email':
                     errorMessage = 'Invalid email format.';
@@ -98,11 +96,9 @@ if (signUpButton) {
             showMessage(errorMessage, 'signUpMessage');
         }
     });
-} else {
-    console.warn("Sign-up button with ID 'submitSignUp' not found.");
 }
 
-// --- Sign In with Email Verification Check ---
+// --- Sign-In Handler ---
 const signInButton = document.getElementById('submitSignIn');
 if (signInButton) {
     signInButton.addEventListener('click', async (event) => {
@@ -112,7 +108,7 @@ if (signInButton) {
         const password = document.getElementById('password')?.value;
 
         if (!email || !password) {
-            showMessage('Please enter both your email and password.', 'signInMessage');
+            showMessage('Please enter both email and password.', 'signInMessage');
             return;
         }
 
@@ -125,12 +121,20 @@ if (signInButton) {
                 return;
             }
 
-            localStorage.setItem('loggedInUserId', user.uid);
-            showMessage('Login successful!', 'signInMessage');
-            window.location.href = 'dashboardx.html';
+            // ✅ Step 1: Generate and send 6-digit code
+            const code = Math.floor(100000 + Math.random() * 900000).toString();
+            sessionStorage.setItem('tempLoginCode', code);
+
+            // --- SIMULATE SENDING EMAIL ---
+            console.log(`🚨 Simulated: Code ${code} sent to ${email}`);
+            showMessage('A verification code has been sent to your email (simulated).', 'signInMessage');
+
+            // ✅ Step 2: Show modal
+            const codeModal = new bootstrap.Modal(document.getElementById('codeModal'));
+            codeModal.show();
 
         } catch (error) {
-            console.error("Error during sign-in:", error);
+            console.error("Sign-in error:", error);
             let errorMessage = 'Login failed. Please check your credentials.';
             switch (error.code) {
                 case 'auth/invalid-credential':
@@ -142,7 +146,7 @@ if (signInButton) {
                     errorMessage = 'Invalid email format.';
                     break;
                 case 'auth/user-disabled':
-                    errorMessage = 'Your account has been disabled.';
+                    errorMessage = 'This account is disabled.';
                     break;
                 default:
                     errorMessage = `Unexpected error: ${error.message}`;
@@ -151,6 +155,64 @@ if (signInButton) {
             showMessage(errorMessage, 'signInMessage');
         }
     });
-} else {
-    console.warn("Sign-in button with ID 'submitSignIn' not found.");
+}
+
+// --- Resend Verification Email ---
+const resendVerificationBtn = document.getElementById('resendVerificationBtn');
+if (resendVerificationBtn) {
+    resendVerificationBtn.addEventListener('click', async () => {
+        const email = document.getElementById('email')?.value;
+        const password = document.getElementById('password')?.value;
+
+        if (!email || !password) {
+            showMessage('Please enter your email and password first.', 'signInMessage');
+            return;
+        }
+
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            if (user.emailVerified) {
+                showMessage('Your email is already verified.', 'signInMessage');
+                return;
+            }
+
+            await sendEmailVerification(user);
+            showMessage('Verification email resent. Check your inbox or spam.', 'signInMessage');
+        } catch (error) {
+            console.error('Resend verification error:', error);
+            let errorMessage = 'Could not resend verification email.';
+            switch (error.code) {
+                case 'auth/user-not-found':
+                    errorMessage = 'No account found with this email.';
+                    break;
+                case 'auth/wrong-password':
+                    errorMessage = 'Incorrect password.';
+                    break;
+                case 'auth/invalid-email':
+                    errorMessage = 'Invalid email format.';
+                    break;
+            }
+            showMessage(errorMessage, 'signInMessage');
+        }
+    });
+}
+
+// --- Code Verification Modal Logic ---
+const verifyCodeBtn = document.getElementById('verifyCodeBtn');
+if (verifyCodeBtn) {
+    verifyCodeBtn.addEventListener('click', () => {
+        const inputCode = document.getElementById('emailCodeInput')?.value;
+        const expectedCode = sessionStorage.getItem('tempLoginCode');
+        const codeMessage = document.getElementById('codeMessage');
+
+        if (inputCode === expectedCode) {
+            codeMessage.textContent = '';
+            localStorage.setItem('loggedInUserId', auth.currentUser.uid);
+            window.location.href = 'dashboardx.html';
+        } else {
+            codeMessage.textContent = 'Incorrect code. Please try again.';
+        }
+    });
 }
