@@ -142,7 +142,7 @@ if (signInButton) {
             // Redirect to a specific page after successful login.
             // In a more advanced setup, you would fetch the user's role from Firestore here
             // and redirect to a role-specific dashboard (e.g., admin, user, hospital).
-            window.location.href = 'homepage.html'; 
+            window.location.href = 'dashboard.html'; 
 
         } catch (error) {
             console.error("Error during sign-in:", error);
