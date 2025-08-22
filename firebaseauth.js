@@ -3,15 +3,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/fireba
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-// Firebase Configuration: IMPORTANT - Replace with your actual Firebase project credentials
-// You can find this in your Firebase project settings -> Project settings -> Your apps -> Firebase SDK snippet -> Config
+// Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY", // e.g., "AIzaSyC_YOUR_API_KEY_HERE"
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com", // e.g., "bloodconnect-b5142.firebaseapp.com"
-    projectId: "YOUR_PROJECT_ID", // e.g., "bloodconnect-b5142"
-    storageBucket: "YOUR_PROJECT_ID.appspot.com", // e.g., "bloodconnect-b5142.appspot.com"
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // e.g., "631993835929"
-    appId: "YOUR_APP_ID" // e.g., "1:631993835929:web:75554aca166e9058473308"
+  apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
+  authDomain: "bloodconnect-b5142.firebaseapp.com",
+  databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
+  projectId: "bloodconnect-b5142",
+  storageBucket: "bloodconnect-b5142.firebasestorage.app",
+  messagingSenderId: "631993835929",
+  appId: "1:631993835929:web:75554aca166e9058473308"
 };
 
 // Initialize Firebase
