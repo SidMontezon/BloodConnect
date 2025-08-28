@@ -11,10 +11,8 @@ import {
     doc
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-// EmailJS Library - make sure you also include this script tag in your HTML:
-// <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
-// And initialize with your public key:
-emailjs.init("403pGDRb-rwGc0bva"); // Your EmailJS public key here
+// Initialize EmailJS (Make sure your public key is correct)
+emailjs.init("403pGDRb-rwGc0bva");
 
 // Firebase config
 const firebaseConfig = {
@@ -105,13 +103,13 @@ if (signInButton) {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
 
-            // ✅ Generate and send 6-digit verification code
+            // Generate and send 6-digit verification code
             const code = Math.floor(100000 + Math.random() * 900000).toString();
             sessionStorage.setItem('tempLoginCode', code);
 
             const templateParams = {
-                to_email: email,
-                login_code: code
+                to_email: email,   // Must match your EmailJS template variable exactly
+                login_code: code   // Must match your EmailJS template variable exactly
             };
 
             emailjs.send('service_otkjg9d', 'template_mx54p5m', templateParams)
