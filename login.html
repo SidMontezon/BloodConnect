@@ -61,10 +61,6 @@
       color: red;
       min-height: 1.25rem; /* Reserve space for error messages */
     }
-    #signUpMessage {
-      margin-top: 10px;
-      color: red;
-    }
     #codeMessage {
       color: red;
       margin-top: 10px;
@@ -96,10 +92,10 @@
       Login
     </div>
 
-    <!-- Changed form id to "signInForm" to match firebaseauth.js listener -->
+    <!-- Form for sign-in -->
     <form id="signInForm">
-      <input type="email" id="email" class="form-control" placeholder="Email" required />
-      <input type="password" id="password" class="form-control" placeholder="Password" required />
+      <input type="email" id="email" class="form-control" placeholder="Email" required autocomplete="username" />
+      <input type="password" id="password" class="form-control" placeholder="Password" required autocomplete="current-password" />
       <button id="submitSignIn" class="btn btn-login w-100 text-white" type="submit">
         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-box-arrow-in-right me-1" viewBox="0 0 16 16" style="width: 16px; height:16px;">
           <path fill-rule="evenodd" d="M8.146 11.354a.5.5 0 01.708-.708L11.207 13H5.5a.5.5 0 010-1h5.707l-2.353-2.354a.5.5 0 010-.708z"/>
@@ -125,7 +121,6 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <!-- Added maxlength and autocomplete off -->
           <input
             type="text"
             id="emailCodeInput"
@@ -151,5 +146,6 @@
 
   <!-- Your Firebase + EmailJS script as module -->
   <script type="module" src="firebaseauth.js"></script>
+
 </body>
 </html>
