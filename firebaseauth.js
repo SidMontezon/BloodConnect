@@ -11,11 +11,11 @@ import {
     doc
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-// EmailJS import as module
-import emailjs from "https://cdn.emailjs.com/dist/email.min.js";
+// EmailJS import as ES module
+import emailjs from "https://cdn.emailjs.com/dist/email.esm.min.js";
 
 // Initialize EmailJS with your public key
-emailjs.init("403pGDRb-rwGc0bva"); // Your EmailJS public key here
+emailjs.init("403pGDRb-rwGc0bva"); // Replace with your EmailJS public key
 
 // Firebase config
 const firebaseConfig = {
