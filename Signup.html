@@ -1,16 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>BloodConnect - Sign Up</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - BloodConnect</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        body { font-family: 'Lato', sans-serif; }
-        .hero { background: #dc3545; color: white; padding: 100px 20px; text-align: center; }
-        .form-container { max-width: 500px; margin: auto; padding: 40px 20px; border-radius: 10px; background-color: #f8f9fa; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
-        .btn-custom { background-color: #dc3545; color: white; width: 100%; }
+        body { background-color: #f8f9fa; }
+        .signup-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .signup-box {
+            background: white; padding: 40px; border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center; width: 100%; max-width: 400px;
+        }
+        .message-display {
+            color: red;
+            margin-top: 10px;
+            display: none;
+            opacity: 0;
+            transition: opacity 1s ease-out;
+        }
+        .back-to-home {
+            position: absolute;
+            top: 70px;
+            left: 20px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -18,116 +36,42 @@
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
     <div class="container">
-        <a class="navbar-brand" href="index.html">
-            <i class="fa-solid fa-droplet"></i> BloodConnect
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link btn btn-light" href="index.html">Home</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-light" href="about.html">About Us</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-light" href="contact.html">Contact Us</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-light" href="faqs.html">FAQs</a></li>
-                <!-- Sign Up Button -->
-                <li class="nav-item">
-                    <a class="nav-link btn btn-light " href="Signup.html">Sign Up</a>
-                </li>
-                <!-- Login Button -->
-                <li class="nav-item">
-                    <a class="nav-link btn btn-light " href="login.html">Login</a>
-                </li>
-            </ul>
-        </div>
+        <a class="navbar-brand" href="index.html"><i class="fa-solid fa-droplet"></i> BloodConnect</a>
     </div>
 </nav>
 
+<p class="back-to-home"><a href="index.html" class="text-danger">Back to Home Page</a></p>
 
-<!-- Hero Section -->
-<header class="hero">
-    <h1>Sign Up to Save Lives</h1>
-    <p class="lead">Join us and be a part of our mission to help others!</p>
-</header>
-
-<!-- Sign Up Form -->
-<div class="container py-5">
-    <div class="form-container">
-        <h3 class="text-center mb-4">Create an Account</h3>
+<div class="signup-container">
+    <div class="signup-box">
+        <h2><i class="fa-solid fa-user-plus"></i> Sign Up</h2>
         <form id="signupForm">
-            <!-- Name Field -->
-            <div class="mb-3">
-                <input type="text" id="name" class="form-control" placeholder="Enter your full name" required>
-            </div>
-            <!-- Email Field -->
-            <div class="mb-3">
-                <input type="email" id="email" class="form-control" placeholder="Enter your email" required>
-            </div>
-            <!-- Password Field -->
-            <div class="mb-3">
-                <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
-            </div>
-            <!-- Role Selection -->
-            <div class="mb-3">
-                <label for="role" class="form-label">Choose Role</label>
-                <select class="form-select" id="role" required>
-                    <option value="donor">Donor</option>
-                    <option value="hospital">Hospital/Partner</option>
-                </select>
-            </div>
-            <!-- Submit Button -->
-            <button type="submit" class="btn btn-custom">Sign Up</button>
+            <input type="text" class="form-control mb-3" id="fName" placeholder="First Name" required>
+            <input type="text" class="form-control mb-3" id="lName" placeholder="Last Name" required>
+            <input type="email" class="form-control mb-3" id="rEmail" placeholder="Email" required>
+            <input type="password" class="form-control mb-3" id="rPassword" placeholder="Password" required>
+
+            <button type="submit" class="btn btn-danger w-100" id="submitSignUp">
+                <i class="fa-solid fa-user-plus"></i> Register
+            </button>
         </form>
+
+        <p class="mt-3">Already have an account? <a href="login.html" class="text-danger">Login</a></p>
+        <div class="message-display" id="signUpMessage"></div>
     </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- EmailJS Script -->
+<script src="https://cdn.emailjs.com/dist/email.min.js"></script>
 <script>
-            const firebaseConfig = {
-        apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
-        authDomain: "bloodconnect-b5142.firebaseapp.com",
-        databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
-        projectId: "bloodconnect-b5142",
-        storageBucket: "bloodconnect-b5142.appspot.com",
-        messagingSenderId: "631993835929",
-        appId: "1:631993835929:web:75554aca166e9058473308"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    // Handle sign up form
-    document.getElementById('signupForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-        const name = document.getElementById('name').value;   // Get the name
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const role = document.getElementById('role').value;  // Get the selected role
-
-        auth.createUserWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                const user = userCredential.user;
-
-                // Assign role and save user details after signup
-                db.collection("users").doc(user.uid).set({
-                    role: role,   // Store the selected role ("donor" or "hospital")
-                    email: email,
-                    name: name    // Save the name of the user
-                });
-
-                alert('User created and role assigned');
-                window.location.href = 'index.html';  // Redirect to homepage after successful signup
-            })
-            .catch((error) => {
-                console.error("Error signing up: ", error.message);
-                alert("Error signing up: " + error.message);
-            });
-    });
+    emailjs.init("YOUR_PUBLIC_KEY"); // Replace this
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Firebase Logic -->
+<script type="module" src="firebaseauth.js"></script>
 </body>
 </html>
+
