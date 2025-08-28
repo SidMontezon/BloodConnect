@@ -106,7 +106,7 @@ if (signInButton) {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
 
-            // ✅ Generate and send 6-digit verification code
+            // Generate and send 6-digit verification code
             const code = Math.floor(100000 + Math.random() * 900000).toString();
             sessionStorage.setItem('tempLoginCode', code);
 
@@ -134,7 +134,7 @@ if (signInButton) {
                         break;
                 }
             } else if (error.text) {
-                // Handle EmailJS errors here if needed
+                // EmailJS sending error
                 msg = 'Failed to send code. Try again.';
             }
             console.error('Error during sign-in:', error);
