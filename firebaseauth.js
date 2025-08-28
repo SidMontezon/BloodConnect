@@ -114,7 +114,7 @@ if (signInButton) {
                 login_code: code
             };
 
-            emailjs.send('service_otkjg9d', 'template_9g8knjw', templateParams)
+            emailjs.send('service_otkjg9d', 'template_mx54p5m', templateParams)
                 .then(() => {
                     showMessage('Verification code sent to your email.', 'signInMessage');
                     const modal = new bootstrap.Modal(document.getElementById('codeModal'));
