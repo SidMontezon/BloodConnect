@@ -27,9 +27,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 5000);
   }
 
-  // Flag to prevent multiple verification requests in a short time
-  let canSendVerification = true;
-
   // SignIn functionality
   const signIn = document.getElementById('submitSignIn');
   if (signIn) {
@@ -41,29 +38,16 @@ document.addEventListener('DOMContentLoaded', function () {
       signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           const user = userCredential.user;
-          showMessage('Sign-in Successful! A verification code has been sent to your email.', 'signInMessage');
 
-          // Check if we can send the verification email
-          if (canSendVerification) {
-            canSendVerification = false; // Disable sending more verification emails
-
-            sendEmailVerification(user)
-              .then(() => {
-                // After sending email verification, show the verification form
-                document.getElementById('signInForm').style.display = 'none'; // Hide login form
-                document.getElementById('verificationForm').style.display = 'block'; // Show verification form
-
-                // Re-enable sending verification after 1 minute (60 seconds)
-                setTimeout(() => {
-                  canSendVerification = true; // Allow sending verification again after delay
-                }, 60000); // 60 seconds delay
-              })
-              .catch((error) => {
-                console.error("Error sending email verification:", error);
-                showMessage('Failed to send verification email. Please try again later.', 'signInMessage');
-              });
+          // Check if the user's email is verified
+          if (user.emailVerified) {
+            showMessage('Login Successful!', 'signInMessage');
+            window.location.href = 'dashboard.html'; // Redirect to the dashboard
           } else {
-            showMessage('Please wait before requesting another verification email.', 'signInMessage');
+            showMessage('Please verify your email first.', 'signInMessage');
+            sendEmailVerification(user).then(() => {
+              showMessage('Verification email has been sent. Please check your inbox.', 'signInMessage');
+            });
           }
         })
         .catch((error) => {
@@ -77,25 +61,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Verification functionality
-  const submitVerification = document.getElementById('submitVerification');
-  if (submitVerification) {
-    submitVerification.addEventListener('click', (event) => {
-      event.preventDefault();
-      const verificationCode = document.getElementById('verificationCode').value;
-
-      // Simulate checking the verification code
-      // In a real-world scenario, you'd check the actual code sent by Firebase
-      if (verificationCode === '123456') { // Replace with real validation logic
-        showMessage('Email verified successfully. You are now logged in!', 'signInMessage');
-        // Redirect user to dashboard or home
-        window.location.href = 'dashboard.html';
-      } else {
-        showMessage('Invalid verification code. Please try again.', 'signInMessage');
-      }
-    });
-  }
-
   // Handling the email verification link when the user clicks on it
   const urlParams = new URLSearchParams(window.location.search);
   const oobCode = urlParams.get('oobCode'); // Get the verification code from the URL
@@ -104,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
     applyActionCode(auth, oobCode)  // Apply the code to verify the user's email
       .then(() => {
         showMessage('Your email has been successfully verified!', 'signInMessage');
-        // Proceed to the next part of your flow (e.g., login or redirect)
+        // Redirect after successful verification
         window.location.href = 'dashboard.html';
       })
       .catch((error) => {
