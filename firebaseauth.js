@@ -11,10 +11,6 @@ import {
     doc
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-// Note: Removed import for EmailJS here!
-// Assume emailjs is loaded globally in your HTML with:
-// <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
-
 // Initialize EmailJS with your public key
 emailjs.init("403pGDRb-rwGc0bva"); // Your EmailJS public key
 
@@ -116,9 +112,12 @@ if (signInButton) {
                 login_code: code
             };
 
+            // Ensure EmailJS is initialized and can send
             await emailjs.send('service_otkjg9d', 'template_mx54p5m', templateParams);
 
             showMessage('Verification code sent to your email.', 'signInMessage');
+
+            // Trigger modal after email is sent
             const modal = new bootstrap.Modal(document.getElementById('codeModal'));
             modal.show();
 
