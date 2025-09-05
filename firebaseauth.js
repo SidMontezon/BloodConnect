@@ -2,7 +2,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/fireba
 import { getAuth, signInWithEmailAndPassword, sendEmailVerification, applyActionCode } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
 document.addEventListener('DOMContentLoaded', function () {
-
   const firebaseConfig = {
     apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
     authDomain: "bloodconnect-b5142.firebaseapp.com",

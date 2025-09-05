@@ -74,6 +74,10 @@
       font-size: 1.1rem;
       margin-top: 10px;
     }
+    /* Verification Form Styles */
+    #verificationForm {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -115,6 +119,13 @@
     </div>
 
     <div id="signInMessage"></div>
+
+    <!-- Verification Form -->
+    <div id="verificationForm">
+      <h3 class="text-center">Check your email for the verification code!</h3>
+      <input type="text" id="verificationCode" class="form-control" placeholder="Enter Verification Code" />
+      <button id="submitVerification" class="btn btn-login w-100 text-white mt-3">Verify</button>
+    </div>
   </div>
 
   <!-- Bootstrap JS Bundle (includes Popper) -->
