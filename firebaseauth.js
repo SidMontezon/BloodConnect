@@ -1,18 +1,17 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, sendEmailVerification, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, sendEmailVerification, applyActionCode } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
 document.addEventListener('DOMContentLoaded', function () {
 
- const firebaseConfig = {
-        apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
-        authDomain: "bloodconnect-b5142.firebaseapp.com",
-        databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
-        projectId: "bloodconnect-b5142",
-        storageBucket: "bloodconnect-b5142.firebasestorage.app",
-        messagingSenderId: "631993835929",
-        appId: "1:631993835929:web:75554aca166e9058473308"
-    };
-
+  const firebaseConfig = {
+    apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
+    authDomain: "bloodconnect-b5142.firebaseapp.com",
+    databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
+    projectId: "bloodconnect-b5142",
+    storageBucket: "bloodconnect-b5142.firebasestorage.app",
+    messagingSenderId: "631993835929",
+    appId: "1:631993835929:web:75554aca166e9058473308"
+  };
 
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
@@ -29,6 +28,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 5000);
   }
 
+  // Flag to prevent multiple verification requests in a short time
+  let canSendVerification = true;
+
   // SignIn functionality
   const signIn = document.getElementById('submitSignIn');
   if (signIn) {
@@ -42,17 +44,28 @@ document.addEventListener('DOMContentLoaded', function () {
           const user = userCredential.user;
           showMessage('Sign-in Successful! A verification code has been sent to your email.', 'signInMessage');
 
-          // Send email verification (second step of 2FA)
-          sendEmailVerification(user)
-            .then(() => {
-              // After sending email verification, show the verification form
-              document.getElementById('signInForm').style.display = 'none';  // Hide login form
-              document.getElementById('verificationForm').style.display = 'block';  // Show verification form
-            })
-            .catch((error) => {
-              console.error("Error sending email verification:", error);
-              showMessage('Failed to send verification email', 'signInMessage');
-            });
+          // Check if we can send the verification email
+          if (canSendVerification) {
+            canSendVerification = false; // Disable sending more verification emails
+
+            sendEmailVerification(user)
+              .then(() => {
+                // After sending email verification, show the verification form
+                document.getElementById('signInForm').style.display = 'none'; // Hide login form
+                document.getElementById('verificationForm').style.display = 'block'; // Show verification form
+
+                // Re-enable sending verification after 1 minute (60 seconds)
+                setTimeout(() => {
+                  canSendVerification = true; // Allow sending verification again after delay
+                }, 60000); // 60 seconds delay
+              })
+              .catch((error) => {
+                console.error("Error sending email verification:", error);
+                showMessage('Failed to send verification email. Please try again later.', 'signInMessage');
+              });
+          } else {
+            showMessage('Please wait before requesting another verification email.', 'signInMessage');
+          }
         })
         .catch((error) => {
           const errorCode = error.code;
@@ -72,12 +85,9 @@ document.addEventListener('DOMContentLoaded', function () {
       event.preventDefault();
       const verificationCode = document.getElementById('verificationCode').value;
 
-      // You would need to verify this code against the Firebase user's sent verification link
-      // (usually by checking the URL for the code)
-
-      // For this example, we simulate a basic code verification.
-      // In a real scenario, you can compare it with the code sent to the email
-      if (verificationCode === '123456') {  // Replace with real logic to validate the code
+      // Simulate checking the verification code
+      // In a real-world scenario, you'd check the actual code sent by Firebase
+      if (verificationCode === '123456') { // Replace with real validation logic
         showMessage('Email verified successfully. You are now logged in!', 'signInMessage');
         // Redirect user to dashboard or home
         window.location.href = 'dashboard.html';
@@ -87,4 +97,20 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // Handling the email verification link when the user clicks on it
+  const urlParams = new URLSearchParams(window.location.search);
+  const oobCode = urlParams.get('oobCode'); // Get the verification code from the URL
+
+  if (oobCode) {
+    applyActionCode(auth, oobCode)  // Apply the code to verify the user's email
+      .then(() => {
+        showMessage('Your email has been successfully verified!', 'signInMessage');
+        // Proceed to the next part of your flow (e.g., login or redirect)
+        window.location.href = 'dashboard.html';
+      })
+      .catch((error) => {
+        console.error("Error applying verification code:", error);
+        showMessage('Failed to verify email. Please try again.', 'signInMessage');
+      });
+  }
 });
