@@ -93,7 +93,7 @@
     </div>
 
     <!-- Form for sign-in -->
-    <form id="signInForm">
+    <form id="signInForm" novalidate>
       <input type="email" id="email" class="form-control" placeholder="Email" required autocomplete="username" />
       <input type="password" id="password" class="form-control" placeholder="Password" required autocomplete="current-password" />
       <button id="submitSignIn" class="btn btn-login w-100 text-white" type="submit">
@@ -112,7 +112,7 @@
     <div id="signInMessage" class="text-center mt-2"></div>
   </div>
 
-  <!-- Modal for verification code -->
+  <!-- Modal for verification code (optional, can be removed if unused) -->
   <div class="modal fade" id="codeModal" tabindex="-1" aria-labelledby="codeModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
