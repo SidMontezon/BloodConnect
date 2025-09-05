@@ -3,10 +3,15 @@
  import {getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
  import{getFirestore, setDoc, doc} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js"
  
- const firebaseConfig = {
- //YOUR COPIED FIREBASE PART SHOULD BE HERE
- //WATCH THIS VIDEO TO LEARN WHAT TO PUT HERE   https://youtu.be/_Xczf06n6x0
- };
+const firebaseConfig = {
+        apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
+        authDomain: "bloodconnect-b5142.firebaseapp.com",
+        databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
+        projectId: "bloodconnect-b5142",
+        storageBucket: "bloodconnect-b5142.firebasestorage.app",
+        messagingSenderId: "631993835929",
+        appId: "1:631993835929:web:75554aca166e9058473308"
+    };
 
  // Initialize Firebase
  const app = initializeApp(firebaseConfig);
