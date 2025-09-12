@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
       signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           const user = userCredential.user;
-          // Use your deployed Cloud Function endpoint
+          // Call your deployed Cloud Function for 2FA
           fetch('https://bloodconnect-b5142.cloudfunctions.net/send2faCode', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

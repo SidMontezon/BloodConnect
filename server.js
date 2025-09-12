@@ -2,13 +2,13 @@ const functions = require('firebase-functions');
 const nodemailer = require('nodemailer');
 const cors = require('cors')({ origin: true });
 
-const codes = {};
+const codes = {}; // In-memory storage (resets on cold start)
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'sid.montezon18@gmail.com',
-    pass: 'akbi oltw qzst ydra'
+    pass: 'akbi oltw qzst ydra' // Your Gmail App Password
   }
 });
 
