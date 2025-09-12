@@ -9,7 +9,6 @@ app.use(bodyParser.json());
 
 const codes = {}; // In-memory storage for demo
 
-// Configure your email here
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -25,7 +24,7 @@ app.post('/send-2fa-code', (req, res) => {
   codes[email] = code;
 
   const mailOptions = {
-    from: 'sid.montezon18@gmail.com', // Use your Gmail here
+    from: 'sid.montezon18@gmail.com',
     to: email,
     subject: 'Your 2FA Code',
     text: `Your 2FA code is: ${code}`

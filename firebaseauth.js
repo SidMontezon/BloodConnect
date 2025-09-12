@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, applyActionCode } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
 document.addEventListener('DOMContentLoaded', function () {
   const firebaseConfig = {
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
       signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           const user = userCredential.user;
-          // Directly send 2FA code after login, no email verification required
+          // Always send 2FA code after login
           fetch('http://localhost:3000/send-2fa-code', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -110,20 +110,5 @@ document.addEventListener('DOMContentLoaded', function () {
         showMessage('Error verifying 2FA code.', 'signInMessage');
       });
     });
-  }
-
-  // Handling the email verification link when the user clicks on it (optional, can be removed if not needed)
-  const urlParams = new URLSearchParams(window.location.search);
-  const oobCode = urlParams.get('oobCode');
-  if (oobCode) {
-    applyActionCode(auth, oobCode)
-      .then(() => {
-        showMessage('Your email has been successfully verified!', 'signInMessage');
-        window.location.href = 'dashboard.html';
-      })
-      .catch((error) => {
-        console.error("Error applying verification code:", error);
-        showMessage('Failed to verify email. Please try again.', 'signInMessage');
-      });
   }
 });
