@@ -30,14 +30,6 @@ document.addEventListener('DOMContentLoaded', function () {
   function show2FAForm() {
     document.getElementById('signInForm').style.display = 'none';
     document.getElementById('verificationForm').style.display = 'block';
-    // If not already present, add the 2FA input and button
-    if (!document.getElementById('verificationCode')) {
-      document.getElementById('verificationForm').innerHTML = `
-        <input type="text" id="verificationCode" class="form-control" placeholder="Enter 2FA code" required />
-        <button id="submitVerification" class="btn btn-login w-100 mt-2">Verify 2FA</button>
-      `;
-      document.getElementById('submitVerification').addEventListener('click', submit2FA);
-    }
   }
 
   function hide2FAForm() {
@@ -46,9 +38,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // SignIn functionality
-  const signIn = document.getElementById('submitSignIn');
-  if (signIn) {
-    signIn.addEventListener('click', (event) => {
+  const signInForm = document.getElementById('signInForm');
+  if (signInForm) {
+    signInForm.addEventListener('submit', (event) => {
       event.preventDefault();
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
@@ -95,32 +87,35 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // 2FA Verification handler
-  function submit2FA(event) {
-    event.preventDefault();
-    const code = document.getElementById('verificationCode').value;
-    const email = sessionStorage.getItem('2fa_email');
-    if (!email) {
-      showMessage('Session expired. Please login again.', 'signInMessage');
-      hide2FAForm();
-      return;
-    }
-    fetch('http://localhost:3000/verify-2fa-code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, code })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        showMessage('2FA verification successful!', 'signInMessage');
-        sessionStorage.removeItem('2fa_email');
-        window.location.href = 'dashboard.html';
-      } else {
-        showMessage('Invalid 2FA code.', 'signInMessage');
+  const verificationForm = document.getElementById('verificationForm');
+  if (verificationForm) {
+    verificationForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+      const code = document.getElementById('verificationCode').value;
+      const email = sessionStorage.getItem('2fa_email');
+      if (!email) {
+        showMessage('Session expired. Please login again.', 'signInMessage');
+        hide2FAForm();
+        return;
       }
-    })
-    .catch(() => {
-      showMessage('Error verifying 2FA code.', 'signInMessage');
+      fetch('http://localhost:3000/verify-2fa-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showMessage('2FA verification successful!', 'signInMessage');
+          sessionStorage.removeItem('2fa_email');
+          window.location.href = 'dashboard.html';
+        } else {
+          showMessage('Invalid 2FA code.', 'signInMessage');
+        }
+      })
+      .catch(() => {
+        showMessage('Error verifying 2FA code.', 'signInMessage');
+      });
     });
   }
 
