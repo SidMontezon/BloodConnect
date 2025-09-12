@@ -59,13 +59,12 @@
     #signInMessage {
       margin-top: 10px;
       color: red;
-      min-height: 1.25rem; /* Reserve space for error messages */
+      min-height: 1.25rem;
       text-align: center;
     }
     a {
       color: #d7393f;
     }
-    /* Additional styling for consistency */
     .form-control, .btn-login {
       font-size: 1rem;
       padding: 10px;
@@ -74,7 +73,6 @@
       font-size: 1.1rem;
       margin-top: 10px;
     }
-    /* Verification Form Styles */
     #verificationForm {
       display: none;
     }
@@ -121,11 +119,11 @@
     <div id="signInMessage"></div>
 
     <!-- Verification Form -->
-    <div id="verificationForm">
+    <form id="verificationForm" style="display:none;">
       <h3 class="text-center">Check your email for the verification code!</h3>
-      <input type="text" id="verificationCode" class="form-control" placeholder="Enter Verification Code" />
-      <button id="submitVerification" class="btn btn-login w-100 text-white mt-3">Verify</button>
-    </div>
+      <input type="text" id="verificationCode" class="form-control" placeholder="Enter Verification Code" required maxlength="6" pattern="\d{6}" />
+      <button id="submitVerification" class="btn btn-login w-100 text-white mt-3" type="submit">Verify</button>
+    </form>
   </div>
 
   <!-- Bootstrap JS Bundle (includes Popper) -->
