@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, sendEmailVerification, applyActionCode } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, applyActionCode } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 
 document.addEventListener('DOMContentLoaded', function () {
   const firebaseConfig = {
@@ -48,32 +48,25 @@ document.addEventListener('DOMContentLoaded', function () {
       signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           const user = userCredential.user;
-          if (user.emailVerified) {
-            // Request backend to send 2FA code
-            fetch('http://localhost:3000/send-2fa-code', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: user.email })
-            })
-            .then(res => res.json())
-            .then(data => {
-              if (data.success) {
-                showMessage('2FA code sent to your email.', 'signInMessage');
-                show2FAForm();
-                sessionStorage.setItem('2fa_email', user.email);
-              } else {
-                showMessage('Failed to send 2FA code.', 'signInMessage');
-              }
-            })
-            .catch(() => {
-              showMessage('Error sending 2FA code.', 'signInMessage');
-            });
-          } else {
-            showMessage('Please verify your email first.', 'signInMessage');
-            sendEmailVerification(user).then(() => {
-              showMessage('Verification email has been sent. Please check your inbox.', 'signInMessage');
-            });
-          }
+          // Directly send 2FA code after login, no email verification required
+          fetch('http://localhost:3000/send-2fa-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: user.email })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              showMessage('2FA code sent to your email.', 'signInMessage');
+              show2FAForm();
+              sessionStorage.setItem('2fa_email', user.email);
+            } else {
+              showMessage('Failed to send 2FA code.', 'signInMessage');
+            }
+          })
+          .catch(() => {
+            showMessage('Error sending 2FA code.', 'signInMessage');
+          });
         })
         .catch((error) => {
           const errorCode = error.code;
@@ -119,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Handling the email verification link when the user clicks on it
+  // Handling the email verification link when the user clicks on it (optional, can be removed if not needed)
   const urlParams = new URLSearchParams(window.location.search);
   const oobCode = urlParams.get('oobCode');
   if (oobCode) {

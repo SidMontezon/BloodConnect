@@ -20,11 +20,12 @@ const transporter = nodemailer.createTransport({
 
 app.post('/send-2fa-code', (req, res) => {
   const { email } = req.body;
+  if (!email) return res.json({ success: false, message: "No email provided" });
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   codes[email] = code;
 
   const mailOptions = {
-    from: 'bloodconnect@gmail.com',
+    from: 'sid.montezon18@gmail.com', // Use your Gmail here
     to: email,
     subject: 'Your 2FA Code',
     text: `Your 2FA code is: ${code}`
@@ -32,6 +33,7 @@ app.post('/send-2fa-code', (req, res) => {
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
+      console.error(error);
       return res.json({ success: false });
     }
     res.json({ success: true });
