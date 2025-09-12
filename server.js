@@ -1,13 +1,8 @@
-const express = require('express');
+const functions = require('firebase-functions');
 const nodemailer = require('nodemailer');
-const cors = require('cors');
-const bodyParser = require('body-parser');
+const cors = require('cors')({ origin: true });
 
-const app = express();
-app.use(cors());
-app.use(bodyParser.json());
-
-const codes = {}; // In-memory storage for demo
+const codes = {};
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -17,38 +12,40 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-app.post('/send-2fa-code', (req, res) => {
-  const { email } = req.body;
-  if (!email) return res.json({ success: false, message: "No email provided" });
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  codes[email] = code;
+exports.send2faCode = functions.https.onRequest((req, res) => {
+  cors(req, res, () => {
+    if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+    const { email } = req.body;
+    if (!email) return res.json({ success: false, message: "No email provided" });
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    codes[email] = code;
 
-  const mailOptions = {
-    from: 'sid.montezon18@gmail.com',
-    to: email,
-    subject: 'Your 2FA Code',
-    text: `Your 2FA code is: ${code}`
-  };
+    const mailOptions = {
+      from: 'sid.montezon18@gmail.com',
+      to: email,
+      subject: 'Your 2FA Code',
+      text: `Your 2FA code is: ${code}`
+    };
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.error(error);
-      return res.json({ success: false });
-    }
-    res.json({ success: true });
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error(error);
+        return res.json({ success: false });
+      }
+      res.json({ success: true });
+    });
   });
 });
 
-app.post('/verify-2fa-code', (req, res) => {
-  const { email, code } = req.body;
-  if (codes[email] && codes[email] === code) {
-    delete codes[email];
-    res.json({ success: true });
-  } else {
-    res.json({ success: false });
-  }
-});
-
-app.listen(3000, () => {
-  console.log('2FA backend running on http://localhost:3000');
+exports.verify2faCode = functions.https.onRequest((req, res) => {
+  cors(req, res, () => {
+    if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+    const { email, code } = req.body;
+    if (codes[email] && codes[email] === code) {
+      delete codes[email];
+      res.json({ success: true });
+    } else {
+      res.json({ success: false });
+    }
+  });
 });

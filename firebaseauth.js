@@ -48,8 +48,8 @@ document.addEventListener('DOMContentLoaded', function () {
       signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           const user = userCredential.user;
-          // Always send 2FA code after login
-          fetch('http://localhost:3000/send-2fa-code', {
+          // Use your deployed Cloud Function endpoint
+          fetch('https://bloodconnect-b5142.cloudfunctions.net/send2faCode', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: user.email })
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
         hide2FAForm();
         return;
       }
-      fetch('http://localhost:3000/verify-2fa-code', {
+      fetch('https://bloodconnect-b5142.cloudfunctions.net/verify2faCode', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, code })
