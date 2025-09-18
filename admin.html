@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin - BloodConnect</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #f8f9fa; }
+        .navbar { background: #c0392b; }
+        .navbar-brand, .nav-link { color: white !important; }
+        .card a { text-decoration: none; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+        <div class="container">
+            <a class="navbar-brand" href="admin.html"><i class="fa-solid fa-droplet"></i> Admin</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-light text-dark" href="logout.html">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <h2 class="mb-4">Administrator Panel</h2>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <a href="admin-inventory.html" class="card card-body">
+                    <h5 class="mb-1"><i class="fa-solid fa-warehouse me-2"></i>Blood Inventory</h5>
+                    <div>View and update blood stock</div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="admin-hospital-requests.html" class="card card-body">
+                    <h5 class="mb-1"><i class="fa-solid fa-hospital me-2"></i>Hospital Requests</h5>
+                    <div>Approve or reject requests</div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="admin-donor-registrations.html" class="card card-body">
+                    <h5 class="mb-1"><i class="fa-solid fa-user-plus me-2"></i>Donor Registrations</h5>
+                    <div>Approve or reject new donors</div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="admin-donor-eligibility.html" class="card card-body">
+                    <h5 class="mb-1"><i class="fa-solid fa-user-check me-2"></i>Donor Eligibility</h5>
+                    <div>Manage donor eligibility status</div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="admin-reports.html" class="card card-body">
+                    <h5 class="mb-1"><i class="fa-solid fa-file-lines me-2"></i>Reports</h5>
+                    <div>Inventory, donors, requests</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
+            authDomain: "bloodconnect-b5142.firebaseapp.com",
+            databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
+            projectId: "bloodconnect-b5142",
+            storageBucket: "bloodconnect-b5142.appspot.com",
+            messagingSenderId: "631993835929",
+            appId: "1:631993835929:web:75554aca166e9058473308"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        auth.onAuthStateChanged((user) => {
+            if (!user) { window.location.href = "login.html"; }
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BloodConnect - Hospital Partner</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .hidden { display: none; }
+    .card { border: 1px solid #ccc; padding: 20px; margin: 10px 0; border-radius: 10px; }
+    .btn { padding: 10px 15px; margin: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Hospital Partner Portal - BloodConnect</h1>
+
+  <div id="loginSection">
+    <h3>Login</h3>
+    <input type="text" id="username" placeholder="Username"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+    <button class="btn" onclick="login()">Login</button>
+    <p id="loginError" style="color:red;"></p>
+  </div>
+
+  <div id="dashboard" class="hidden">
+    <h2>Partner Dashboard</h2>
+    <button class="btn" onclick="viewRequests()">View Requests</button>
+    <button class="btn" onclick="setSchedule()">Set Schedule</button>
+    <button class="btn" onclick="setEventDate()">Set Event Date</button>
+  </div>
+
+  <div id="requestSection" class="hidden card">
+    <h3>Blood Requests</h3>
+    <p>Checking availability...</p>
+    <button class="btn" onclick="approveRequest()">Approve</button>
+  </div>
+
+  <div id="eventSection" class="hidden card">
+    <h3>Event Scheduling</h3>
+    <input type="date" id="eventDate">
+    <button class="btn" onclick="submitEvent()">Submit for Approval</button>
+    <p id="eventStatus"></p>
+  </div>
+
+  <script>
+    function login() {
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+      if (user === 'partner' && pass === 'blood123') {
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+      } else {
+        document.getElementById('loginError').innerText = 'Incorrect credentials';
+      }
+    }
+
+    function viewRequests() {
+      document.getElementById('requestSection').classList.remove('hidden');
+    }
+
+    function approveRequest() {
+      alert("Request Approved (Assuming blood is available)");
+    }
+
+    function setSchedule() {
+      alert("Schedule feature coming soon!");
+    }
+
+    function setEventDate() {
+      document.getElementById('eventSection').classList.remove('hidden');
+    }
+
+    function submitEvent() {
+      const date = document.getElementById('eventDate').value;
+      if (date) {
+        document.getElementById('eventStatus').innerText = "Submitted. Awaiting approval...";
+      } else {
+        alert("Please select a date.");
+      }
+    }
+  </script>
+</body>
+</html>

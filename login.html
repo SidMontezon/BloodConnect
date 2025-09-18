@@ -73,9 +73,7 @@
       font-size: 1.1rem;
       margin-top: 10px;
     }
-    #verificationForm {
-      display: none;
-    }
+    /* 2FA UI removed */
   </style>
 </head>
 <body>
@@ -118,12 +116,7 @@
 
     <div id="signInMessage"></div>
 
-    <!-- Verification Form -->
-    <form id="verificationForm" style="display:none;">
-      <h3 class="text-center">Check your email for the verification code!</h3>
-      <input type="text" id="verificationCode" class="form-control" placeholder="Enter Verification Code" required maxlength="6" pattern="\d{6}" />
-      <button id="submitVerification" class="btn btn-login w-100 text-white mt-3" type="submit">Verify</button>
-    </form>
+    <!-- 2FA verification form removed -->
   </div>
 
   <!-- Bootstrap JS Bundle (includes Popper) -->

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin - Blood Inventory</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .navbar { background: #c0392b; }
+        .navbar-brand, .nav-link { color: white !important; }
+        .form-range { width: 200px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+        <div class="container">
+            <a class="navbar-brand" href="admin.html">Admin</a>
+            <div class="collapse navbar-collapse"></div>
+            <a class="nav-link text-white" href="logout.html">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <h3 class="mb-3">Blood Inventory</h3>
+
+        <div class="table-responsive">
+            <table class="table table-bordered bg-white">
+                <thead>
+                    <tr>
+                        <th>Blood Group</th>
+                        <th>Quantity (L)</th>
+                        <th>Update</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryBody"></tbody>
+            </table>
+        </div>
+
+        <div class="alert alert-info" id="message" style="display:none;"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
+            authDomain: "bloodconnect-b5142.firebaseapp.com",
+            databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
+            projectId: "bloodconnect-b5142",
+            storageBucket: "bloodconnect-b5142.appspot.com",
+            messagingSenderId: "631993835929",
+            appId: "1:631993835929:web:75554aca166e9058473308"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        const groups = ["Aplus", "Bplus", "Oplus", "ABplus", "Aminus", "Bminus", "Ominus", "ABminus"]; 
+
+        function showMessage(text) {
+            const m = document.getElementById('message');
+            m.innerText = text; m.style.display = 'block';
+            setTimeout(() => { m.style.display = 'none'; }, 3000);
+        }
+
+        function renderInventory(data) {
+            const tbody = document.getElementById('inventoryBody');
+            tbody.innerHTML = '';
+            groups.forEach(key => {
+                const qty = (data && data[key]) || 0;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${key.replace('plus','+').replace('minus','-')}</td>
+                    <td><input type="number" min="0" step="0.1" class="form-control" id="q_${key}" value="${qty}"></td>
+                    <td><button class="btn btn-primary btn-sm" data-key="${key}">Save</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            tbody.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const key = e.target.getAttribute('data-key');
+                    const val = parseFloat(document.getElementById(`q_${key}`).value) || 0;
+                    db.ref('bloodInventory/' + key).set(val).then(() => showMessage('Saved'));
+                });
+            });
+        }
+
+        auth.onAuthStateChanged((user) => {
+            if (!user) { window.location.href = 'login.html'; return; }
+            db.ref('bloodInventory').on('value', (snap) => renderInventory(snap.val()));
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin - Donor Registrations</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .navbar { background: #c0392b; }
+        .navbar-brand, .nav-link { color: white !important; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+        <div class="container">
+            <a class="navbar-brand" href="admin.html">Admin</a>
+            <div class="collapse navbar-collapse"></div>
+            <a class="nav-link text-white" href="logout.html">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <h3 class="mb-3">Pending Donor Registrations</h3>
+        <div class="table-responsive">
+            <table class="table table-bordered bg-white">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Blood Group</th>
+                        <th>Age</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="donorsBody"></tbody>
+            </table>
+        </div>
+        <div class="alert" id="message" style="display:none;"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
+            authDomain: "bloodconnect-b5142.firebaseapp.com",
+            databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
+            projectId: "bloodconnect-b5142",
+            storageBucket: "bloodconnect-b5142.appspot.com",
+            messagingSenderId: "631993835929",
+            appId: "1:631993835929:web:75554aca166e9058473308"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        function flash(message, type='info') {
+            const el = document.getElementById('message');
+            el.className = `alert alert-${type}`;
+            el.innerText = message; el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 2500);
+        }
+
+        function setStatus(id, status) {
+            return db.ref('donorRegistrations/' + id + '/status').set(status);
+        }
+
+        function render(rows) {
+            const tbody = document.getElementById('donorsBody');
+            tbody.innerHTML = '';
+            Object.entries(rows || {}).forEach(([id, r]) => {
+                if ((r.status || 'pending') !== 'pending') return;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${r.name || ''}</td>
+                    <td>${r.email || ''}</td>
+                    <td>${r.bloodGroup || ''}</td>
+                    <td>${r.age || ''}</td>
+                    <td><span class="badge bg-secondary">${r.status || 'pending'}</span></td>
+                    <td>
+                        <button class="btn btn-success btn-sm" data-action="approve" data-id="${id}">Approve</button>
+                        <button class="btn btn-danger btn-sm ms-1" data-action="reject" data-id="${id}">Reject</button>
+                    </td>`;
+                tbody.appendChild(tr);
+            });
+
+            tbody.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    const action = e.target.getAttribute('data-action');
+                    const status = action === 'approve' ? 'approved' : 'rejected';
+                    setStatus(id, status).then(() => flash(`Donor ${status}`, status==='approved'?'success':'danger'));
+                });
+            });
+        }
+
+        auth.onAuthStateChanged((user) => {
+            if (!user) { window.location.href = 'login.html'; return; }
+            db.ref('donorRegistrations').on('value', (snap) => render(snap.val()));
+        });
+    </script>
+</body>
+</html>
+

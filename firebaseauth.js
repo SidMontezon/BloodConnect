@@ -27,15 +27,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 5000);
   }
 
-  function show2FAForm() {
-    document.getElementById('signInForm').style.display = 'none';
-    document.getElementById('verificationForm').style.display = 'block';
-  }
-
-  function hide2FAForm() {
-    document.getElementById('signInForm').style.display = 'block';
-    document.getElementById('verificationForm').style.display = 'none';
-  }
+  // 2FA UI helpers removed as 2FA is disabled
+  function show2FAForm() {}
+  function hide2FAForm() {}
 
   // SignIn functionality
   const signInForm = document.getElementById('signInForm');
@@ -46,27 +40,8 @@ document.addEventListener('DOMContentLoaded', function () {
       const password = document.getElementById('password').value;
 
       signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          // Call your deployed Cloud Function for 2FA
-          fetch('https://bloodconnect-b5142.cloudfunctions.net/send2faCode', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: user.email })
-          })
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              showMessage('2FA code sent to your email.', 'signInMessage');
-              show2FAForm();
-              sessionStorage.setItem('2fa_email', user.email);
-            } else {
-              showMessage('Failed to send 2FA code.', 'signInMessage');
-            }
-          })
-          .catch(() => {
-            showMessage('Error sending 2FA code.', 'signInMessage');
-          });
+        .then(() => {
+          window.location.href = 'dashboard.html';
         })
         .catch((error) => {
           const errorCode = error.code;
@@ -79,36 +54,5 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // 2FA Verification handler
-  const verificationForm = document.getElementById('verificationForm');
-  if (verificationForm) {
-    verificationForm.addEventListener('submit', function(event) {
-      event.preventDefault();
-      const code = document.getElementById('verificationCode').value;
-      const email = sessionStorage.getItem('2fa_email');
-      if (!email) {
-        showMessage('Session expired. Please login again.', 'signInMessage');
-        hide2FAForm();
-        return;
-      }
-      fetch('https://bloodconnect-b5142.cloudfunctions.net/verify2faCode', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          showMessage('2FA verification successful!', 'signInMessage');
-          sessionStorage.removeItem('2fa_email');
-          window.location.href = 'dashboard.html';
-        } else {
-          showMessage('Invalid 2FA code.', 'signInMessage');
-        }
-      })
-      .catch(() => {
-        showMessage('Error verifying 2FA code.', 'signInMessage');
-      });
-    });
-  }
+  // 2FA verification removed
 });
