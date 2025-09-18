@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       signInWithEmailAndPassword(auth, email, password)
         .then(() => {
-          window.location.href = 'dashboard.html';
+          window.location.href = 'admin.html';
         })
         .catch((error) => {
           const errorCode = error.code;
