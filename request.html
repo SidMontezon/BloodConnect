@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Blood Donations - Blood Bank Management</title>
+    <title>Blood Requests - Blood Bank Management</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -29,19 +29,19 @@
     </nav>
 
     <div class="container mt-4">
-        <h2 class="text-center">Blood Donations</h2>
+        <h2 class="text-center">Blood Requests</h2>
         <table class="table table-bordered mt-3">
             <thead class="table-danger">
                 <tr>
-                    <th>Donor Name</th>
+                    <th>Requestor Name</th>
                     <th>Blood Type</th>
-                    <th>Volume Donated (ml)</th>
-                    <th>Donation Date</th>
-                    <th>Hospital Location</th>
-                    <th>Status</th> 
+                    <th>Units Needed (ml)</th>
+                    <th>Request Date</th>
+                    <th>Hospital Location</th> <!-- New Column -->
+                    <th>Status</th>
                 </tr>
             </thead>
-            <tbody id="donationsTable">
+            <tbody id="requestsTable">
             </tbody>
         </table>
     </div>
@@ -50,7 +50,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
+            apiKey: "AIzaSyBElBKqa9ThPR1bEXlCu-wGdi0vE943O4",
             authDomain: "bloodconnect2-d094a.firebaseapp.com",
             databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com/",
             projectId: "bloodconnect2-d094a",
@@ -64,8 +64,8 @@
 
         function getStatusBadge(status) {
             switch (status?.toLowerCase()) {
-                case 'accepted':
-                    return '<span class="badge bg-success">Accepted</span>';
+                case 'approved':
+                    return '<span class="badge bg-success">Approved</span>';
                 case 'rejected':
                     return '<span class="badge bg-danger">Rejected</span>';
                 default:
@@ -73,18 +73,19 @@
             }
         }
 
-        function loadBloodDonations() {
-            const tableBody = document.getElementById("donationsTable");
-            database.ref("bloodDonations").once("value", (snapshot) => {
+        function loadBloodRequests() {
+            const tableBody = document.getElementById("requestsTable");
+            database.ref("bloodRequests").once("value", (snapshot) => {
                 tableBody.innerHTML = "";
                 snapshot.forEach(childSnapshot => {
-                    const donation = childSnapshot.val();
-                    const statusBadge = getStatusBadge(donation.status);
+                    const request = childSnapshot.val();
+                    const statusBadge = getStatusBadge(request.status);
                     const row = `<tr>
-                        <td>${donation.donorName}</td>
-                        <td>${donation.bloodType}</td>
-                        <td>${donation.volume} ml</td>
-                        <td>${donation.date}</td>
+                        <td>${request.requestorName}</td>
+                        <td>${request.bloodType}</td>
+                        <td>${request.units} ml</td>
+                        <td>${request.date}</td>
+                        <td>${request.hospitalLocation || "N/A"}</td>
                         <td>${statusBadge}</td>
                     </tr>`;
                     tableBody.innerHTML += row;
@@ -92,7 +93,7 @@
             });
         }
 
-        window.onload = loadBloodDonations;
+        window.onload = loadBloodRequests;
     </script>
 </body>
 </html>

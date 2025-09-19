@@ -59,13 +59,12 @@
 <script>
     // Firebase config
     const firebaseConfig = {
-        apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
-        authDomain: "bloodconnect-b5142.firebaseapp.com",
-        databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
-        projectId: "bloodconnect-b5142",
-        storageBucket: "bloodconnect-b5142.appspot.com",
-        messagingSenderId: "631993835929",
-        appId: "1:631993835929:web:75554aca166e9058473308"
+        apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
+        authDomain: "bloodconnect2-d094a.firebaseapp.com",
+        projectId: "bloodconnect2-d094a",
+        storageBucket: "bloodconnect2-d094a.firebasestorage.app",
+        messagingSenderId: "124251937624",
+        appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
     };
     
     // Initialize Firebase
@@ -86,35 +85,74 @@
         // Attempt login
         auth.signInWithEmailAndPassword(email, password)
             .then((userCredential) => {
-                // Retrieve the user's role from Firestore using the path /users/{userID}
                 const user = userCredential.user;
-                console.log("Authenticated user:", user); // Log the authenticated user
+                console.log("Authenticated user:", user);
 
-                // Now try to get the user's data from Firestore
+                // Check if email is verified
+                if (!user.emailVerified) {
+                    // Send verification email with better error handling
+                    user.sendEmailVerification().then(() => {
+                        errorMessageElement.textContent = "Please verify your email before logging in. A verification email has been sent.";
+                        errorMessageElement.style.color = "orange";
+                    }).catch((error) => {
+                        console.error("Error sending verification email:", error);
+                        
+                        if (error.code === 'auth/too-many-requests') {
+                            errorMessageElement.textContent = "Too many requests. Please wait 1-2 hours before trying again, or try a different network.";
+                            errorMessageElement.style.color = "red";
+                        } else if (error.code === 'auth/network-request-failed') {
+                            errorMessageElement.textContent = "Network error. Please check your internet connection and try again.";
+                            errorMessageElement.style.color = "red";
+                        } else {
+                            errorMessageElement.textContent = "Please verify your email. Error: " + error.message;
+                            errorMessageElement.style.color = "red";
+                        }
+                    });
+                    return;
+                }
+
+                // Get user data from Firestore
                 db.collection("users").doc(user.uid).get()
                     .then((doc) => {
                         if (doc.exists) {
-                            const role = doc.data().role;
-                            console.log("User role:", role); // Log the role value
+                            const userData = doc.data();
+                            const role = userData.role;
+                            const twoFactorEnabled = userData.twoFactorEnabled || false;
+                            
+                            console.log("User role:", role);
+                            console.log("2FA enabled:", twoFactorEnabled);
 
-                            // Redirect based on user role
-                            if (role === "admin") {
-                                window.location.href = "dashboard.html";  // Redirect to admin dashboard
-                            } else if (role === "user") {
-                                window.location.href = "donatordashboard.html";  // Redirect to user dashboard
-                            } else if (role === "hospital") {
-                                window.location.href = "hospitaldashboard.html";  // Redirect to hospital dashboard
+                            // If 2FA is enabled, redirect to 2FA verification
+                            if (twoFactorEnabled) {
+                                // Store user data temporarily for after 2FA verification
+                                sessionStorage.setItem('pendingUser', JSON.stringify({
+                                    uid: user.uid,
+                                    role: role,
+                                    email: user.email
+                                }));
+                                window.location.href = "verify-2fa.html";
                             } else {
-                                window.location.href = "index.html";  // Default redirect if role is undefined
+                                // No 2FA, proceed with normal login
+                                redirectUser(role);
                             }
                         } else {
                             console.error("No user document found in Firestore.");
-                            errorMessageElement.textContent = "User data not found in Firestore.";
+                            errorMessageElement.textContent = "User data not found. Please contact support.";
                         }
                     })
                     .catch((error) => {
                         console.error("Error retrieving user data:", error);
-                        errorMessageElement.textContent = "Error retrieving user data: " + error.message;
+                        
+                        if (error.code === 'permission-denied') {
+                            errorMessageElement.textContent = "Permission denied. Please check Firestore security rules or contact support.";
+                            errorMessageElement.style.color = "red";
+                        } else if (error.code === 'unavailable') {
+                            errorMessageElement.textContent = "Database temporarily unavailable. Please try again in a few minutes.";
+                            errorMessageElement.style.color = "red";
+                        } else {
+                            errorMessageElement.textContent = "Error retrieving user data: " + error.message;
+                            errorMessageElement.style.color = "red";
+                        }
                     });
             })
             .catch((error) => {
@@ -123,6 +161,19 @@
                 errorMessageElement.textContent = error.message;
             });
     });
+
+    // Function to redirect user based on role
+    function redirectUser(role) {
+        if (role === "admin") {
+            window.location.href = "dashboard.html";
+        } else if (role === "user" || role === "donor") {
+            window.location.href = "donatordashboard.html";
+        } else if (role === "hospital") {
+            window.location.href = "hospitaldashboard.html";
+        } else {
+            window.location.href = "index.html";
+        }
+    }
 </script>
 
 <!-- Bootstrap JS -->
