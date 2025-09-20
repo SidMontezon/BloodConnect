@@ -1,7 +1,15 @@
-// Firebase compat imports
-import firebase from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js";
-import "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js";
-import "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -15,11 +23,11 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-// Function to show messages to the user
+// Show message function
 function showMessage(message, divId) {
   const messageDiv = document.getElementById(divId);
   if (!messageDiv) return;
@@ -34,27 +42,46 @@ function showMessage(message, divId) {
   }, 5000);
 }
 
-// --- Check if the user is already logged in ---
-auth.onAuthStateChanged((user) => {
-  if (user) {
-    // If the user is logged in, check their role and redirect accordingly
-    db.collection("users").doc(user.uid).get().then(doc => {
-      if (doc.exists) {
-        const userData = doc.data();
-        const role = userData.role;
-        if (role === 'admin') {
-          window.location.href = 'admin.html';
-        } else if (role === 'hospital') {
-          window.location.href = 'hospital.html';
-        } else if (role === 'donor') {
-          window.location.href = 'donor.html';
-        }
-      }
-    });
-  }
-});
+// --- Signup Logic ---
+const signupForm = document.getElementById('signupForm');
+if (signupForm) {
+  signupForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
 
-// --- Login Logic ---
+    const fName = document.getElementById('fName').value.trim();
+    const lName = document.getElementById('lName').value.trim();
+    const email = document.getElementById('rEmail').value.trim();
+    const password = document.getElementById('rPassword').value;
+    const role = document.getElementById('userRole').value;
+
+    if (!role) {
+      showMessage('Please select a role.', 'signUpMessage');
+      return;
+    }
+
+    try {
+      // Create user with email and password
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Store additional user info including role in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        firstName: fName,
+        lastName: lName,
+        email: email,
+        role: role,
+        createdAt: new Date()
+      });
+
+      // Redirect to login page after successful signup
+      window.location.href = 'login.html';
+    } catch (error) {
+      showMessage(error.message, 'signUpMessage');
+    }
+  });
+}
+
+// --- Login Logic (no role check) ---
 const signInForm = document.getElementById('signInForm');
 if (signInForm) {
   signInForm.addEventListener('submit', async (event) => {
@@ -63,35 +90,18 @@ if (signInForm) {
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
 
-    // Simple form validation
-    if (!email || !password) {
-      showMessage('Please enter both email and password.', 'signInMessage');
-      return;
-    }
-
     try {
-      // Sign in the user with email and password
-      const userCredential = await auth.signInWithEmailAndPassword(email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Fetch user role from Firestore after successful login
-      const userDoc = await db.collection("users").doc(user.uid).get();
-      if (userDoc.exists) {
-        const userData = userDoc.data();
-        const role = userData.role;
-
-        // Redirect based on user role
-        if (role === 'admin') {
-          window.location.href = 'admin.html';
-        } else if (role === 'hospital') {
-          window.location.href = 'hospital.html';
-        } else if (role === 'donor') {
-          window.location.href = 'donor.html';
-        } else {
-          showMessage('User role is not defined.', 'signInMessage');
-        }
+      // Get user data from Firestore
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists()) {
+        // User is authenticated, proceed with normal login without checking the role
+        // Optionally, you can redirect to a dashboard or homepage
+        window.location.href = 'admin.html';  // Replace with your preferred redirection
       } else {
-        showMessage('User data not found.', 'signInMessage');
+        showMessage('User data not found. Please contact support.', 'signInMessage');
       }
     } catch (error) {
       if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
