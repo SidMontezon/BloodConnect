@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/fireba
 import {
   getAuth,
   signInWithEmailAndPassword,
-  createUser WithEmailAndPassword  // fixed here: no space
+  createUserWithEmailAndPassword // Fixed typo here
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 import {
   getFirestore,
@@ -34,6 +34,10 @@ function showMessage(message, divId) {
   messageDiv.style.opacity = 1;
   setTimeout(() => {
     messageDiv.style.opacity = 0;
+    // Optionally hide after fade out
+    setTimeout(() => {
+      messageDiv.style.display = "none";
+    }, 500);
   }, 5000);
 }
 
@@ -56,7 +60,7 @@ if (signupForm) {
 
     try {
       // Create user with email and password
-      const userCredential = await createUser WithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password); // Fixed function call
       const user = userCredential.user;
 
       // Store additional user info including role in Firestore
@@ -64,7 +68,8 @@ if (signupForm) {
         firstName: fName,
         lastName: lName,
         email: email,
-        role: role
+        role: role,
+        createdAt: new Date()
       });
 
       // Redirect to login page after successful signup
@@ -102,10 +107,10 @@ if (signInForm) {
         } else if (role === 'donor') {
           window.location.href = 'donor.html';
         } else {
-          showMessage('User  role is not defined.', 'signInMessage');
+          showMessage('User role is not defined.', 'signInMessage');
         }
       } else {
-        showMessage('User  data not found.', 'signInMessage');
+        showMessage('User data not found.', 'signInMessage');
       }
     } catch (error) {
       if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
