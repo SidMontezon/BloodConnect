@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>BloodConnect - 2FA Settings</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { background-color: #f8f9fa; }
+        .settings-container { 
+            max-width: 800px; 
+            margin: 40px auto; 
+            padding: 20px; 
+        }
+        .settings-card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+        .success-message {
+            color: green;
+            margin-top: 10px;
+        }
+        .info-message {
+            color: #0d6efd;
+            margin-top: 10px;
+        }
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .status-enabled {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-disabled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .phone-input-group {
+            margin-top: 15px;
+        }
+        .hidden {
+            display: none;
+        }
+        .security-icon {
+            font-size: 2rem;
+            color: #dc3545;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+    <div class="container">
+        <a class="navbar-brand" href="index.html"><i class="fa-solid fa-droplet"></i> BloodConnect</a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link" href="donatordashboard.html">
+                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</nav>
+
+<!-- 2FA Settings -->
+<div class="settings-container">
+    <div class="settings-card">
+        <div class="text-center">
+            <div class="security-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h2>Two-Factor Authentication Settings</h2>
+            <p class="text-muted">Enhance your account security with 2FA</p>
+        </div>
+
+        <!-- Current Status -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h5>Current Status</h5>
+                <span id="currentStatus" class="status-badge status-disabled">Disabled</span>
+            </div>
+            <div class="col-md-6 text-end">
+                <button class="btn btn-outline-danger" onclick="toggle2FA()" id="toggleBtn">
+                    <i class="fa-solid fa-toggle-off"></i> Enable 2FA
+                </button>
+            </div>
+        </div>
+
+        <!-- Email Verification Status -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h6><i class="fa-solid fa-envelope"></i> Email Verification</h6>
+                <p class="text-muted mb-0">Your email address is verified and can be used for 2FA</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <span id="emailStatus" class="status-badge status-disabled">Not Verified</span>
+            </div>
+        </div>
+
+        <!-- Phone Number Setup -->
+        <div id="phoneSetup" class="hidden">
+            <h5><i class="fa-solid fa-mobile-screen"></i> Phone Number Setup</h5>
+            <p class="text-muted">Add a phone number to receive SMS verification codes</p>
+            
+            <div class="phone-input-group">
+                <div class="input-group">
+                    <span class="input-group-text">+63</span>
+                    <input type="tel" id="phoneNumber" class="form-control" placeholder="9123456789" maxlength="10">
+                    <button class="btn btn-outline-primary" onclick="addPhoneNumber()" id="addPhoneBtn">
+                        <i class="fa-solid fa-plus"></i> Add Phone
+                    </button>
+                </div>
+                <small class="text-muted">Enter your 10-digit mobile number without the country code</small>
+            </div>
+
+            <div id="phoneVerification" class="hidden mt-3">
+                <h6>Verify Phone Number</h6>
+                <div class="input-group">
+                    <input type="text" id="phoneOTP" class="form-control" placeholder="Enter 6-digit code" maxlength="6">
+                    <button class="btn btn-success" onclick="verifyPhoneNumber()" id="verifyPhoneBtn">
+                        <i class="fa-solid fa-check"></i> Verify
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Phone Number -->
+        <div id="currentPhone" class="hidden">
+            <h6><i class="fa-solid fa-mobile-screen"></i> Current Phone Number</h6>
+            <p class="text-muted mb-2">Phone: <span id="displayPhone"></span></p>
+            <button class="btn btn-outline-warning btn-sm" onclick="changePhoneNumber()">
+                <i class="fa-solid fa-edit"></i> Change Phone Number
+            </button>
+        </div>
+
+        <!-- Security Information -->
+        <div class="mt-4">
+            <h5><i class="fa-solid fa-info-circle"></i> Security Information</h5>
+            <div class="alert alert-info">
+                <h6>How 2FA Works:</h6>
+                <ul class="mb-0">
+                    <li>When you log in, you'll be asked for a second verification step</li>
+                    <li>You can choose between SMS or Email verification</li>
+                    <li>This adds an extra layer of security to your account</li>
+                    <li>You can disable 2FA at any time from this page</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Message Display -->
+        <div class="error-message" id="error-message"></div>
+        <div class="success-message" id="success-message"></div>
+        <div class="info-message" id="info-message"></div>
+    </div>
+</div>
+
+<!-- Firebase Scripts -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+    // Firebase config
+    const firebaseConfig = {
+        apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
+        authDomain: "bloodconnect2-d094a.firebaseapp.com",
+        projectId: "bloodconnect2-d094a",
+        storageBucket: "bloodconnect2-d094a.firebasestorage.app",
+        messagingSenderId: "124251937624",
+        appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let confirmationResult = null;
+    let currentUser = null;
+
+    // Check authentication and load user data
+    window.addEventListener('load', function() {
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                loadUserSettings();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    });
+
+    function loadUserSettings() {
+        if (!currentUser) return;
+
+        // Check email verification status
+        const emailStatus = currentUser.emailVerified ? 'Verified' : 'Not Verified';
+        const emailStatusClass = currentUser.emailVerified ? 'status-enabled' : 'status-disabled';
+        document.getElementById('emailStatus').textContent = emailStatus;
+        document.getElementById('emailStatus').className = `status-badge ${emailStatusClass}`;
+
+        // Load user data from Firestore
+        db.collection("users").doc(currentUser.uid).get()
+            .then((doc) => {
+                if (doc.exists) {
+                    const userData = doc.data();
+                    const twoFactorEnabled = userData.twoFactorEnabled || false;
+                    const phoneNumber = userData.phoneNumber || '';
+
+                    // Update 2FA status
+                    update2FAStatus(twoFactorEnabled);
+
+                    // Update phone number display
+                    if (phoneNumber) {
+                        document.getElementById('displayPhone').textContent = phoneNumber;
+                        document.getElementById('currentPhone').classList.remove('hidden');
+                        document.getElementById('phoneSetup').classList.add('hidden');
+                    } else {
+                        document.getElementById('currentPhone').classList.add('hidden');
+                        document.getElementById('phoneSetup').classList.remove('hidden');
+                    }
+                }
+            })
+            .catch((error) => {
+                console.error('Error loading user settings:', error);
+                showError('Error loading settings: ' + error.message);
+            });
+    }
+
+    function update2FAStatus(enabled) {
+        const statusElement = document.getElementById('currentStatus');
+        const toggleBtn = document.getElementById('toggleBtn');
+
+        if (enabled) {
+            statusElement.textContent = 'Enabled';
+            statusElement.className = 'status-badge status-enabled';
+            toggleBtn.innerHTML = '<i class="fa-solid fa-toggle-on"></i> Disable 2FA';
+            toggleBtn.className = 'btn btn-outline-danger';
+        } else {
+            statusElement.textContent = 'Disabled';
+            statusElement.className = 'status-badge status-disabled';
+            toggleBtn.innerHTML = '<i class="fa-solid fa-toggle-off"></i> Enable 2FA';
+            toggleBtn.className = 'btn btn-outline-success';
+        }
+    }
+
+    function toggle2FA() {
+        if (!currentUser) return;
+
+        // Check if email is verified first
+        if (!currentUser.emailVerified) {
+            showError('Please verify your email address before enabling 2FA.');
+            return;
+        }
+
+        // Check if phone number is added
+        db.collection("users").doc(currentUser.uid).get()
+            .then((doc) => {
+                if (doc.exists) {
+                    const userData = doc.data();
+                    const twoFactorEnabled = userData.twoFactorEnabled || false;
+                    const phoneNumber = userData.phoneNumber || '';
+
+                    if (!twoFactorEnabled && !phoneNumber) {
+                        showError('Please add a phone number before enabling 2FA.');
+                        document.getElementById('phoneSetup').classList.remove('hidden');
+                        return;
+                    }
+
+                    // Toggle 2FA status
+                    const newStatus = !twoFactorEnabled;
+                    
+                    db.collection("users").doc(currentUser.uid).update({
+                        twoFactorEnabled: newStatus
+                    }).then(() => {
+                        update2FAStatus(newStatus);
+                        const message = newStatus ? '2FA enabled successfully!' : '2FA disabled successfully!';
+                        showSuccess(message);
+                    }).catch((error) => {
+                        console.error('Error updating 2FA status:', error);
+                        showError('Error updating 2FA status: ' + error.message);
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error('Error checking user data:', error);
+                showError('Error checking user data: ' + error.message);
+            });
+    }
+
+    function addPhoneNumber() {
+        const phoneNumber = document.getElementById('phoneNumber').value;
+        if (!phoneNumber || phoneNumber.length !== 10) {
+            showError('Please enter a valid 10-digit phone number');
+            return;
+        }
+
+        const fullPhoneNumber = '+63' + phoneNumber;
+        
+        // Create reCAPTCHA verifier
+        const appVerifier = new firebase.auth.RecaptchaVerifier('addPhoneBtn', {
+            'size': 'invisible',
+            'callback': function(response) {
+                // reCAPTCHA solved, allow signInWithPhoneNumber
+                console.log('reCAPTCHA solved');
+            },
+            'expired-callback': function() {
+                // Response expired. Ask user to solve reCAPTCHA again.
+                console.log('reCAPTCHA expired');
+                showError('reCAPTCHA expired. Please try again.');
+            }
+        });
+
+        // Clear any existing reCAPTCHA
+        appVerifier.clear();
+
+        auth.signInWithPhoneNumber(fullPhoneNumber, appVerifier)
+            .then((confirmation) => {
+                confirmationResult = confirmation;
+                showSuccess('SMS verification code sent!');
+                document.getElementById('phoneVerification').classList.remove('hidden');
+                document.getElementById('addPhoneBtn').disabled = true;
+            })
+            .catch((error) => {
+                console.error('SMS verification error:', error);
+                if (error.code === 'auth/too-many-requests') {
+                    showError('Too many requests. Please try again later.');
+                } else if (error.code === 'auth/invalid-phone-number') {
+                    showError('Invalid phone number format.');
+                } else {
+                    showError('Error sending SMS: ' + error.message);
+                }
+            });
+    }
+
+    function verifyPhoneNumber() {
+        const otpCode = document.getElementById('phoneOTP').value;
+        if (!otpCode || otpCode.length !== 6) {
+            showError('Please enter a valid 6-digit code');
+            return;
+        }
+
+        if (confirmationResult) {
+            confirmationResult.confirm(otpCode)
+                .then((result) => {
+                    const phoneNumber = '+63' + document.getElementById('phoneNumber').value;
+                    
+                    // Save phone number to user data
+                    db.collection("users").doc(currentUser.uid).update({
+                        phoneNumber: phoneNumber
+                    }).then(() => {
+                        showSuccess('Phone number verified and saved!');
+                        loadUserSettings(); // Reload settings
+                    }).catch((error) => {
+                        console.error('Error saving phone number:', error);
+                        showError('Error saving phone number: ' + error.message);
+                    });
+                })
+                .catch((error) => {
+                    console.error('Phone verification error:', error);
+                    showError('Invalid verification code');
+                });
+        } else {
+            showError('No SMS verification in progress');
+        }
+    }
+
+    function changePhoneNumber() {
+        document.getElementById('currentPhone').classList.add('hidden');
+        document.getElementById('phoneSetup').classList.remove('hidden');
+        document.getElementById('phoneNumber').value = '';
+        document.getElementById('phoneOTP').value = '';
+        document.getElementById('phoneVerification').classList.add('hidden');
+        document.getElementById('addPhoneBtn').disabled = false;
+    }
+
+    function showError(message) {
+        const errorElement = document.getElementById('error-message');
+        const successElement = document.getElementById('success-message');
+        const infoElement = document.getElementById('info-message');
+        
+        errorElement.textContent = message;
+        successElement.textContent = '';
+        infoElement.textContent = '';
+        
+        errorElement.style.display = 'block';
+        successElement.style.display = 'none';
+        infoElement.style.display = 'none';
+    }
+
+    function showSuccess(message) {
+        const errorElement = document.getElementById('error-message');
+        const successElement = document.getElementById('success-message');
+        const infoElement = document.getElementById('info-message');
+        
+        successElement.textContent = message;
+        errorElement.textContent = '';
+        infoElement.textContent = '';
+        
+        successElement.style.display = 'block';
+        errorElement.style.display = 'none';
+        infoElement.style.display = 'none';
+    }
+
+    function showInfo(message) {
+        const errorElement = document.getElementById('error-message');
+        const successElement = document.getElementById('success-message');
+        const infoElement = document.getElementById('info-message');
+        
+        infoElement.textContent = message;
+        errorElement.textContent = '';
+        successElement.textContent = '';
+        
+        infoElement.style.display = 'block';
+        errorElement.style.display = 'none';
+        successElement.style.display = 'none';
+    }
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

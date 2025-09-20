@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Create User Document - BloodConnect</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { background-color: #f8f9fa; }
+        .container { max-width: 600px; margin: 50px auto; }
+        .card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+        .success-message {
+            color: green;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h2 class="text-center mb-4">
+            <i class="fa-solid fa-user-plus"></i> Create User Document
+        </h2>
+        <p class="text-muted text-center">This tool helps create missing user documents in Firestore</p>
+        
+        <form id="createUserForm">
+            <div class="mb-3">
+                <label for="userEmail" class="form-label">Email Address</label>
+                <input type="email" class="form-control" id="userEmail" required>
+                <div class="form-text">Enter the email address of the user</div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="userName" class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="userName" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="userRole" class="form-label">Role</label>
+                <select class="form-select" id="userRole" required>
+                    <option value="donor">Donor</option>
+                    <option value="hospital">Hospital</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label for="userPhone" class="form-label">Phone Number (Optional)</label>
+                <input type="tel" class="form-control" id="userPhone" placeholder="9123456789">
+                <div class="form-text">Enter 10-digit number without +63</div>
+            </div>
+            
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="emailVerified" checked>
+                    <label class="form-check-label" for="emailVerified">
+                        Email Verified
+                    </label>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="twoFactorEnabled">
+                    <label class="form-check-label" for="twoFactorEnabled">
+                        Enable 2FA
+                    </label>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-danger w-100">
+                <i class="fa-solid fa-plus"></i> Create User Document
+            </button>
+        </form>
+        
+        <!-- Message Display -->
+        <div class="error-message" id="error-message"></div>
+        <div class="success-message" id="success-message"></div>
+        
+        <div class="mt-4">
+            <a href="login.html" class="btn btn-outline-secondary w-100">
+                <i class="fa-solid fa-arrow-left"></i> Back to Login
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase Scripts -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+    // Firebase config
+    const firebaseConfig = {
+        apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
+        authDomain: "bloodconnect2-d094a.firebaseapp.com",
+        projectId: "bloodconnect2-d094a",
+        storageBucket: "bloodconnect2-d094a.firebasestorage.app",
+        messagingSenderId: "124251937624",
+        appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Handle form submission
+    document.getElementById("createUserForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        
+        const email = document.getElementById("userEmail").value;
+        const name = document.getElementById("userName").value;
+        const role = document.getElementById("userRole").value;
+        const phone = document.getElementById("userPhone").value;
+        const emailVerified = document.getElementById("emailVerified").checked;
+        const twoFactorEnabled = document.getElementById("twoFactorEnabled").checked;
+
+        // First, try to find the user in Firebase Auth
+        auth.fetchSignInMethodsForEmail(email)
+            .then((signInMethods) => {
+                if (signInMethods.length === 0) {
+                    throw new Error("No user found with this email address in Firebase Authentication. Please create the user account first.");
+                }
+                
+                // User exists in Auth, now create Firestore document
+                // We need to get the user's UID, but we can't do that directly
+                // So we'll create a document with a temporary ID and let the user know
+                const tempId = 'temp_' + Date.now();
+                
+                const userData = {
+                    name: name,
+                    email: email,
+                    role: role,
+                    emailVerified: emailVerified,
+                    twoFactorEnabled: twoFactorEnabled,
+                    phoneNumber: phone ? '+63' + phone : '',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    needsUIDUpdate: true // Flag to indicate this needs the real UID
+                };
+
+                return db.collection("users").doc(tempId).set(userData);
+            })
+            .then(() => {
+                showSuccess(`User document created with temporary ID: ${tempId}. Please contact support to update with the correct UID.`);
+            })
+            .catch((error) => {
+                console.error("Error creating user document:", error);
+                showError("Error: " + error.message);
+            });
+    });
+
+    function showError(message) {
+        const errorElement = document.getElementById('error-message');
+        const successElement = document.getElementById('success-message');
+        errorElement.textContent = message;
+        successElement.textContent = '';
+        errorElement.style.display = 'block';
+        successElement.style.display = 'none';
+    }
+
+    function showSuccess(message) {
+        const errorElement = document.getElementById('error-message');
+        const successElement = document.getElementById('success-message');
+        successElement.textContent = message;
+        errorElement.textContent = '';
+        successElement.style.display = 'block';
+        errorElement.style.display = 'none';
+    }
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+
+

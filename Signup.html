@@ -75,7 +75,92 @@
 <!-- EmailJS Script -->
 <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
 <script>
+<<<<<<< HEAD
     emailjs.init("YOUR_PUBLIC_KEY"); // Replace this with your EmailJS public key
+=======
+<<<<<<< HEAD
+            const firebaseConfig = {
+        apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
+        authDomain: "bloodconnect2-d094a.firebaseapp.com",
+        projectId: "bloodconnect2-d094a",
+        storageBucket: "bloodconnect2-d094a.firebasestorage.app",
+        messagingSenderId: "124251937624",
+        appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Handle sign up form
+    document.getElementById('signupForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const name = document.getElementById('name').value;   // Get the name
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const role = document.getElementById('role').value;  // Get the selected role
+
+        auth.createUserWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                const user = userCredential.user;
+
+                // Create user document in Firestore first
+                const userData = {
+                    role: role,   // Store the selected role ("donor" or "hospital")
+                    email: email,
+                    name: name,    // Save the name of the user
+                    emailVerified: false,
+                    twoFactorEnabled: false,
+                    phoneNumber: '',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                // Save user data to Firestore
+                db.collection("users").doc(user.uid).set(userData)
+                    .then(() => {
+                        console.log("User document created successfully");
+                        
+                        // Store user data for verification page
+                        sessionStorage.setItem('pendingVerification', JSON.stringify({
+                            uid: user.uid,
+                            email: email,
+                            name: name,
+                            role: role
+                        }));
+
+                        // Send email verification
+                        return user.sendEmailVerification();
+                    })
+                    .then(() => {
+                        alert('Account created successfully! Please check your email to verify your account.');
+                        window.location.href = 'verify-email.html';  // Redirect to email verification page
+                    })
+                    .catch((error) => {
+                        console.error("Error during signup:", error);
+                        
+                        let errorMessage = "Account created but there was an error: ";
+                        if (error.code === 'auth/too-many-requests') {
+                            errorMessage = "Account created! However, too many requests were made. Please wait 1-2 hours before requesting a new verification email, or try a different network.";
+                        } else if (error.code === 'auth/network-request-failed') {
+                            errorMessage = "Account created! Network error occurred. Please check your internet connection and try again.";
+                        } else if (error.code === 'permission-denied') {
+                            errorMessage = "Account created! Please contact support to complete your registration.";
+                        } else {
+                            errorMessage += error.message;
+                        }
+                        
+                        alert(errorMessage);
+                    });
+            })
+            .catch((error) => {
+                console.error("Error signing up: ", error.message);
+                alert("Error signing up: " + error.message);
+            });
+    });
+=======
+    emailjs.init("YOUR_PUBLIC_KEY"); // Replace this
+>>>>>>> 1aba2da41315da1b1270fd5314934f9d632fb1fc
+>>>>>>> 77ffc0914969c95bbe59bee9ea6154ccb489711d
 </script>
 
 <!-- Firebase Logic -->
