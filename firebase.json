@@ -1,0 +1,28 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "**/*.bat",
+      "**/*.exe",
+      "**/*.sh",
+      "**/*.cmd",
+      "**/package.json",
+      "**/package-lock.json",
+      "**/server.js",
+      "**/PHPMailer/**",
+      "**/add-sample-data.bat",
+      "**/FIREBASE-*.md",
+      "**/firebase-setup-guide.md",
+      "**/README.md"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
