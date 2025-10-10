@@ -11,14 +11,15 @@ import {
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-// Firebase configuration - Using the correct project
+// Firebase configuration - Using the correct project where user accounts exist
 const firebaseConfig = {
-  apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
-  authDomain: "bloodconnect2-d094a.firebaseapp.com",
-  projectId: "bloodconnect2-d094a",
-  storageBucket: "bloodconnect2-d094a.firebasestorage.app",
-  messagingSenderId: "124251937624",
-  appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
+  apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
+  authDomain: "bloodconnect-b5142.firebaseapp.com",
+  databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
+  projectId: "bloodconnect-b5142",
+  storageBucket: "bloodconnect-b5142.firebasestorage.app",
+  messagingSenderId: "631993835929",
+  appId: "1:631993835929:web:75554aca166e9058473308"
 };
 
 // Initialize Firebase
