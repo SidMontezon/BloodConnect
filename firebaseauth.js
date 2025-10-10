@@ -60,11 +60,13 @@ if (signupForm) {
     }
 
     try {
-      // Create user with email and password
+      console.log("Attempting to create user with email:", email);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      console.log("User created in Firebase Auth:", user.uid);
 
       // Store additional user info including role in Firestore
+      console.log("Attempting to write user data to Firestore for UID:", user.uid);
       await setDoc(doc(db, "users", user.uid), {
         firstName: fName,
         lastName: lName,
@@ -72,6 +74,7 @@ if (signupForm) {
         role: role,
         createdAt: new Date()
       });
+      console.log("User data successfully written to Firestore for UID:", user.uid);
 
       // Redirect to login page after successful signup
       window.location.href = 'login.html';
@@ -90,17 +93,23 @@ if (signInForm) {
 
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-    const signInMessageDiv = document.getElementById('signInMessage');
+    // const signInMessageDiv = document.getElementById('signInMessage'); // This variable is not used, can remove.
 
     try {
+      console.log("Attempting to sign in with email:", email);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      console.log("User successfully authenticated by Firebase Auth:", user.uid);
+      console.log("Attempting to fetch user document from Firestore for UID:", user.uid);
 
       // Get user data from Firestore
       const userDoc = await getDoc(doc(db, "users", user.uid));
+      
       if (userDoc.exists()) {
         const userData = userDoc.data();
         const role = userData.role;
+        console.log("User document found in Firestore. Data:", userData);
+        console.log("User role:", role);
 
         // Redirect based on role (example, adjust as needed)
         if (role === 'admin') {
@@ -113,7 +122,7 @@ if (signInForm) {
           window.location.href = 'index.html'; // Default redirect
         }
       } else {
-        console.error("User document not found in Firestore for UID:", user.uid);
+        console.warn("User document NOT found in Firestore for UID:", user.uid);
         showMessage('User data not found. Please contact support.', 'signInMessage');
       }
     } catch (error) {
