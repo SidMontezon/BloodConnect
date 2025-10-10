@@ -12,7 +12,26 @@
     .info-section { padding: 60px 20px; }
     .card-icon { font-size: 50px; color: #dc3545; }
     .navbar-brand i { color: white; margin-right: 10px; }
-    
+    .hero-image-container {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 40px;
+        flex-wrap: wrap; /* Allow images to wrap on smaller screens */
+    }
+    .hero-image-container img {
+        max-width: 100%; /* Ensure images are responsive */
+        height: auto;
+        border-radius: 8px; /* Slightly rounded corners for images */
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Subtle shadow for depth */
+    }
+    /* Adjust for smaller screens */
+    @media (max-width: 768px) {
+        .hero { padding: 60px 20px; }
+        .hero-image-container img {
+            max-width: 80%; /* Make images a bit smaller on mobile */
+        }
+    }
 </style>
 </head>
 <body>
@@ -50,7 +69,13 @@
 <header class="hero">
     <h1>Save Lives - Donate Blood</h1>
     <p class="lead">Your donation can make a difference!</p>
-    <a href="Signup.html    " class="btn btn-light btn-lg">Get Involved</a>
+    <a href="Signup.html" class="btn btn-light btn-lg">Get Involved</a>
+    <div class="hero-image-container">
+        <!-- Image 1 -->
+        <img src="donor.jpg" alt="Blood Donation Diagram" style="max-width: 400px;">
+        <!-- Image 2 -->
+        <img src="donation.jpg" alt="Blood Donation and Heartbeat" style="max-width: 400px;">
+    </div>
 </header>
 
 <!-- Why Donate Section -->
@@ -96,7 +121,7 @@
     <p><strong>Blood Collection</strong><br>With different PRC blood service facilities strategically located in the entire country, the PRC collects blood from voluntary, non-remunerated blood donors with their donations accounting for almost 50% share of the nation’s blood supply.</p>
     <p><strong>Blood Component Processing</strong><br>Whole blood donations are separated into components using special equipment to generate one unit each of red blood cells, plasma, and platelets. Thus, one donation can help save three lives.</p>
     <p><strong>Blood Storage and Issuance</strong><br>Once blood is suitable for transfusion, it is stored in a temperature-controlled blood bank refrigerator. Clients or patients needing blood for transfusion may request from any PRC blood facilities upon presentation of a blood request form issued by the hospital or physician.</p>
-    <p><strong>Blood Samaritan Program</strong><br>The Blood Samaritan Program is aimed mainly at assisting indigent patients needing blood transfusions. The PRC seeks kind-hearted individuals/groups willing to give financial donations to support the blood needs of the indigents. The donated money covers the payment of blood processing fees of legitimate indigent patients.</p>
+    <p><strong>Blood Samaritan Program</strong><br>The Blood Samaritan Program is aimed mainly at assisting indigent patients needing blood transfusions. The PRC seeks kind-hearted individuals/groups willing to give financial donations to support the blood needs of the indigent. The donated money covers the payment of blood processing fees of legitimate indigent patients.</p>
     <p><strong>Blood Donor Recognition</strong><br>We have instituted different awards to recognize and thank individuals and different groups who untiringly help us attain our mission. Blood Galloner pins, certificates, medals, and plaques are some of the tokens we issue during the annual Blood Donors Recognition Ceremony held every July in celebration of Blood Donors Month.</p>
 </div>
 <!-- Testimonials -->
