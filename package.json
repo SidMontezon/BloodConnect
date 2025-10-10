@@ -1,5 +1,16 @@
 {
+  "name": "bloodconnect-sample-data",
+  "version": "1.0.0",
+  "description": "Script to add sample data to BloodConnect Firebase Realtime Database",
+  "main": "add-sample-data-simple.js",
+  "scripts": {
+    "add-data": "node add-sample-data-simple.js",
+    "install-deps": "npm install firebase"
+  },
   "dependencies": {
-    "nodemailer": "^7.0.6"
-  }
+    "firebase": "^10.8.0"
+  },
+  "keywords": ["firebase", "bloodconnect", "sample-data"],
+  "author": "BloodConnect Team",
+  "license": "MIT"
 }
