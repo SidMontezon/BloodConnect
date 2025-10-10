@@ -93,7 +93,6 @@ if (signInForm) {
 
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-    // const signInMessageDiv = document.getElementById('signInMessage'); // This variable is not used, can remove.
 
     try {
       console.log("Attempting to sign in with email:", email);
@@ -101,6 +100,9 @@ if (signInForm) {
       const user = userCredential.user;
       console.log("User successfully authenticated by Firebase Auth:", user.uid);
       console.log("Attempting to fetch user document from Firestore for UID:", user.uid);
+
+      // *** NO EMAIL VERIFICATION CHECK HERE ***
+      // *** NO 2FA CHECK HERE ***
 
       // Get user data from Firestore
       const userDoc = await getDoc(doc(db, "users", user.uid));
