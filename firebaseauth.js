@@ -11,7 +11,7 @@ import {
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-// Firebase configuration
+// Firebase configuration (Use your actual config from the first snippet)
 const firebaseConfig = {
   apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
   authDomain: "bloodconnect-b5142.firebaseapp.com",
@@ -76,12 +76,13 @@ if (signupForm) {
       // Redirect to login page after successful signup
       window.location.href = 'login.html';
     } catch (error) {
+      console.error("Signup error:", error);
       showMessage(error.message, 'signUpMessage');
     }
   });
 }
 
-// --- Login Logic (no role check) ---
+// --- Login Logic ---
 const signInForm = document.getElementById('signInForm');
 if (signInForm) {
   signInForm.addEventListener('submit', async (event) => {
@@ -89,6 +90,7 @@ if (signInForm) {
 
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
+    const signInMessageDiv = document.getElementById('signInMessage');
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -97,14 +99,26 @@ if (signInForm) {
       // Get user data from Firestore
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (userDoc.exists()) {
-        // User is authenticated, proceed with normal login without checking the role
-        // Optionally, you can redirect to a dashboard or homepage
-        window.location.href = 'admin.html';  // Replace with your preferred redirection
+        const userData = userDoc.data();
+        const role = userData.role;
+
+        // Redirect based on role (example, adjust as needed)
+        if (role === 'admin') {
+          window.location.href = 'admin.html';
+        } else if (role === 'user' || role === 'donor') {
+          window.location.href = 'donatordashboard.html'; // Example for user/donor
+        } else if (role === 'hospital') {
+          window.location.href = 'hospitaldashboard.html'; // Example for hospital
+        } else {
+          window.location.href = 'index.html'; // Default redirect
+        }
       } else {
+        console.error("User document not found in Firestore for UID:", user.uid);
         showMessage('User data not found. Please contact support.', 'signInMessage');
       }
     } catch (error) {
-      if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+      console.error("Login error:", error);
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
         showMessage('Incorrect Email or Password', 'signInMessage');
       } else {
         showMessage(error.message, 'signInMessage');
