@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <title>BloodConnect - Sign Up</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         body { background-color: #f8f9fa; }
@@ -46,18 +46,10 @@
     <div class="signup-box">
         <h2><i class="fa-solid fa-user-plus"></i> Sign Up</h2>
         <form id="signupForm">
-            <input type="text" class="form-control mb-3" id="fName" placeholder="First Name" required />
-            <input type="text" class="form-control mb-3" id="lName" placeholder="Last Name" required />
-            <input type="email" class="form-control mb-3" id="rEmail" placeholder="Email" required />
-            <input type="password" class="form-control mb-3" id="rPassword" placeholder="Password" required />
-
-            <!-- Role selector added -->
-            <select class="form-control mb-3" id="userRole" required>
-                <option value="" disabled selected>Select Role</option>
-                <option value="donor">Donor</option>
-                <option value="hospital">Hospital</option>
-                <option value="admin">Admin</option>
-            </select>
+            <input type="text" class="form-control mb-3" id="fName" placeholder="First Name" required>
+            <input type="text" class="form-control mb-3" id="lName" placeholder="Last Name" required>
+            <input type="email" class="form-control mb-3" id="rEmail" placeholder="Email" required>
+            <input type="password" class="form-control mb-3" id="rPassword" placeholder="Password" required>
 
             <button type="submit" class="btn btn-danger w-100" id="submitSignUp">
                 <i class="fa-solid fa-user-plus"></i> Register
@@ -75,9 +67,6 @@
 <!-- EmailJS Script -->
 <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
 <script>
-<<<<<<< HEAD
-    emailjs.init("YOUR_PUBLIC_KEY"); // Replace this with your EmailJS public key
-=======
 <<<<<<< HEAD
             const firebaseConfig = {
         apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
@@ -160,10 +149,10 @@
 =======
     emailjs.init("YOUR_PUBLIC_KEY"); // Replace this
 >>>>>>> 1aba2da41315da1b1270fd5314934f9d632fb1fc
->>>>>>> 77ffc0914969c95bbe59bee9ea6154ccb489711d
 </script>
 
 <!-- Firebase Logic -->
 <script type="module" src="firebaseauth.js"></script>
 </body>
 </html>
+
