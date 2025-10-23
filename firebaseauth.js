@@ -102,7 +102,7 @@ if (signInForm) {
             window.location.href = "admin.html";
             break;
           case "donor":
-            window.location.href = "donatordashboard.html";
+            window.location.href = "donor-dashboard.html";
             break;
           case "hospital":
             window.location.href = "hospital-dashboard.html";
