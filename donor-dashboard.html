@@ -7,9 +7,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="red-cross-styles.css">
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <!-- Firebase v9+ Modular API -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 </head>
 <body>
     <!-- Red Cross Header -->
@@ -232,14 +235,15 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Firebase Configuration
+        // Firebase Configuration (Updated to match login system)
         const firebaseConfig = {
-            apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
-            authDomain: "bloodconnect2-d094a.firebaseapp.com",
-            projectId: "bloodconnect2-d094a",
-            storageBucket: "bloodconnect2-d094a.firebasestorage.app",
-            messagingSenderId: "124251937624",
-            appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
+            apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
+            authDomain: "bloodconnect-b5142.firebaseapp.com",
+            databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
+            projectId: "bloodconnect-b5142",
+            storageBucket: "bloodconnect-b5142.firebasestorage.app",
+            messagingSenderId: "631993835929",
+            appId: "1:631993835929:web:75554aca166e9058473308"
         };
 
         firebase.initializeApp(firebaseConfig);
