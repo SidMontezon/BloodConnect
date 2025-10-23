@@ -1,111 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Blood Request Form</title>
+    <title>Blood Request Form - BloodConnect</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Firebase, Bootstrap & FontAwesome -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="red-cross-styles.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <style>
-        body { background-color: #f8f9fa; }
-        .form-container {
-            max-width: 600px;
-            margin: 50px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .btn i { margin-right: 5px; }
-        .navbar { background: #c0392b; }
-        .navbar-brand, .nav-link { color: white !important; }
-    </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
-        <div class="container">
-            <a class="navbar-brand" href="donatordashboard.html">
-                <i class="fa-solid fa-droplet"></i> BloodConnect
+<!-- Red Cross Header -->
+<header class="red-cross-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="donor-dashboard.html" class="red-cross-logo">
+                <div class="red-cross-icon">✚</div>
+                <div>
+                    <h1 class="red-cross-brand">BloodConnect</h1>
+                    <p class="red-cross-tagline">Medical Blood Management</p>
+                </div>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="donatordashboard.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="donate.html">Donate</a></li>
-                    <li class="nav-item"><a class="nav-link" href="requestblood.html">Request</a></li>
-                    <li class="nav-item"><a class="nav-link btn btn-light text-dark" href="logout.html">Logout</a></li>
-                </ul>
+            <div class="red-cross-nav">
+                <a href="donor-dashboard.html">Dashboard</a>
+                <a href="donate.html">Donate</a>
+                <a href="requestblood.html" class="active">Request Blood</a>
+                <a href="logout.html" class="btn-red-cross-outline">Logout</a>
             </div>
         </div>
-    </nav>
+    </div>
+</header>
 
-    <div class="container mt-4">
-        <div class="form-container">
-            <h2><i class="fa-solid fa-hand-holding-droplet"></i> Blood Request Form</h2>
+<!-- Blood Request Form Section -->
+<section class="red-cross-request-form">
+    <div class="container">
+        <div class="red-cross-page-header">
+            <div class="text-center">
+                <h1 class="red-cross-page-title">Blood Request Form</h1>
+                <p class="red-cross-page-subtitle">Request blood for medical emergencies and treatments</p>
+            </div>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="red-cross-card">
+                    <div class="red-cross-card-header">
+                        <i class="fa-solid fa-hand-holding-droplet text-red-cross"></i>
+                        Blood Request Information
+                    </div>
+                    <div class="red-cross-card-body">
+                        <form id="requestForm">
+                            <!-- Requestor Information -->
+                            <div class="red-cross-section-title">
+                                <h4><i class="fa-solid fa-user text-red-cross me-2"></i>Requestor Information</h4>
+                            </div>
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="requestorName" class="red-cross-form-label">Full Name</label>
+                                        <input type="text" class="red-cross-form-control" id="requestorName" placeholder="Enter your full name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="requestorAge" class="red-cross-form-label">Age</label>
+                                        <input type="number" class="red-cross-form-control" id="requestorAge" placeholder="Enter your age" min="1" max="120" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="requestorContact" class="red-cross-form-label">Contact Number</label>
+                                        <input type="tel" class="red-cross-form-control" id="requestorContact" placeholder="Enter your contact number" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="bloodTypeRequired" class="red-cross-form-label">Blood Type Required</label>
+                                        <select class="red-cross-form-control" id="bloodTypeRequired" required>
+                                            <option value="">Select blood type</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
 
-            <!-- Form to request blood -->
-            <form id="requestForm">
-                <!-- Requestor Information -->
-                <h4>Requestor Information</h4>
-                <div class="mb-3">
-                    <label for="requestorName" class="form-label">Full Name</label>
-                    <input type="text" class="form-control" id="requestorName" placeholder="Enter your full name" required>
-                </div>
-                <div class="mb-3">
-                    <label for="requestorAge" class="form-label">Age</label>
-                    <input type="number" class="form-control" id="requestorAge" placeholder="Enter your age" required>
-                </div>
-                <div class="mb-3">
-                    <label for="requestorContact" class="form-label">Contact Number</label>
-                    <input type="text" class="form-control" id="requestorContact" placeholder="Enter your contact number" required>
-                </div>
+                            <!-- Hospital Information -->
+                            <div class="red-cross-section-title">
+                                <h4><i class="fa-solid fa-hospital text-red-cross me-2"></i>Hospital Information</h4>
+                            </div>
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="hospitalName" class="red-cross-form-label">Hospital Name</label>
+                                        <input type="text" class="red-cross-form-control" id="hospitalName" placeholder="Enter the hospital name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="hospitalLocation" class="red-cross-form-label">Hospital Location</label>
+                                        <input type="text" class="red-cross-form-control" id="hospitalLocation" placeholder="Enter the hospital location" required>
+                                    </div>
+                                </div>
+                            </div>
 
-                <!-- Blood Type Required -->
-                <div class="mb-3">
-                    <label for="bloodTypeRequired" class="form-label">Blood Type Required</label>
-                    <select class="form-select" id="bloodTypeRequired" required>
-                        <option value="A+">A+</option>
-                        <option value="A-">A-</option>
-                        <option value="B+">B+</option>
-                        <option value="B-">B-</option>
-                        <option value="AB+">AB+</option>
-                        <option value="AB-">AB-</option>
-                        <option value="O+">O+</option>
-                        <option value="O-">O-</option>
-                    </select>
-                </div>
+                            <!-- Request Details -->
+                            <div class="red-cross-section-title">
+                                <h4><i class="fa-solid fa-calendar-check text-red-cross me-2"></i>Request Details</h4>
+                            </div>
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="requestDate" class="red-cross-form-label">Required Date</label>
+                                        <input type="date" class="red-cross-form-control" id="requestDate" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="urgency" class="red-cross-form-label">Urgency Level</label>
+                                        <select class="red-cross-form-control" id="urgency" required>
+                                            <option value="">Select urgency level</option>
+                                            <option value="emergency">Emergency</option>
+                                            <option value="urgent">Urgent</option>
+                                            <option value="normal">Normal</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="red-cross-form-group">
+                                        <label for="medicalReason" class="red-cross-form-label">Medical Reason</label>
+                                        <textarea class="red-cross-form-control" id="medicalReason" rows="3" placeholder="Briefly describe the medical reason for blood requirement"></textarea>
+                                    </div>
+                                </div>
+                            </div>
 
-                <!-- Hospital Information -->
-                <h4>Required Hospital Information</h4>
-                <div class="mb-3">
-                    <label for="hospitalName" class="form-label">Hospital Name</label>
-                    <input type="text" class="form-control" id="hospitalName" placeholder="Enter the hospital name" required>
+                            <div class="text-center">
+                                <button type="submit" class="btn-red-cross btn-lg">
+                                    <i class="fa-solid fa-hand-holding-medical me-2"></i>
+                                    Submit Blood Request
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label for="hospitalLocation" class="form-label">Hospital Location</label>
-                    <input type="text" class="form-control" id="hospitalLocation" placeholder="Enter the hospital location" required>
-                </div>
-
-                <!-- Request Schedule (Date picker) -->
-                <h4>Request Schedule</h4>
-                <div class="mb-3">
-                    <label for="requestDate" class="form-label">Request Date</label>
-                    <input type="date" class="form-control" id="requestDate" required>
-                </div>
-
-                <button type="submit" class="btn btn-danger w-100 mt-3"><i class="fa-solid fa-hand-holding-medical"></i> Submit Request</button>
-            </form>
+            </div>
         </div>
     </div>
+</section>
 
     <script>
         const firebaseConfig = {

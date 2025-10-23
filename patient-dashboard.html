@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Patient Dashboard - BloodConnect</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="red-cross-styles.css">
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <!-- Red Cross Header -->
+    <header class="red-cross-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="patient-dashboard.html" class="red-cross-logo">
+                    <div class="red-cross-icon">✚</div>
+                    <div>
+                        <h1 class="red-cross-brand">BloodConnect</h1>
+                        <p class="red-cross-tagline">Medical Blood Management</p>
+                    </div>
+                </a>
+                <div class="red-cross-nav">
+                    <a href="patient-dashboard.html" class="active">Dashboard</a>
+                    <a href="patient-request-blood.html">Request Blood</a>
+                    <a href="patient-profile.html">Profile</a>
+                    <a href="patient-history.html">History</a>
+                    <a href="logout.html" class="btn-red-cross-outline">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Patient Dashboard Hero -->
+    <section class="red-cross-hero">
+        <div class="container">
+            <div class="red-cross-page-header">
+                <div class="text-center">
+                    <h1 class="red-cross-page-title">Welcome back, <span id="patientName">Patient</span>!</h1>
+                    <p class="red-cross-page-subtitle">Manage your blood requests and track availability</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Stats -->
+    <section class="red-cross-dashboard-stats">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="red-cross-card text-center">
+                        <div class="red-cross-card-body">
+                            <div class="red-cross-stat-icon">
+                                <i class="fa-solid fa-tint"></i>
+                            </div>
+                            <h3 class="red-cross-stat-number" id="totalRequests">0</h3>
+                            <p class="red-cross-stat-label">Total Requests</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="red-cross-card text-center">
+                        <div class="red-cross-card-body">
+                            <div class="red-cross-stat-icon">
+                                <i class="fa-solid fa-check-circle"></i>
+                            </div>
+                            <h3 class="red-cross-stat-number" id="approvedRequests">0</h3>
+                            <p class="red-cross-stat-label">Approved Requests</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="red-cross-card text-center">
+                        <div class="red-cross-card-body">
+                            <div class="red-cross-stat-icon">
+                                <i class="fa-solid fa-clock"></i>
+                            </div>
+                            <h3 class="red-cross-stat-number" id="pendingRequests">0</h3>
+                            <p class="red-cross-stat-label">Pending Requests</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="red-cross-card text-center">
+                        <div class="red-cross-card-body">
+                            <div class="red-cross-stat-icon">
+                                <i class="fa-solid fa-hospital"></i>
+                            </div>
+                            <h3 class="red-cross-stat-number" id="availableHospitals">0</h3>
+                            <p class="red-cross-stat-label">Available Hospitals</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="red-cross-quick-actions">
+        <div class="container">
+            <div class="red-cross-page-header">
+                <div class="text-center">
+                    <h2 class="red-cross-page-title">Quick Actions</h2>
+                    <p class="red-cross-page-subtitle">Manage your blood requests</p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-body text-center">
+                            <div class="red-cross-action-icon">
+                                <i class="fa-solid fa-plus-circle"></i>
+                            </div>
+                            <h4 class="red-cross-action-title">Request Blood</h4>
+                            <p class="red-cross-action-description">Submit a new blood request</p>
+                            <a href="patient-request-blood.html" class="btn-red-cross">Request Blood</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-body text-center">
+                            <div class="red-cross-action-icon">
+                                <i class="fa-solid fa-search"></i>
+                            </div>
+                            <h4 class="red-cross-action-title">Find Hospitals</h4>
+                            <p class="red-cross-action-description">Locate hospitals with available blood</p>
+                            <a href="patient-find-hospitals.html" class="btn-red-cross-outline">Find Hospitals</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-body text-center">
+                            <div class="red-cross-action-icon">
+                                <i class="fa-solid fa-user-edit"></i>
+                            </div>
+                            <h4 class="red-cross-action-title">Update Profile</h4>
+                            <p class="red-cross-action-description">Keep your medical information current</p>
+                            <a href="patient-profile.html" class="btn-red-cross-outline">Update Profile</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Requests -->
+    <section class="red-cross-recent-requests">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-header">
+                            <i class="fa-solid fa-list text-red-cross"></i>
+                            Recent Blood Requests
+                        </div>
+                        <div class="red-cross-card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-red-cross">
+                                    <thead>
+                                        <tr>
+                                            <th>Blood Type</th>
+                                            <th>Quantity</th>
+                                            <th>Hospital</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentRequestsTable">
+                                        <tr>
+                                            <td colspan="6" class="text-center text-medical">No recent requests found</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-header">
+                            <i class="fa-solid fa-bell text-red-cross"></i>
+                            Notifications
+                        </div>
+                        <div class="red-cross-card-body">
+                            <div id="notificationsList">
+                                <div class="text-center text-medical">No notifications</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blood Availability -->
+    <section class="red-cross-blood-availability">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-header">
+                            <i class="fa-solid fa-chart-bar text-red-cross"></i>
+                            Blood Availability Status
+                        </div>
+                        <div class="red-cross-card-body">
+                            <div class="row" id="bloodAvailabilityChart">
+                                <div class="col-12 text-center text-medical">Loading blood availability...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Nearby Hospitals -->
+    <section class="red-cross-nearby-hospitals">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-header">
+                            <i class="fa-solid fa-map-marker-alt text-red-cross"></i>
+                            Nearby Hospitals
+                        </div>
+                        <div class="red-cross-card-body">
+                            <div class="row" id="nearbyHospitalsList">
+                                <div class="col-12 text-center text-medical">Loading nearby hospitals...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Red Cross Footer -->
+    <footer class="red-cross-footer">
+        <div class="container">
+            <div class="red-cross-footer-bottom">
+                <p>&copy; 2025 BloodConnect. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
+            authDomain: "bloodconnect2-d094a.firebaseapp.com",
+            projectId: "bloodconnect2-d094a",
+            storageBucket: "bloodconnect2-d094a.firebasestorage.app",
+            messagingSenderId: "124251937624",
+            appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // Check authentication
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                loadPatientDashboard(user.uid);
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        function loadPatientDashboard(uid) {
+            // Load patient profile
+            database.ref('users/' + uid).once('value').then((snapshot) => {
+                const userData = snapshot.val();
+                if (userData) {
+                    document.getElementById('patientName').textContent = userData.name || 'Patient';
+                }
+            });
+
+            // Load patient statistics
+            loadPatientStats(uid);
+            loadRecentRequests(uid);
+            loadNotifications(uid);
+            loadBloodAvailability();
+            loadNearbyHospitals();
+        }
+
+        function loadPatientStats(uid) {
+            // Load patient requests
+            database.ref('patientRequests').orderByChild('patientId').equalTo(uid).once('value').then((snapshot) => {
+                const requests = snapshot.val() || {};
+                const requestCount = Object.keys(requests).length;
+                const approvedCount = Object.values(requests).filter(request => request.status === 'approved').length;
+                const pendingCount = Object.values(requests).filter(request => request.status === 'pending').length;
+                
+                document.getElementById('totalRequests').textContent = requestCount;
+                document.getElementById('approvedRequests').textContent = approvedCount;
+                document.getElementById('pendingRequests').textContent = pendingCount;
+            });
+
+            // Load available hospitals
+            database.ref('hospitals').once('value').then((snapshot) => {
+                const hospitals = snapshot.val() || {};
+                const availableCount = Object.values(hospitals).filter(hospital => hospital.status === 'active').length;
+                document.getElementById('availableHospitals').textContent = availableCount;
+            });
+        }
+
+        function loadRecentRequests(uid) {
+            database.ref('patientRequests').orderByChild('patientId').equalTo(uid).limitToLast(10).once('value').then((snapshot) => {
+                const requests = snapshot.val() || {};
+                const tableBody = document.getElementById('recentRequestsTable');
+                
+                if (Object.keys(requests).length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-medical">No recent requests found</td></tr>';
+                    return;
+                }
+
+                tableBody.innerHTML = '';
+                Object.entries(requests).reverse().forEach(([key, request]) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><span class="badge-red-cross">${request.bloodType}</span></td>
+                        <td>${request.quantity} units</td>
+                        <td>${request.hospitalName}</td>
+                        <td><span class="badge badge-${getRequestStatusClass(request.status)}">${request.status}</span></td>
+                        <td>${new Date(request.requestDate).toLocaleDateString()}</td>
+                        <td><button class="btn-red-cross-outline btn-sm" onclick="viewRequestDetails('${key}')">View</button></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            });
+        }
+
+        function loadNotifications(uid) {
+            database.ref('notifications').orderByChild('patientId').equalTo(uid).limitToLast(5).once('value').then((snapshot) => {
+                const notifications = snapshot.val() || {};
+                const notificationsContainer = document.getElementById('notificationsList');
+                
+                if (Object.keys(notifications).length === 0) {
+                    notificationsContainer.innerHTML = '<div class="text-center text-medical">No notifications</div>';
+                    return;
+                }
+
+                notificationsContainer.innerHTML = '';
+                Object.entries(notifications).reverse().forEach(([key, notification]) => {
+                    const notificationDiv = document.createElement('div');
+                    notificationDiv.className = 'red-cross-notification';
+                    notificationDiv.innerHTML = `
+                        <div class="d-flex align-items-start">
+                            <div class="red-cross-notification-icon">
+                                <i class="fa-solid fa-${getNotificationIcon(notification.type)}"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">${notification.title}</h6>
+                                <p class="mb-1 text-sm">${notification.message}</p>
+                                <small class="text-muted">${new Date(notification.timestamp).toLocaleString()}</small>
+                            </div>
+                        </div>
+                    `;
+                    notificationsContainer.appendChild(notificationDiv);
+                });
+            });
+        }
+
+        function loadBloodAvailability() {
+            database.ref('bloodInventory').once('value').then((snapshot) => {
+                const inventory = snapshot.val() || {};
+                const chartContainer = document.getElementById('bloodAvailabilityChart');
+                
+                let chartHTML = '';
+                Object.entries(inventory).forEach(([bloodType, data]) => {
+                    const quantity = data.quantity || 0;
+                    const status = quantity > 10 ? 'available' : quantity > 5 ? 'low' : 'critical';
+                    const statusClass = status === 'available' ? 'success' : status === 'low' ? 'warning' : 'danger';
+                    
+                    chartHTML += `
+                        <div class="col-md-3 mb-3">
+                            <div class="red-cross-availability-item text-center">
+                                <div class="red-cross-availability-type">${bloodType}</div>
+                                <div class="red-cross-availability-quantity">${quantity} units</div>
+                                <div class="red-cross-availability-status badge-${statusClass}">${status}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                chartContainer.innerHTML = chartHTML;
+            });
+        }
+
+        function loadNearbyHospitals() {
+            database.ref('hospitals').once('value').then((snapshot) => {
+                const hospitals = snapshot.val() || {};
+                const hospitalsContainer = document.getElementById('nearbyHospitalsList');
+                
+                let hospitalsHTML = '';
+                Object.entries(hospitals).slice(0, 4).forEach(([key, hospital]) => {
+                    hospitalsHTML += `
+                        <div class="col-md-6 mb-3">
+                            <div class="red-cross-hospital-card">
+                                <div class="red-cross-hospital-name">${hospital.name}</div>
+                                <div class="red-cross-hospital-location">
+                                    <i class="fa-solid fa-map-marker-alt me-1"></i>
+                                    ${hospital.location}
+                                </div>
+                                <div class="red-cross-hospital-contact">
+                                    <i class="fa-solid fa-phone me-1"></i>
+                                    ${hospital.phone}
+                                </div>
+                                <div class="red-cross-hospital-status">
+                                    <span class="badge badge-success">Available</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                hospitalsContainer.innerHTML = hospitalsHTML;
+            });
+        }
+
+        function getRequestStatusClass(status) {
+            switch(status) {
+                case 'approved': return 'success';
+                case 'pending': return 'warning';
+                case 'rejected': return 'danger';
+                case 'fulfilled': return 'info';
+                default: return 'secondary';
+            }
+        }
+
+        function getNotificationIcon(type) {
+            switch(type) {
+                case 'approval': return 'check-circle';
+                case 'rejection': return 'times-circle';
+                case 'availability': return 'bell';
+                case 'reminder': return 'clock';
+                default: return 'info-circle';
+            }
+        }
+
+        function viewRequestDetails(requestId) {
+            // Implement request details modal or redirect
+            alert('Request details for ID: ' + requestId);
+        }
+    </script>
+</body>
+</html>

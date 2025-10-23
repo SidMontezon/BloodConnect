@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hospital Dashboard - BloodConnect</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="red-cross-styles.css">
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <!-- Red Cross Header -->
+    <header class="red-cross-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="hospital-dashboard.html" class="red-cross-logo">
+                    <div class="red-cross-icon">✚</div>
+                    <div>
+                        <h1 class="red-cross-brand">BloodConnect</h1>
+                        <p class="red-cross-tagline">Medical Blood Management</p>
+                    </div>
+                </a>
+                <div class="red-cross-nav">
+                    <a href="hospital-dashboard.html" class="active">Dashboard</a>
+                    <a href="hospital-requests.html">Blood Requests</a>
+                    <a href="hospital-inventory.html">Inventory</a>
+                    <a href="hospital-patients.html">Patients</a>
+                    <a href="logout.html" class="btn-red-cross-outline">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hospital Dashboard Hero -->
+    <section class="red-cross-hero">
+        <div class="container">
+            <div class="red-cross-page-header">
+                <div class="text-center">
+                    <h1 class="red-cross-page-title">Hospital Dashboard</h1>
+                    <p class="red-cross-page-subtitle">Manage blood requests, inventory, and patient care</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Stats -->
+    <section class="red-cross-dashboard-stats">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="red-cross-card text-center">
+                        <div class="red-cross-card-body">
+                            <div class="red-cross-stat-icon">
+                                <i class="fa-solid fa-tint"></i>
+                            </div>
+                            <h3 class="red-cross-stat-number" id="totalBloodUnits">0</h3>
+                            <p class="red-cross-stat-label">Total Blood Units</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="red-cross-card text-center">
+                        <div class="red-cross-card-body">
+                            <div class="red-cross-stat-icon">
+                                <i class="fa-solid fa-exclamation-triangle"></i>
+                            </div>
+                            <h3 class="red-cross-stat-number" id="pendingRequests">0</h3>
+                            <p class="red-cross-stat-label">Pending Requests</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="red-cross-card text-center">
+                        <div class="red-cross-card-body">
+                            <div class="red-cross-stat-icon">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <h3 class="red-cross-stat-number" id="activePatients">0</h3>
+                            <p class="red-cross-stat-label">Active Patients</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="red-cross-card text-center">
+                            <div class="red-cross-card-body">
+                            <div class="red-cross-stat-icon">
+                                <i class="fa-solid fa-bell"></i>
+                            </div>
+                            <h3 class="red-cross-stat-number" id="urgentAlerts">0</h3>
+                            <p class="red-cross-stat-label">Urgent Alerts</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="red-cross-quick-actions">
+        <div class="container">
+            <div class="red-cross-page-header">
+                <div class="text-center">
+                    <h2 class="red-cross-page-title">Quick Actions</h2>
+                    <p class="red-cross-page-subtitle">Manage hospital operations</p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-body text-center">
+                            <div class="red-cross-action-icon">
+                                <i class="fa-solid fa-plus-circle"></i>
+                            </div>
+                            <h4 class="red-cross-action-title">Request Blood</h4>
+                            <p class="red-cross-action-description">Submit a new blood request for patients</p>
+                            <a href="hospital-request-blood.html" class="btn-red-cross">Request Blood</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-body text-center">
+                            <div class="red-cross-action-icon">
+                                <i class="fa-solid fa-warehouse"></i>
+                            </div>
+                            <h4 class="red-cross-action-title">Check Inventory</h4>
+                            <p class="red-cross-action-description">View current blood stock levels</p>
+                            <a href="hospital-inventory.html" class="btn-red-cross-outline">View Inventory</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-body text-center">
+                            <div class="red-cross-action-icon">
+                                <i class="fa-solid fa-user-injured"></i>
+                            </div>
+                            <h4 class="red-cross-action-title">Manage Patients</h4>
+                            <p class="red-cross-action-description">Track patient blood requirements</p>
+                            <a href="hospital-patients.html" class="btn-red-cross-outline">Manage Patients</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Requests -->
+    <section class="red-cross-recent-requests">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-header">
+                            <i class="fa-solid fa-list text-red-cross"></i>
+                            Recent Blood Requests
+                        </div>
+                        <div class="red-cross-card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-red-cross">
+                                    <thead>
+                                        <tr>
+                                            <th>Patient</th>
+                                            <th>Blood Type</th>
+                                            <th>Quantity</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentRequestsTable">
+                                        <tr>
+                                            <td colspan="6" class="text-center text-medical">No recent requests found</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-header">
+                            <i class="fa-solid fa-chart-pie text-red-cross"></i>
+                            Blood Type Distribution
+                        </div>
+                        <div class="red-cross-card-body">
+                            <div id="bloodTypeChart">
+                                <div class="text-center text-medical">Loading chart...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Emergency Alerts -->
+    <section class="red-cross-emergency-alerts">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-header">
+                            <i class="fa-solid fa-exclamation-triangle text-danger"></i>
+                            Emergency Alerts
+                        </div>
+                        <div class="red-cross-card-body">
+                            <div id="emergencyAlerts">
+                                <div class="text-center text-medical">No emergency alerts at this time</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Red Cross Footer -->
+    <footer class="red-cross-footer">
+        <div class="container">
+            <div class="red-cross-footer-bottom">
+                <p>&copy; 2025 BloodConnect. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
+            authDomain: "bloodconnect2-d094a.firebaseapp.com",
+            projectId: "bloodconnect2-d094a",
+            storageBucket: "bloodconnect2-d094a.firebasestorage.app",
+            messagingSenderId: "124251937624",
+            appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // Check authentication
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                loadHospitalDashboard(user.uid);
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        function loadHospitalDashboard(uid) {
+            // Load hospital profile
+            database.ref('users/' + uid).once('value').then((snapshot) => {
+                const userData = snapshot.val();
+                if (userData) {
+                    document.querySelector('.red-cross-page-title').textContent = `${userData.name} Dashboard`;
+                }
+            });
+
+            // Load hospital statistics
+            loadHospitalStats(uid);
+            loadRecentRequests(uid);
+            loadBloodTypeDistribution(uid);
+            loadEmergencyAlerts(uid);
+        }
+
+        function loadHospitalStats(uid) {
+            // Load blood inventory
+            database.ref('bloodInventory').once('value').then((snapshot) => {
+                const inventory = snapshot.val() || {};
+                const totalUnits = Object.values(inventory).reduce((sum, bloodType) => sum + (bloodType.quantity || 0), 0);
+                document.getElementById('totalBloodUnits').textContent = totalUnits;
+            });
+
+            // Load pending requests
+            database.ref('hospitalRequests').orderByChild('hospitalId').equalTo(uid).once('value').then((snapshot) => {
+                const requests = snapshot.val() || {};
+                const pendingCount = Object.values(requests).filter(request => request.status === 'pending').length;
+                document.getElementById('pendingRequests').textContent = pendingCount;
+            });
+
+            // Load active patients
+            database.ref('patients').orderByChild('hospitalId').equalTo(uid).once('value').then((snapshot) => {
+                const patients = snapshot.val() || {};
+                const activeCount = Object.values(patients).filter(patient => patient.status === 'active').length;
+                document.getElementById('activePatients').textContent = activeCount;
+            });
+
+            // Load urgent alerts
+            database.ref('emergencyAlerts').orderByChild('hospitalId').equalTo(uid).once('value').then((snapshot) => {
+                const alerts = snapshot.val() || {};
+                const urgentCount = Object.values(alerts).filter(alert => alert.priority === 'urgent').length;
+                document.getElementById('urgentAlerts').textContent = urgentCount;
+            });
+        }
+
+        function loadRecentRequests(uid) {
+            database.ref('hospitalRequests').orderByChild('hospitalId').equalTo(uid).limitToLast(10).once('value').then((snapshot) => {
+                const requests = snapshot.val() || {};
+                const tableBody = document.getElementById('recentRequestsTable');
+                
+                if (Object.keys(requests).length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-medical">No recent requests found</td></tr>';
+                    return;
+                }
+
+                tableBody.innerHTML = '';
+                Object.entries(requests).reverse().forEach(([key, request]) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${request.patientName}</td>
+                        <td><span class="badge-red-cross">${request.bloodType}</span></td>
+                        <td>${request.quantity} units</td>
+                        <td><span class="badge badge-${getRequestStatusClass(request.status)}">${request.status}</span></td>
+                        <td>${new Date(request.requestDate).toLocaleDateString()}</td>
+                        <td><button class="btn-red-cross-outline btn-sm" onclick="viewRequestDetails('${key}')">View</button></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            });
+        }
+
+        function loadBloodTypeDistribution(uid) {
+            database.ref('bloodInventory').once('value').then((snapshot) => {
+                const inventory = snapshot.val() || {};
+                const chartContainer = document.getElementById('bloodTypeChart');
+                
+                let chartHTML = '<div class="row g-2">';
+                Object.entries(inventory).forEach(([bloodType, data]) => {
+                    const quantity = data.quantity || 0;
+                    const percentage = Object.values(inventory).reduce((sum, item) => sum + (item.quantity || 0), 0) > 0 
+                        ? Math.round((quantity / Object.values(inventory).reduce((sum, item) => sum + (item.quantity || 0), 0)) * 100) 
+                        : 0;
+                    
+                    chartHTML += `
+                        <div class="col-6">
+                            <div class="red-cross-chart-item">
+                                <div class="red-cross-chart-label">${bloodType}</div>
+                                <div class="red-cross-chart-bar">
+                                    <div class="red-cross-chart-fill" style="width: ${percentage}%"></div>
+                                </div>
+                                <div class="red-cross-chart-value">${quantity} units</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                chartHTML += '</div>';
+                
+                chartContainer.innerHTML = chartHTML;
+            });
+        }
+
+        function loadEmergencyAlerts(uid) {
+            database.ref('emergencyAlerts').orderByChild('hospitalId').equalTo(uid).limitToLast(5).once('value').then((snapshot) => {
+                const alerts = snapshot.val() || {};
+                const alertsContainer = document.getElementById('emergencyAlerts');
+                
+                if (Object.keys(alerts).length === 0) {
+                    alertsContainer.innerHTML = '<div class="text-center text-medical">No emergency alerts at this time</div>';
+                    return;
+                }
+
+                alertsContainer.innerHTML = '';
+                Object.entries(alerts).reverse().forEach(([key, alert]) => {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = `red-cross-alert alert-${alert.priority}`;
+                    alertDiv.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">${alert.title}</h6>
+                                <p class="mb-0 text-sm">${alert.message}</p>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted">${new Date(alert.timestamp).toLocaleString()}</small>
+                                <br>
+                                <span class="badge badge-${getAlertPriorityClass(alert.priority)}">${alert.priority}</span>
+                            </div>
+                        </div>
+                    `;
+                    alertsContainer.appendChild(alertDiv);
+                });
+            });
+        }
+
+        function getRequestStatusClass(status) {
+            switch(status) {
+                case 'approved': return 'success';
+                case 'pending': return 'warning';
+                case 'rejected': return 'danger';
+                case 'fulfilled': return 'info';
+                default: return 'secondary';
+            }
+        }
+
+        function getAlertPriorityClass(priority) {
+            switch(priority) {
+                case 'urgent': return 'danger';
+                case 'high': return 'warning';
+                case 'medium': return 'info';
+                case 'low': return 'secondary';
+                default: return 'secondary';
+            }
+        }
+
+        function viewRequestDetails(requestId) {
+            // Implement request details modal or redirect
+            alert('Request details for ID: ' + requestId);
+        }
+    </script>
+</body>
+</html>

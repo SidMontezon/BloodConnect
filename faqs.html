@@ -6,98 +6,181 @@
     <title>FAQs - BloodConnect</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { font-family: 'Lato', sans-serif; }
-        .faq-box { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); margin-bottom: 20px; }
-        .faq-header { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
-    </style>
+    <link rel="stylesheet" href="red-cross-styles.css">
 </head>
 <body>
     
- <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+<!-- Red Cross Header -->
+<header class="red-cross-header">
     <div class="container">
-        <a class="navbar-brand" href="index.html">
-            <i class="fa-solid fa-droplet"></i> BloodConnect
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link btn btn-light" href="index.html">Home</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-light" href="about.html">About Us</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-light" href="contact.html">Contact Us</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-light" href="faqs.html">FAQs</a></li>
-                <!-- Sign Up Button -->
-                <li class="nav-item">
-                    <a class="nav-link btn btn-light " href="Signup.html">Sign Up</a>
-                </li>
-                <!-- Login Button -->
-                <li class="nav-item">
-                    <a class="nav-link btn btn-light " href="login.html">Login</a>
-                </li>
-            </ul>
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="index.html" class="red-cross-logo">
+                <div class="red-cross-icon">✚</div>
+                <div>
+                    <h1 class="red-cross-brand">BloodConnect</h1>
+                    <p class="red-cross-tagline">Medical Blood Management</p>
+                </div>
+            </a>
+            <div class="red-cross-nav">
+                <a href="index.html">Home</a>
+                <a href="about.html">About Us</a>
+                <a href="contact.html">Contact Us</a>
+                <a href="faqs.html" class="active">FAQs</a>
+                <a href="Signup.html" class="btn-red-cross-outline">Sign Up</a>
+                <a href="login.html" class="btn-red-cross">Login</a>
+            </div>
         </div>
     </div>
-</nav>
+</header>
 
 
-    <!-- FAQ Header -->
-    <div class="container text-center py-5">
-        <h1 class="display-4">Frequently Asked Questions</h1>
-        <p class="lead">Find answers to common questions about blood donation</p>
-    </div>
-
-    <!-- FAQ Content -->
+<!-- FAQs Hero Section -->
+<section class="red-cross-hero">
     <div class="container">
-        <div class="faq-box">
-            <h2 class="faq-header"><i class="fa-solid fa-user-check"></i> Who can donate blood?</h2>
-            <p>Anyone aged 18-65, in good health, and meeting donation requirements can donate blood.</p>
-        </div>
-        
-        <div class="faq-box">
-            <h2 class="faq-header"><i class="fa-solid fa-hand-holding-heart"></i> How to donate blood?</h2>
-            <p>Visit a certified blood donation center or mobile drive, undergo a health screening, donate, and rest for a short period after donation.</p>
-        </div>
-        
-        <div class="faq-box">
-            <h2 class="faq-header"><i class="fa-solid fa-calendar-check"></i> How do I schedule an appointment?</h2>
-            <p>You can schedule an appointment by visiting our website, calling a local blood donation center, or using our mobile app.</p>
+        <div class="red-cross-page-header">
+            <div class="text-center">
+                <h1 class="red-cross-page-title">Frequently Asked Questions</h1>
+                <p class="red-cross-page-subtitle">Find answers to common questions about blood donation</p>
+            </div>
         </div>
     </div>
+</section>
 
-    <!-- Footer -->
-    <footer class="bg-dark text-light py-4">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <h5>Quick Links</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="index.html" class="text-light">Home</a></li>
-                        <li><a href="about.html" class="text-light">About Us</a></li>
-                        <li><a href="contact.html" class="text-light">Contact Us</a></li>
-                        <li><a href="faq.html" class="text-light">FAQs</a></li>
-                    </ul>
+<!-- FAQs Content Section -->
+<section class="red-cross-faqs">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="red-cross-card">
+                    <div class="red-cross-card-body">
+                        <div class="red-cross-faq-item">
+                            <div class="red-cross-faq-icon">
+                                <i class="fa-solid fa-user-check"></i>
+                            </div>
+                            <div class="red-cross-faq-content">
+                                <h3 class="red-cross-faq-question">Who can donate blood?</h3>
+                                <p class="red-cross-faq-answer">Anyone aged 18-65, in good health, and meeting donation requirements can donate blood. You must weigh at least 110 pounds and be free from certain medical conditions.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <h5>Contact Info</h5>
-                    <p>Email: bloodconnect@gmail.com</p>
-                    <p>Phone: +63 976 501 7696</p>
-                    <p>Location: Pinagkawitan, Lipa City, Batangas</p>
+                
+                <div class="red-cross-card">
+                    <div class="red-cross-card-body">
+                        <div class="red-cross-faq-item">
+                            <div class="red-cross-faq-icon">
+                                <i class="fa-solid fa-hand-holding-heart"></i>
+                            </div>
+                            <div class="red-cross-faq-content">
+                                <h3 class="red-cross-faq-question">How to donate blood?</h3>
+                                <p class="red-cross-faq-answer">Visit a certified blood donation center or mobile drive, undergo a health screening, donate, and rest for a short period after donation. The entire process takes about 45-60 minutes.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <h5>Follow Us</h5>
-                    <div class="social-icons">
-                        <a href="#" class="text-light me-2"><i class="fa-brands fa-facebook fa-2x"></i></a>
-                        <a href="#" class="text-light me-2"><i class="fa-brands fa-instagram fa-2x"></i></a>
-                        <a href="#" class="text-light me-2"><i class="fa-brands fa-twitter fa-2x"></i></a>
-                        <a href="#" class="text-light"><i class="fa-brands fa-linkedin fa-2x"></i></a>
+                
+                <div class="red-cross-card">
+                    <div class="red-cross-card-body">
+                        <div class="red-cross-faq-item">
+                            <div class="red-cross-faq-icon">
+                                <i class="fa-solid fa-calendar-check"></i>
+                            </div>
+                            <div class="red-cross-faq-content">
+                                <h3 class="red-cross-faq-question">How do I schedule an appointment?</h3>
+                                <p class="red-cross-faq-answer">You can schedule an appointment by visiting our website, calling a local blood donation center, or using our mobile app. Walk-ins are also welcome at most locations.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="red-cross-card">
+                    <div class="red-cross-card-body">
+                        <div class="red-cross-faq-item">
+                            <div class="red-cross-faq-icon">
+                                <i class="fa-solid fa-clock"></i>
+                            </div>
+                            <div class="red-cross-faq-content">
+                                <h3 class="red-cross-faq-question">How often can I donate blood?</h3>
+                                <p class="red-cross-faq-answer">You can donate whole blood every 56 days (8 weeks). For platelet donations, you can donate every 7 days, up to 24 times per year.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="red-cross-card">
+                    <div class="red-cross-card-body">
+                        <div class="red-cross-faq-item">
+                            <div class="red-cross-faq-icon">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </div>
+                            <div class="red-cross-faq-content">
+                                <h3 class="red-cross-faq-question">Is blood donation safe?</h3>
+                                <p class="red-cross-faq-answer">Yes, blood donation is very safe. All equipment used is sterile and disposable. Our medical staff are trained professionals who follow strict safety protocols.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="red-cross-card">
+                    <div class="red-cross-card-body">
+                        <div class="red-cross-faq-item">
+                            <div class="red-cross-faq-icon">
+                                <i class="fa-solid fa-heart-pulse"></i>
+                            </div>
+                            <div class="red-cross-faq-content">
+                                <h3 class="red-cross-faq-question">What happens to my donated blood?</h3>
+                                <p class="red-cross-faq-answer">Your donated blood is tested for safety, processed into components (red cells, plasma, platelets), and distributed to hospitals to help patients in need.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="text-center mt-3">&copy; 2025 BloodConnect. All Rights Reserved.</div>
         </div>
-    </footer>
+    </div>
+</section>
+
+<!-- Red Cross Footer -->
+<footer class="red-cross-footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="red-cross-footer-section">
+                    <h5 class="red-cross-footer-title">Quick Links</h5>
+                    <ul class="red-cross-footer-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="faqs.html">FAQs</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="red-cross-footer-section">
+                    <h5 class="red-cross-footer-title">Contact Info</h5>
+                    <div class="red-cross-footer-contact">
+                        <p><i class="fa-solid fa-envelope me-2"></i>bloodconnect@gmail.com</p>
+                        <p><i class="fa-solid fa-phone me-2"></i>+63 976 501 7696</p>
+                        <p><i class="fa-solid fa-location-dot me-2"></i>Pinagkawitan, Lipa City, Batangas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="red-cross-footer-section">
+                    <h5 class="red-cross-footer-title">Follow Us</h5>
+                    <div class="red-cross-footer-social">
+                        <a href="#" class="red-cross-social-link"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#" class="red-cross-social-link"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="red-cross-social-link"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#" class="red-cross-social-link"><i class="fa-brands fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="red-cross-footer-bottom">
+            <p>&copy; 2025 BloodConnect. All Rights Reserved.</p>
+        </div>
+    </div>
+</footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

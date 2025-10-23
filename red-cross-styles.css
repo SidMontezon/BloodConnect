@@ -1,0 +1,1303 @@
+/* BloodConnect - Red Cross Inspired Design System */
+:root {
+  /* Red Cross Color Palette */
+  --red-cross-red: #DC143C;
+  --red-cross-dark-red: #B22222;
+  --red-cross-light-red: #FFE4E1;
+  --medical-white: #FFFFFF;
+  --medical-light-gray: #F8F9FA;
+  --medical-gray: #E9ECEF;
+  --medical-dark-gray: #6C757D;
+  --medical-text: #2C3E50;
+  --medical-blue: #007BFF;
+  --medical-green: #28A745;
+  --medical-orange: #FD7E14;
+  
+  /* Typography */
+  --font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  
+  /* Border Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Reset and Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  color: var(--medical-text);
+  background-color: var(--medical-white);
+  margin: 0;
+  padding: 0;
+}
+
+/* Red Cross Header/Navigation */
+.red-cross-header {
+  background: var(--medical-white);
+  border-bottom: 3px solid var(--red-cross-red);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-md) 0;
+}
+
+.red-cross-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  text-decoration: none;
+  color: var(--medical-text);
+}
+
+.red-cross-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--red-cross-red);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--medical-white);
+  font-weight: bold;
+  font-size: var(--font-size-lg);
+}
+
+.red-cross-brand {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--red-cross-red);
+  margin: 0;
+}
+
+.red-cross-tagline {
+  font-size: var(--font-size-sm);
+  color: var(--medical-dark-gray);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Red Cross Navigation */
+.red-cross-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.red-cross-nav a {
+  color: var(--medical-text);
+  text-decoration: none;
+  font-weight: 500;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.red-cross-nav a:hover {
+  background-color: var(--red-cross-light-red);
+  color: var(--red-cross-red);
+}
+
+.red-cross-nav a.active {
+  background-color: var(--red-cross-red);
+  color: var(--medical-white);
+}
+
+/* Red Cross Buttons */
+.btn-red-cross {
+  background: var(--red-cross-red);
+  color: var(--medical-white);
+  border: none;
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-red-cross:hover {
+  background: var(--red-cross-dark-red);
+  color: var(--medical-white);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-red-cross-outline {
+  background: transparent;
+  color: var(--red-cross-red);
+  border: 2px solid var(--red-cross-red);
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-red-cross-outline:hover {
+  background: var(--red-cross-red);
+  color: var(--medical-white);
+}
+
+.btn-medical {
+  background: var(--medical-blue);
+  color: var(--medical-white);
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-medical:hover {
+  background: #0056b3;
+  color: var(--medical-white);
+}
+
+.btn-success-medical {
+  background: var(--medical-green);
+  color: var(--medical-white);
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-success-medical:hover {
+  background: #1e7e34;
+  color: var(--medical-white);
+}
+
+/* Red Cross Cards */
+.red-cross-card {
+  background: var(--medical-white);
+  border: 1px solid var(--medical-gray);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.red-cross-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.red-cross-card-header {
+  background: var(--medical-light-gray);
+  border-bottom: 1px solid var(--medical-gray);
+  padding: var(--spacing-lg);
+  font-weight: 600;
+  color: var(--medical-text);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.red-cross-card-body {
+  padding: var(--spacing-lg);
+}
+
+.red-cross-card-footer {
+  background: var(--medical-light-gray);
+  border-top: 1px solid var(--medical-gray);
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+/* Red Cross Forms */
+.red-cross-form-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.red-cross-form-label {
+  display: block;
+  font-weight: 600;
+  color: var(--medical-text);
+  margin-bottom: var(--spacing-sm);
+}
+
+.red-cross-form-control {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 2px solid var(--medical-gray);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  transition: all 0.2s ease;
+  background-color: var(--medical-white);
+}
+
+.red-cross-form-control:focus {
+  outline: none;
+  border-color: var(--red-cross-red);
+  box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+}
+
+/* Red Cross Tables */
+.red-cross-table {
+  width: 100%;
+  background: var(--medical-white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.red-cross-table thead {
+  background: var(--medical-light-gray);
+}
+
+.red-cross-table thead th {
+  padding: var(--spacing-lg);
+  font-weight: 600;
+  color: var(--medical-text);
+  text-align: left;
+  border-bottom: 2px solid var(--medical-gray);
+}
+
+.red-cross-table tbody td {
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--medical-gray);
+  vertical-align: middle;
+}
+
+.red-cross-table tbody tr:hover {
+  background-color: var(--red-cross-light-red);
+}
+
+.red-cross-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Red Cross Alerts */
+.red-cross-alert {
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+  font-weight: 500;
+}
+
+.red-cross-alert-success {
+  background: #d4edda;
+  color: #155724;
+  border-left: 4px solid var(--medical-green);
+}
+
+.red-cross-alert-danger {
+  background: #f8d7da;
+  color: #721c24;
+  border-left: 4px solid var(--red-cross-red);
+}
+
+.red-cross-alert-warning {
+  background: #fff3cd;
+  color: #856404;
+  border-left: 4px solid var(--medical-orange);
+}
+
+.red-cross-alert-info {
+  background: #d1ecf1;
+  color: #0c5460;
+  border-left: 4px solid var(--medical-blue);
+}
+
+/* Red Cross Badges */
+.red-cross-badge {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.red-cross-badge-success {
+  background: var(--medical-green);
+  color: var(--medical-white);
+}
+
+.red-cross-badge-danger {
+  background: var(--red-cross-red);
+  color: var(--medical-white);
+}
+
+.red-cross-badge-warning {
+  background: var(--medical-orange);
+  color: var(--medical-white);
+}
+
+.red-cross-badge-info {
+  background: var(--medical-blue);
+  color: var(--medical-white);
+}
+
+.red-cross-badge-secondary {
+  background: var(--medical-dark-gray);
+  color: var(--medical-white);
+}
+
+/* Red Cross Login Page */
+.red-cross-login-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--medical-light-gray) 0%, var(--medical-white) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+}
+
+.red-cross-login-card {
+  background: var(--medical-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-2xl);
+  width: 100%;
+  max-width: 400px;
+  border-top: 4px solid var(--red-cross-red);
+}
+
+.red-cross-login-header {
+  text-align: center;
+  margin-bottom: var(--spacing-2xl);
+}
+
+.red-cross-login-icon {
+  width: 60px;
+  height: 60px;
+  background: var(--red-cross-red);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--medical-white);
+  font-size: var(--font-size-2xl);
+  font-weight: bold;
+  margin: 0 auto var(--spacing-lg);
+}
+
+.red-cross-login-title {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--medical-text);
+  margin-bottom: var(--spacing-sm);
+}
+
+.red-cross-login-subtitle {
+  color: var(--medical-dark-gray);
+  font-size: var(--font-size-base);
+}
+
+/* Red Cross Admin Dashboard */
+.red-cross-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.red-cross-admin-card {
+  background: var(--medical-white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid var(--medical-gray);
+  border-top: 4px solid var(--red-cross-red);
+}
+
+.red-cross-admin-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+  text-decoration: none;
+  color: inherit;
+}
+
+.red-cross-admin-card-icon {
+  width: 50px;
+  height: 50px;
+  background: var(--red-cross-red);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--medical-white);
+  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-xl);
+}
+
+.red-cross-admin-card-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--medical-text);
+  margin-bottom: var(--spacing-sm);
+}
+
+.red-cross-admin-card-description {
+  color: var(--medical-dark-gray);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+}
+
+/* Red Cross Metrics */
+.red-cross-metric-card {
+  background: var(--medical-white);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+  border-top: 4px solid var(--red-cross-red);
+}
+
+.red-cross-metric-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.red-cross-metric-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--red-cross-red);
+  margin-bottom: var(--spacing-sm);
+}
+
+.red-cross-metric-label {
+  font-size: var(--font-size-sm);
+  color: var(--medical-dark-gray);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Red Cross Page Headers */
+.red-cross-page-header {
+  background: var(--medical-white);
+  border-bottom: 1px solid var(--medical-gray);
+  padding: var(--spacing-xl) 0;
+  margin-bottom: var(--spacing-2xl);
+}
+
+.red-cross-page-title {
+  font-size: var(--font-size-4xl);
+  font-weight: 700;
+  color: var(--medical-text);
+  margin-bottom: var(--spacing-sm);
+}
+
+.red-cross-page-subtitle {
+  color: var(--medical-dark-gray);
+  font-size: var(--font-size-lg);
+  margin-bottom: 0;
+}
+
+/* Red Cross Responsive Design */
+@media (max-width: 768px) {
+  .red-cross-admin-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+  
+  .red-cross-login-card {
+    padding: var(--spacing-xl);
+    margin: var(--spacing-md);
+  }
+  
+  .red-cross-page-title {
+    font-size: var(--font-size-3xl);
+  }
+  
+  .red-cross-nav {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+}
+
+/* Red Cross Animations */
+@keyframes redCrossFadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+.red-cross-fade-in {
+  animation: redCrossFadeIn 0.6s ease-out;
+}
+
+@keyframes redCrossSlideIn {
+  from { 
+    transform: translateX(-100%); 
+  }
+  to { 
+    transform: translateX(0); 
+  }
+}
+
+.red-cross-slide-in {
+  animation: redCrossSlideIn 0.4s ease-out;
+}
+
+/* Red Cross Loading States */
+.red-cross-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.red-cross-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--medical-gray);
+  border-top: 2px solid var(--red-cross-red);
+  border-radius: 50%;
+  animation: redCrossSpin 1s linear infinite;
+}
+
+@keyframes redCrossSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Red Cross Hero Section */
+.red-cross-hero {
+  background: linear-gradient(135deg, var(--medical-light-gray) 0%, var(--medical-white) 100%);
+  padding: var(--spacing-2xl) 0;
+}
+
+.red-cross-hero-content {
+  padding: var(--spacing-xl) 0;
+}
+
+.red-cross-hero-title {
+  font-size: var(--font-size-4xl);
+  font-weight: 700;
+  color: var(--medical-text);
+  margin-bottom: var(--spacing-lg);
+}
+
+.red-cross-hero-subtitle {
+  font-size: var(--font-size-lg);
+  color: var(--medical-dark-gray);
+  margin-bottom: var(--spacing-xl);
+  line-height: 1.6;
+}
+
+.red-cross-hero-buttons {
+  display: flex;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.red-cross-hero-images {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.red-cross-hero-image {
+  max-width: 300px;
+  height: auto;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+}
+
+.red-cross-hero-image:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Red Cross Features Section */
+.red-cross-features {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-white);
+}
+
+.red-cross-feature-icon {
+  width: 80px;
+  height: 80px;
+  background: var(--red-cross-red);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--medical-white);
+  font-size: var(--font-size-2xl);
+  margin: 0 auto var(--spacing-lg);
+}
+
+.red-cross-feature-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--medical-text);
+  margin-bottom: var(--spacing-md);
+}
+
+.red-cross-feature-description {
+  color: var(--medical-dark-gray);
+  line-height: 1.6;
+}
+
+/* Red Cross Centers Section */
+.red-cross-centers {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-light-gray);
+}
+
+.red-cross-center-icon {
+  width: 60px;
+  height: 60px;
+  background: var(--red-cross-red);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--medical-white);
+  font-size: var(--font-size-xl);
+  margin: 0 auto var(--spacing-lg);
+}
+
+.red-cross-center-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--medical-text);
+  margin-bottom: var(--spacing-sm);
+}
+
+.red-cross-center-location {
+  color: var(--medical-dark-gray);
+  font-weight: 500;
+  margin-bottom: var(--spacing-xs);
+}
+
+.red-cross-center-contact {
+  color: var(--red-cross-red);
+  font-weight: 600;
+}
+
+/* Red Cross Programs Section */
+.red-cross-programs {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-white);
+}
+
+.red-cross-program-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--medical-text);
+  margin-bottom: var(--spacing-md);
+}
+
+.red-cross-program-description {
+  color: var(--medical-dark-gray);
+  line-height: 1.6;
+}
+
+/* Red Cross Testimonials Section */
+.red-cross-testimonials {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-light-gray);
+}
+
+.red-cross-testimonial-icon {
+  width: 50px;
+  height: 50px;
+  background: var(--red-cross-red);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--medical-white);
+  font-size: var(--font-size-lg);
+  margin: 0 auto var(--spacing-lg);
+}
+
+.red-cross-testimonial-text {
+  font-style: italic;
+  color: var(--medical-text);
+  margin-bottom: var(--spacing-lg);
+  line-height: 1.6;
+}
+
+.red-cross-testimonial-author {
+  font-weight: 600;
+  color: var(--red-cross-red);
+}
+
+/* Red Cross Footer */
+.red-cross-footer {
+  background: var(--medical-text);
+  color: var(--medical-white);
+  padding: var(--spacing-2xl) 0 var(--spacing-lg);
+}
+
+.red-cross-footer-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.red-cross-footer-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--medical-white);
+  margin-bottom: var(--spacing-lg);
+}
+
+.red-cross-footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.red-cross-footer-links li {
+  margin-bottom: var(--spacing-sm);
+}
+
+.red-cross-footer-links a {
+  color: var(--medical-gray);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.red-cross-footer-links a:hover {
+  color: var(--red-cross-red);
+}
+
+.red-cross-footer-contact p {
+  color: var(--medical-gray);
+  margin-bottom: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+}
+
+.red-cross-footer-social {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.red-cross-social-link {
+  width: 40px;
+  height: 40px;
+  background: var(--red-cross-red);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--medical-white);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.red-cross-social-link:hover {
+  background: var(--red-cross-dark-red);
+  color: var(--medical-white);
+  transform: translateY(-2px);
+}
+
+.red-cross-footer-bottom {
+  border-top: 1px solid var(--medical-gray);
+  padding-top: var(--spacing-lg);
+  text-align: center;
+}
+
+.red-cross-footer-bottom p {
+  color: var(--medical-gray);
+  margin: 0;
+}
+
+/* Red Cross Responsive Design for Index */
+@media (max-width: 768px) {
+  .red-cross-hero-title {
+    font-size: var(--font-size-3xl);
+  }
+  
+  .red-cross-hero-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .red-cross-hero-image {
+    max-width: 250px;
+  }
+  
+  .red-cross-footer-social {
+    justify-content: center;
+  }
+}
+
+/* Red Cross Contact Section */
+.red-cross-contact {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-light-gray);
+}
+
+/* Red Cross FAQs Section */
+.red-cross-faqs {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-white);
+}
+
+.red-cross-faq-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg) 0;
+}
+
+.red-cross-faq-icon {
+  width: 50px;
+  height: 50px;
+  background: var(--red-cross-red);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--medical-white);
+  font-size: var(--font-size-lg);
+  flex-shrink: 0;
+}
+
+.red-cross-faq-content {
+  flex: 1;
+}
+
+.red-cross-faq-question {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--medical-text);
+  margin-bottom: var(--spacing-sm);
+}
+
+.red-cross-faq-answer {
+  color: var(--medical-dark-gray);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Red Cross Signup Section */
+.red-cross-signup {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-light-gray);
+}
+
+/* Red Cross Register Section */
+.red-cross-register {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-light-gray);
+}
+
+/* Red Cross Donation Section */
+.red-cross-donation {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-white);
+}
+
+.red-cross-section-title {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 2px solid var(--medical-light-gray);
+}
+
+.red-cross-section-title h4 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--medical-text);
+  margin: 0;
+}
+
+.red-cross-message-display {
+  color: var(--red-cross-red);
+  margin-top: var(--spacing-md);
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  text-align: center;
+  padding: var(--spacing-sm);
+  background: rgba(220, 53, 69, 0.1);
+  border-radius: var(--radius-sm);
+}
+
+.red-cross-message-display.show {
+  display: block;
+  opacity: 1;
+}
+
+/* Red Cross Dashboard Components */
+.red-cross-dashboard-stats {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-white);
+}
+
+.red-cross-stat-icon {
+  width: 60px;
+  height: 60px;
+  background: var(--red-cross-red);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--medical-white);
+  font-size: var(--font-size-xl);
+  margin: 0 auto var(--spacing-lg);
+}
+
+.red-cross-stat-number {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--red-cross-red);
+  margin-bottom: var(--spacing-sm);
+}
+
+.red-cross-stat-label {
+  color: var(--medical-dark-gray);
+  font-weight: 500;
+  margin: 0;
+}
+
+.red-cross-quick-actions {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-light-gray);
+}
+
+.red-cross-action-icon {
+  width: 80px;
+  height: 80px;
+  background: var(--red-cross-red);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--medical-white);
+  font-size: var(--font-size-2xl);
+  margin: 0 auto var(--spacing-lg);
+}
+
+.red-cross-action-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--medical-text);
+  margin-bottom: var(--spacing-sm);
+}
+
+.red-cross-action-description {
+  color: var(--medical-dark-gray);
+  margin-bottom: var(--spacing-lg);
+}
+
+.red-cross-recent-activity,
+.red-cross-recent-requests {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-white);
+}
+
+.red-cross-eligibility {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-light-gray);
+}
+
+.red-cross-eligibility-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-2xl);
+  margin: 0 auto;
+}
+
+.red-cross-emergency-alerts {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-white);
+}
+
+.red-cross-alert {
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-md);
+  border-left: 4px solid;
+}
+
+.red-cross-alert.alert-urgent {
+  background: rgba(220, 53, 69, 0.1);
+  border-left-color: var(--red-cross-red);
+}
+
+.red-cross-alert.alert-high {
+  background: rgba(255, 193, 7, 0.1);
+  border-left-color: #ffc107;
+}
+
+.red-cross-alert.alert-medium {
+  background: rgba(13, 202, 240, 0.1);
+  border-left-color: #0dcaf0;
+}
+
+.red-cross-alert.alert-low {
+  background: rgba(108, 117, 125, 0.1);
+  border-left-color: #6c757d;
+}
+
+.red-cross-chart-item {
+  margin-bottom: var(--spacing-md);
+}
+
+.red-cross-chart-label {
+  font-weight: 600;
+  color: var(--medical-text);
+  margin-bottom: var(--spacing-xs);
+}
+
+.red-cross-chart-bar {
+  height: 8px;
+  background: var(--medical-light-gray);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: var(--spacing-xs);
+}
+
+.red-cross-chart-fill {
+  height: 100%;
+  background: var(--red-cross-red);
+  transition: width 0.3s ease;
+}
+
+.red-cross-chart-value {
+  font-size: var(--font-size-sm);
+  color: var(--medical-dark-gray);
+}
+
+.red-cross-blood-availability {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-light-gray);
+}
+
+.red-cross-availability-item {
+  padding: var(--spacing-lg);
+  background: var(--medical-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.red-cross-availability-type {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--medical-text);
+  margin-bottom: var(--spacing-sm);
+}
+
+.red-cross-availability-quantity {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--red-cross-red);
+  margin-bottom: var(--spacing-sm);
+}
+
+.red-cross-availability-status {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.red-cross-nearby-hospitals {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-white);
+}
+
+.red-cross-hospital-card {
+  padding: var(--spacing-lg);
+  background: var(--medical-white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--medical-light-gray);
+}
+
+.red-cross-hospital-name {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--medical-text);
+  margin-bottom: var(--spacing-sm);
+}
+
+.red-cross-hospital-location,
+.red-cross-hospital-contact {
+  color: var(--medical-dark-gray);
+  margin-bottom: var(--spacing-xs);
+  font-size: var(--font-size-sm);
+}
+
+.red-cross-hospital-status {
+  margin-top: var(--spacing-sm);
+}
+
+.red-cross-notification {
+  padding: var(--spacing-md);
+  background: var(--medical-white);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-md);
+  border-left: 3px solid var(--red-cross-red);
+}
+
+.red-cross-notification-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--red-cross-red);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--medical-white);
+  margin-right: var(--spacing-md);
+  flex-shrink: 0;
+}
+
+/* Red Cross Request Form Section */
+.red-cross-request-form {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-white);
+}
+
+/* Red Cross Requests Section */
+.red-cross-requests {
+  padding: var(--spacing-2xl) 0;
+  background: var(--medical-white);
+}
+
+/* Red Cross Logout Screen */
+.red-cross-logout-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--medical-light-gray) 0%, var(--medical-white) 100%);
+}
+
+.red-cross-logout-card {
+  background: var(--medical-white);
+  padding: var(--spacing-2xl);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.red-cross-logout-icon {
+  width: 80px;
+  height: 80px;
+  background: var(--red-cross-red);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--medical-white);
+  font-size: var(--font-size-2xl);
+  margin: 0 auto var(--spacing-lg);
+}
+
+.red-cross-logout-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+  color: var(--medical-text);
+  margin-bottom: var(--spacing-sm);
+}
+
+.red-cross-logout-subtitle {
+  color: var(--medical-dark-gray);
+  margin: 0;
+}
+
+/* Red Cross Responsive Design for Additional Pages */
+@media (max-width: 768px) {
+  .red-cross-faq-item {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .red-cross-faq-icon {
+    margin: 0 auto var(--spacing-md);
+  }
+  
+  .red-cross-contact .red-cross-card {
+    margin: 0 var(--spacing-md);
+  }
+  
+  .red-cross-signup .red-cross-card,
+  .red-cross-register .red-cross-card,
+  .red-cross-donation .red-cross-card {
+    margin: 0 var(--spacing-md);
+  }
+  
+  .red-cross-stat-number {
+    font-size: var(--font-size-2xl);
+  }
+  
+  .red-cross-action-icon,
+  .red-cross-stat-icon {
+    width: 60px;
+    height: 60px;
+    font-size: var(--font-size-lg);
+  }
+  
+  .red-cross-logout-card {
+    margin: var(--spacing-md);
+    padding: var(--spacing-xl);
+  }
+}
+
+/* Red Cross Utility Classes */
+.text-red-cross { color: var(--red-cross-red) !important; }
+.bg-red-cross { background-color: var(--red-cross-red) !important; }
+.border-red-cross { border-color: var(--red-cross-red) !important; }
+
+.text-medical { color: var(--medical-text) !important; }
+.bg-medical { background-color: var(--medical-white) !important; }
+.border-medical { border-color: var(--medical-gray) !important; }
