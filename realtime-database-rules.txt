@@ -1,0 +1,39 @@
+// Realtime Database Security Rules for BloodConnect
+// Copy and paste these rules in Firebase Console → Realtime Database → Rules
+
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+    "bloodInventory": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "bloodRequests": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "donations": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "hospitals": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "notifications": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null"
+      }
+    },
+    "systemSettings": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+}

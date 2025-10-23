@@ -154,7 +154,7 @@ if (signInForm) {
         if (role === 'admin') {
           window.location.href = 'admin.html';
         } else if (role === 'donor') {
-          window.location.href = 'donatordashboard.html';
+          window.location.href = 'donor-dashboard.html';
         } else if (role === 'hospital') {
           window.location.href = 'hospital-dashboard.html';
         } else if (role === 'patient') {
