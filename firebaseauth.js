@@ -27,7 +27,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Show message function
+// Message display helper
 function showMessage(message, divId) {
   const messageDiv = document.getElementById(divId);
   if (!messageDiv) return;
@@ -39,23 +39,23 @@ function showMessage(message, divId) {
     setTimeout(() => {
       messageDiv.style.display = "none";
     }, 500);
-  }, 5000);
+  }, 4000);
 }
 
-// --- Signup Logic ---
-const signupForm = document.getElementById('signupForm');
+// ==================== SIGNUP ====================
+const signupForm = document.getElementById("signupForm");
 if (signupForm) {
-  signupForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
+  signupForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-    const fName = document.getElementById('fName').value.trim();
-    const lName = document.getElementById('lName').value.trim();
-    const email = document.getElementById('rEmail').value.trim();
-    const password = document.getElementById('rPassword').value;
-    const role = document.getElementById('userRole').value;
+    const fName = document.getElementById("fName").value.trim();
+    const lName = document.getElementById("lName").value.trim();
+    const email = document.getElementById("rEmail").value.trim();
+    const password = document.getElementById("rPassword").value;
+    const role = document.getElementById("userRole").value;
 
     if (!role) {
-      showMessage('Please select a role.', 'signUpMessage');
+      showMessage("Please select your role.", "signUpMessage");
       return;
     }
 
@@ -63,7 +63,6 @@ if (signupForm) {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Store additional user info including role in Firestore
       await setDoc(doc(db, "users", user.uid), {
         firstName: fName,
         lastName: lName,
@@ -72,52 +71,60 @@ if (signupForm) {
         createdAt: new Date()
       });
 
-      // Redirect to login page after successful signup
-      window.location.href = 'login.html';
+      showMessage("Account created successfully! Redirecting...", "signUpMessage");
+      setTimeout(() => (window.location.href = "login.html"), 1500);
     } catch (error) {
-      showMessage(error.message, 'signUpMessage');
+      showMessage(error.message, "signUpMessage");
     }
   });
 }
 
-// --- Login Logic ---
-const signInForm = document.getElementById('signInForm');
+// ==================== LOGIN ====================
+const signInForm = document.getElementById("signInForm");
 if (signInForm) {
-  signInForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
+  signInForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
-      // Get user data from Firestore
       const userDoc = await getDoc(doc(db, "users", user.uid));
-      
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        const role = userData.role;
 
-        // Redirect based on role
-        if (role === 'admin') {
-          window.location.href = 'admin.html';
-        } else if (role === 'user' || role === 'donor') {
-          window.location.href = 'donatordashboard.html';
-        } else if (role === 'hospital') {
-          window.location.href = 'hospitaldashboard.html';
-        } else {
-          window.location.href = 'index.html'; // Default redirect
+      if (userDoc.exists()) {
+        const role = userDoc.data().role;
+
+        switch (role) {
+          case "admin":
+            window.location.href = "admin.html";
+            break;
+          case "donor":
+            window.location.href = "donatordashboard.html";
+            break;
+          case "hospital":
+            window.location.href = "hospitaldashboard.html";
+            break;
+          case "patient":
+            window.location.href = "patientdashboard.html";
+            break;
+          default:
+            window.location.href = "index.html";
+            break;
         }
       } else {
-        showMessage('User data not found. Please contact support.', 'signInMessage');
+        showMessage("User data not found. Please contact support.", "signInMessage");
       }
     } catch (error) {
-      if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-        showMessage('Incorrect Email or Password', 'signInMessage');
+      if (
+        error.code === "auth/wrong-password" ||
+        error.code === "auth/user-not-found" ||
+        error.code === "auth/invalid-credential"
+      ) {
+        showMessage("Incorrect email or password.", "signInMessage");
       } else {
-        showMessage(error.message, 'signInMessage');
+        showMessage(error.message, "signInMessage");
       }
     }
   });
