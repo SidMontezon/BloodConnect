@@ -93,22 +93,10 @@ if (signInForm) {
       const user = userCredential.user;
       const userDoc = await getDoc(doc(db, "users", user.uid));
 
-<<<<<<< HEAD
-        // Redirect based on role
-        if (role === 'admin') {
-          window.location.href = 'admin.html';
-        } else if (role === 'user' || role === 'donor') {
-          window.location.href = 'donor-dashboard.html';
-        } else if (role === 'user' || role === 'patient') {
-          window.location.href = 'patient-dashboard.html';
-        } else if (role === 'hospital') {
-          window.location.href = 'hospital-dashboard.html';
-        } else {
-          window.location.href = 'index.html'; // Default redirect
-=======
       if (userDoc.exists()) {
         const role = userDoc.data().role;
 
+        // Redirect based on role
         switch (role) {
           case "admin":
             window.location.href = "admin.html";
@@ -117,15 +105,14 @@ if (signInForm) {
             window.location.href = "donatordashboard.html";
             break;
           case "hospital":
-            window.location.href = "hospitaldashboard.html";
+            window.location.href = "hospital-dashboard.html";
             break;
           case "patient":
-            window.location.href = "patientdashboard.html";
+            window.location.href = "patient-dashboard.html";
             break;
           default:
-            window.location.href = "index.html";
+            window.location.href = "dashboard.html";
             break;
->>>>>>> 37c26ad496c63d87e640a79991369b0929c22a3d
         }
       } else {
         showMessage("User data not found. Please contact support.", "signInMessage");
