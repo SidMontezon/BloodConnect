@@ -1,95 +1,376 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Blood Donor Dashboard</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Prevent Back Navigation Cache -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-
-    <!-- Firebase, Bootstrap & FontAwesome -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <title>Donor Dashboard - BloodConnect</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <style>
-        body { background-color: #f8f9fa; }
-        .dashboard-container {
-            max-width: 600px;
-            margin: 50px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        .btn i { margin-right: 5px; }
-        .navbar { background: #c0392b; }
-        .navbar-brand, .nav-link { color: white !important; }
-    </style>
+    <link rel="stylesheet" href="red-cross-styles.css">
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+    <!-- Red Cross Header -->
+    <header class="red-cross-header">
         <div class="container">
-            <a class="navbar-brand" href="donatordashboard.html">
-                <i class="fa-solid fa-droplet"></i> BloodConnect
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="donatordashboard.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="donate.html">Donate</a></li>
-                    <li class="nav-item"><a class="nav-link" href="requestblood.html">Request</a></li>
-                    <li class="nav-item"><a class="nav-link" href="2fa-settings.html"><i class="fa-solid fa-shield-halved"></i> Security</a></li>
-                    <li class="nav-item"><a class="nav-link btn btn-light text-dark" href="logout.html">Logout</a></li>
-                </ul>
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="donor-dashboard.html" class="red-cross-logo">
+                    <div class="red-cross-icon">✚</div>
+                    <div>
+                        <h1 class="red-cross-brand">BloodConnect</h1>
+                        <p class="red-cross-tagline">Medical Blood Management</p>
+                    </div>
+                </a>
+                <div class="red-cross-nav">
+                    <a href="donor-dashboard.html" class="active">Dashboard</a>
+                    <a href="donate.html">Schedule Donation</a>
+                    <a href="donor-profile.html">Profile</a>
+                    <a href="donor-history.html">History</a>
+                    <a href="logout.html" class="btn-red-cross-outline">Logout</a>
+                </div>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <div class="container mt-4">
-        <div class="dashboard-container">
-            <h2><i class="fa-solid fa-droplet"></i> Blood Donor Dashboard</h2>
-            <p>Welcome to BloodConnect. You can donate or request blood.</p>
-            <button class="btn btn-danger w-100 mb-2" onclick="donateBlood()"><i class="fa-solid fa-hand-holding-medical"></i> Donate Blood</button>
-            <button class="btn btn-primary w-100" onclick="requestBlood()"><i class="fa-solid fa-hand-holding-droplet"></i> Request Blood</button>
-            <hr>
-            <button class="btn btn-secondary w-100" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+    <!-- Donor Dashboard Hero -->
+    <section class="red-cross-hero">
+        <div class="container">
+            <div class="red-cross-page-header">
+                <div class="text-center">
+                    <h1 class="red-cross-page-title">Welcome back, <span id="donorName">Donor</span>!</h1>
+                    <p class="red-cross-page-subtitle">Manage your blood donation activities and track your impact</p>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
 
+    <!-- Dashboard Stats -->
+    <section class="red-cross-dashboard-stats">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="red-cross-card text-center">
+                        <div class="red-cross-card-body">
+                            <div class="red-cross-stat-icon">
+                                <i class="fa-solid fa-tint"></i>
+                            </div>
+                            <h3 class="red-cross-stat-number" id="totalDonations">0</h3>
+                            <p class="red-cross-stat-label">Total Donations</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="red-cross-card text-center">
+                        <div class="red-cross-card-body">
+                            <div class="red-cross-stat-icon">
+                                <i class="fa-solid fa-calendar-check"></i>
+                            </div>
+                            <h3 class="red-cross-stat-number" id="upcomingAppointments">0</h3>
+                            <p class="red-cross-stat-label">Upcoming Appointments</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="red-cross-card text-center">
+                        <div class="red-cross-card-body">
+                            <div class="red-cross-stat-icon">
+                                <i class="fa-solid fa-heart"></i>
+                            </div>
+                            <h3 class="red-cross-stat-number" id="livesSaved">0</h3>
+                            <p class="red-cross-stat-label">Lives Saved</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="red-cross-card text-center">
+                        <div class="red-cross-card-body">
+                            <div class="red-cross-stat-icon">
+                                <i class="fa-solid fa-clock"></i>
+                            </div>
+                            <h3 class="red-cross-stat-number" id="daysUntilEligible">0</h3>
+                            <p class="red-cross-stat-label">Days Until Eligible</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="red-cross-quick-actions">
+        <div class="container">
+            <div class="red-cross-page-header">
+                <div class="text-center">
+                    <h2 class="red-cross-page-title">Quick Actions</h2>
+                    <p class="red-cross-page-subtitle">Manage your donation activities</p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-body text-center">
+                            <div class="red-cross-action-icon">
+                                <i class="fa-solid fa-calendar-plus"></i>
+                            </div>
+                            <h4 class="red-cross-action-title">Schedule Donation</h4>
+                            <p class="red-cross-action-description">Book your next blood donation appointment</p>
+                            <a href="donate.html" class="btn-red-cross">Schedule Now</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-body text-center">
+                            <div class="red-cross-action-icon">
+                                <i class="fa-solid fa-user-edit"></i>
+                            </div>
+                            <h4 class="red-cross-action-title">Update Profile</h4>
+                            <p class="red-cross-action-description">Keep your medical information current</p>
+                            <a href="donor-profile.html" class="btn-red-cross-outline">Update Profile</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-body text-center">
+                            <div class="red-cross-action-icon">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
+                            <h4 class="red-cross-action-title">View History</h4>
+                            <p class="red-cross-action-description">Track your donation history and impact</p>
+                            <a href="donor-history.html" class="btn-red-cross-outline">View History</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Activity -->
+    <section class="red-cross-recent-activity">
+        <div class="container">
+            <div class="red-cross-page-header">
+                <div class="text-center">
+                    <h2 class="red-cross-page-title">Recent Activity</h2>
+                    <p class="red-cross-page-subtitle">Your latest donation activities</p>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-header">
+                            <i class="fa-solid fa-history text-red-cross"></i>
+                            Recent Donations
+                        </div>
+                        <div class="red-cross-card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-red-cross">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Hospital</th>
+                                            <th>Blood Type</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentDonationsTable">
+                                        <tr>
+                                            <td colspan="5" class="text-center text-medical">No recent donations found</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Eligibility Status -->
+    <section class="red-cross-eligibility">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-header">
+                            <i class="fa-solid fa-shield-check text-red-cross"></i>
+                            Donation Eligibility Status
+                        </div>
+                        <div class="red-cross-card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h4 id="eligibilityStatus">Checking eligibility...</h4>
+                                    <p id="eligibilityMessage" class="text-medical">Please wait while we check your donation eligibility.</p>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <div class="red-cross-eligibility-icon" id="eligibilityIcon">
+                                        <i class="fa-solid fa-spinner fa-spin"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Red Cross Footer -->
+    <footer class="red-cross-footer">
+        <div class="container">
+            <div class="red-cross-footer-bottom">
+                <p>&copy; 2025 BloodConnect. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Firebase Configuration
         const firebaseConfig = {
-        apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
-        authDomain: "bloodconnect2-d094a.firebaseapp.com",
-        projectId: "bloodconnect2-d094a",
-        storageBucket: "bloodconnect2-d094a.firebasestorage.app",
-        messagingSenderId: "124251937624",
-        appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
-    };
+            apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
+            authDomain: "bloodconnect2-d094a.firebaseapp.com",
+            projectId: "bloodconnect2-d094a",
+            storageBucket: "bloodconnect2-d094a.firebasestorage.app",
+            messagingSenderId: "124251937624",
+            appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
+        };
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        const database = firebase.database();
 
-        function donateBlood() {
-            window.location.href = "donate.html";  // Directly navigate to the donation page without alert
-        }
+        // Check authentication
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                loadDonorDashboard(user.uid);
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
 
-        function requestBlood() {
-            window.location.href = "requestblood.html";  // Directly navigate to the request page without alert
-        }
-
-        function logout() {
-            auth.signOut().then(() => {
-                window.location.href = "logout.html";  // Redirect to the logout page
+        function loadDonorDashboard(uid) {
+            // Load donor profile
+            database.ref('users/' + uid).once('value').then((snapshot) => {
+                const userData = snapshot.val();
+                if (userData) {
+                    document.getElementById('donorName').textContent = userData.name || 'Donor';
+                }
             });
+
+            // Load donation statistics
+            loadDonationStats(uid);
+            loadRecentDonations(uid);
+            checkEligibility(uid);
+        }
+
+        function loadDonationStats(uid) {
+            database.ref('donations').orderByChild('donorId').equalTo(uid).once('value').then((snapshot) => {
+                const donations = snapshot.val() || {};
+                const donationCount = Object.keys(donations).length;
+                
+                document.getElementById('totalDonations').textContent = donationCount;
+                document.getElementById('livesSaved').textContent = donationCount * 3; // Each donation saves 3 lives
+                
+                // Count upcoming appointments
+                const upcomingCount = Object.values(donations).filter(donation => 
+                    new Date(donation.donationDate) > new Date() && donation.status === 'scheduled'
+                ).length;
+                document.getElementById('upcomingAppointments').textContent = upcomingCount;
+            });
+        }
+
+        function loadRecentDonations(uid) {
+            database.ref('donations').orderByChild('donorId').equalTo(uid).limitToLast(5).once('value').then((snapshot) => {
+                const donations = snapshot.val() || {};
+                const tableBody = document.getElementById('recentDonationsTable');
+                
+                if (Object.keys(donations).length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-medical">No recent donations found</td></tr>';
+                    return;
+                }
+
+                tableBody.innerHTML = '';
+                Object.entries(donations).reverse().forEach(([key, donation]) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${new Date(donation.donationDate).toLocaleDateString()}</td>
+                        <td>${donation.hospitalName}</td>
+                        <td><span class="badge-red-cross">${donation.bloodType}</span></td>
+                        <td><span class="badge badge-${getStatusClass(donation.status)}">${donation.status}</span></td>
+                        <td><button class="btn-red-cross-outline btn-sm" onclick="viewDonationDetails('${key}')">View</button></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            });
+        }
+
+        function checkEligibility(uid) {
+            database.ref('users/' + uid).once('value').then((snapshot) => {
+                const userData = snapshot.val();
+                const eligibilityIcon = document.getElementById('eligibilityIcon');
+                const eligibilityStatus = document.getElementById('eligibilityStatus');
+                const eligibilityMessage = document.getElementById('eligibilityMessage');
+
+                if (userData && userData.eligible === false) {
+                    eligibilityIcon.innerHTML = '<i class="fa-solid fa-times-circle text-danger"></i>';
+                    eligibilityStatus.textContent = 'Not Eligible';
+                    eligibilityStatus.className = 'text-danger';
+                    eligibilityMessage.textContent = 'You are currently not eligible to donate blood. Please contact support for more information.';
+                } else {
+                    // Check last donation date
+                    database.ref('donations').orderByChild('donorId').equalTo(uid).orderByChild('donationDate').limitToLast(1).once('value').then((snapshot) => {
+                        const lastDonation = snapshot.val();
+                        const now = new Date();
+                        
+                        if (lastDonation) {
+                            const lastDonationDate = new Date(Object.values(lastDonation)[0].donationDate);
+                            const daysSinceLastDonation = Math.floor((now - lastDonationDate) / (1000 * 60 * 60 * 24));
+                            const daysUntilEligible = Math.max(0, 56 - daysSinceLastDonation);
+                            
+                            document.getElementById('daysUntilEligible').textContent = daysUntilEligible;
+                            
+                            if (daysUntilEligible === 0) {
+                                eligibilityIcon.innerHTML = '<i class="fa-solid fa-check-circle text-success"></i>';
+                                eligibilityStatus.textContent = 'Eligible to Donate';
+                                eligibilityStatus.className = 'text-success';
+                                eligibilityMessage.textContent = 'You are eligible to donate blood. Schedule your next donation today!';
+                            } else {
+                                eligibilityIcon.innerHTML = '<i class="fa-solid fa-clock text-warning"></i>';
+                                eligibilityStatus.textContent = 'Not Yet Eligible';
+                                eligibilityStatus.className = 'text-warning';
+                                eligibilityMessage.textContent = `You can donate again in ${daysUntilEligible} days.`;
+                            }
+                        } else {
+                            eligibilityIcon.innerHTML = '<i class="fa-solid fa-check-circle text-success"></i>';
+                            eligibilityStatus.textContent = 'Eligible to Donate';
+                            eligibilityStatus.className = 'text-success';
+                            eligibilityMessage.textContent = 'You are eligible to donate blood. Schedule your first donation today!';
+                        }
+                    });
+                }
+            });
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'completed': return 'success';
+                case 'scheduled': return 'primary';
+                case 'cancelled': return 'danger';
+                case 'pending': return 'warning';
+                default: return 'secondary';
+            }
+        }
+
+        function viewDonationDetails(donationId) {
+            // Implement donation details modal or redirect
+            alert('Donation details for ID: ' + donationId);
         }
     </script>
 </body>
