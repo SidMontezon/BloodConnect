@@ -104,9 +104,11 @@ if (signInForm) {
         if (role === 'admin') {
           window.location.href = 'admin.html';
         } else if (role === 'user' || role === 'donor') {
-          window.location.href = 'donatordashboard.html';
+          window.location.href = 'donor-dashboard.html';
+        } else if (role === 'user' || role === 'patient') {
+          window.location.href = 'patient-dashboard.html';
         } else if (role === 'hospital') {
-          window.location.href = 'hospitaldashboard.html';
+          window.location.href = 'hospital-dashboard.html';
         } else {
           window.location.href = 'index.html'; // Default redirect
         }
