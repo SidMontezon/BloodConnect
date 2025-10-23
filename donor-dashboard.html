@@ -7,12 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="red-cross-styles.css">
-    <!-- Firebase v9+ Modular API -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 </head>
 <body>
     <!-- Red Cross Header -->
@@ -233,133 +227,165 @@
         </div>
     </footer>
 
+    <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Firebase Integration with Realtime Database -->
+    <script type="module" src="firebase-integration.js"></script>
+    <script type="module" src="firebase-realtime.js"></script>
+
     <script>
-        // Firebase Configuration (Updated to match login system)
-        const firebaseConfig = {
-            apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
-            authDomain: "bloodconnect-b5142.firebaseapp.com",
-            databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
-            projectId: "bloodconnect-b5142",
-            storageBucket: "bloodconnect-b5142.firebasestorage.app",
-            messagingSenderId: "631993835929",
-            appId: "1:631993835929:web:75554aca166e9058473308"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const database = firebase.database();
-
-        // Check authentication
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                loadDonorDashboard(user.uid);
+        // Wait for Firebase to be loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is authenticated
+            if (window.bloodConnectDB) {
+                checkAuthentication();
             } else {
-                window.location.href = 'login.html';
+                // Wait for Firebase to load
+                setTimeout(checkAuthentication, 1000);
             }
         });
 
-        function loadDonorDashboard(uid) {
-            // Load donor profile
-            database.ref('users/' + uid).once('value').then((snapshot) => {
-                const userData = snapshot.val();
+        async function checkAuthentication() {
+            try {
+                // Get current user data
+                const userData = await window.BloodConnectUtils.getCurrentUserData();
                 if (userData) {
-                    document.getElementById('donorName').textContent = userData.name || 'Donor';
+                    console.log('User authenticated:', userData);
+                    loadDonorDashboard(userData);
+                } else {
+                    console.log('No user authenticated, redirecting to login');
+                    window.location.href = 'login.html';
                 }
-            });
-
-            // Load donation statistics
-            loadDonationStats(uid);
-            loadRecentDonations(uid);
-            checkEligibility(uid);
+            } catch (error) {
+                console.error('Authentication check failed:', error);
+                window.location.href = 'login.html';
+            }
         }
 
-        function loadDonationStats(uid) {
-            database.ref('donations').orderByChild('donorId').equalTo(uid).once('value').then((snapshot) => {
-                const donations = snapshot.val() || {};
-                const donationCount = Object.keys(donations).length;
+        function loadDonorDashboard(userData) {
+            // Update donor name
+            const donorName = userData.firstName || 'Donor';
+            document.getElementById('donorName').textContent = donorName;
+
+            // Load donation statistics
+            loadDonationStats(userData);
+            loadRecentDonations(userData);
+            checkEligibility(userData);
+        }
+
+        async function loadDonationStats(userData) {
+            try {
+                const donations = await window.bloodConnectDB.getDonations();
+                const userDonations = Object.values(donations).filter(donation => 
+                    donation.donorId === userData.uid || donation.donorId === userData.email
+                );
                 
+                const donationCount = userDonations.length;
                 document.getElementById('totalDonations').textContent = donationCount;
                 document.getElementById('livesSaved').textContent = donationCount * 3; // Each donation saves 3 lives
                 
                 // Count upcoming appointments
-                const upcomingCount = Object.values(donations).filter(donation => 
+                const upcomingCount = userDonations.filter(donation => 
                     new Date(donation.donationDate) > new Date() && donation.status === 'scheduled'
                 ).length;
                 document.getElementById('upcomingAppointments').textContent = upcomingCount;
-            });
+            } catch (error) {
+                console.error('Error loading donation stats:', error);
+            }
         }
 
-        function loadRecentDonations(uid) {
-            database.ref('donations').orderByChild('donorId').equalTo(uid).limitToLast(5).once('value').then((snapshot) => {
-                const donations = snapshot.val() || {};
+        async function loadRecentDonations(userData) {
+            try {
+                const donations = await window.bloodConnectDB.getDonations();
+                const userDonations = Object.values(donations).filter(donation => 
+                    donation.donorId === userData.uid || donation.donorId === userData.email
+                );
+                
                 const tableBody = document.getElementById('recentDonationsTable');
                 
-                if (Object.keys(donations).length === 0) {
+                if (userDonations.length === 0) {
                     tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-medical">No recent donations found</td></tr>';
                     return;
                 }
 
                 tableBody.innerHTML = '';
-                Object.entries(donations).reverse().forEach(([key, donation]) => {
+                userDonations.slice(-5).reverse().forEach((donation, index) => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${new Date(donation.donationDate).toLocaleDateString()}</td>
-                        <td>${donation.hospitalName}</td>
+                        <td>${donation.location || 'Unknown Hospital'}</td>
                         <td><span class="badge-red-cross">${donation.bloodType}</span></td>
                         <td><span class="badge badge-${getStatusClass(donation.status)}">${donation.status}</span></td>
-                        <td><button class="btn-red-cross-outline btn-sm" onclick="viewDonationDetails('${key}')">View</button></td>
+                        <td><button class="btn-red-cross-outline btn-sm" onclick="viewDonationDetails('${index}')">View</button></td>
                     `;
                     tableBody.appendChild(row);
                 });
-            });
+            } catch (error) {
+                console.error('Error loading recent donations:', error);
+            }
         }
 
-        function checkEligibility(uid) {
-            database.ref('users/' + uid).once('value').then((snapshot) => {
-                const userData = snapshot.val();
+        async function checkEligibility(userData) {
+            try {
                 const eligibilityIcon = document.getElementById('eligibilityIcon');
                 const eligibilityStatus = document.getElementById('eligibilityStatus');
                 const eligibilityMessage = document.getElementById('eligibilityMessage');
 
-                if (userData && userData.eligible === false) {
+                if (userData.isEligible === false) {
                     eligibilityIcon.innerHTML = '<i class="fa-solid fa-times-circle text-danger"></i>';
                     eligibilityStatus.textContent = 'Not Eligible';
                     eligibilityStatus.className = 'text-danger';
                     eligibilityMessage.textContent = 'You are currently not eligible to donate blood. Please contact support for more information.';
                 } else {
                     // Check last donation date
-                    database.ref('donations').orderByChild('donorId').equalTo(uid).orderByChild('donationDate').limitToLast(1).once('value').then((snapshot) => {
-                        const lastDonation = snapshot.val();
-                        const now = new Date();
+                    const donations = await window.bloodConnectDB.getDonations();
+                    const userDonations = Object.values(donations).filter(donation => 
+                        donation.donorId === userData.uid || donation.donorId === userData.email
+                    );
+                    
+                    const now = new Date();
+                    
+                    if (userDonations.length > 0) {
+                        const lastDonation = userDonations.sort((a, b) => 
+                            new Date(b.donationDate) - new Date(a.donationDate)
+                        )[0];
                         
-                        if (lastDonation) {
-                            const lastDonationDate = new Date(Object.values(lastDonation)[0].donationDate);
-                            const daysSinceLastDonation = Math.floor((now - lastDonationDate) / (1000 * 60 * 60 * 24));
-                            const daysUntilEligible = Math.max(0, 56 - daysSinceLastDonation);
-                            
-                            document.getElementById('daysUntilEligible').textContent = daysUntilEligible;
-                            
-                            if (daysUntilEligible === 0) {
-                                eligibilityIcon.innerHTML = '<i class="fa-solid fa-check-circle text-success"></i>';
-                                eligibilityStatus.textContent = 'Eligible to Donate';
-                                eligibilityStatus.className = 'text-success';
-                                eligibilityMessage.textContent = 'You are eligible to donate blood. Schedule your next donation today!';
-                            } else {
-                                eligibilityIcon.innerHTML = '<i class="fa-solid fa-clock text-warning"></i>';
-                                eligibilityStatus.textContent = 'Not Yet Eligible';
-                                eligibilityStatus.className = 'text-warning';
-                                eligibilityMessage.textContent = `You can donate again in ${daysUntilEligible} days.`;
-                            }
-                        } else {
+                        const lastDonationDate = new Date(lastDonation.donationDate);
+                        const daysSinceLastDonation = Math.floor((now - lastDonationDate) / (1000 * 60 * 60 * 24));
+                        const daysUntilEligible = Math.max(0, 56 - daysSinceLastDonation);
+                        
+                        document.getElementById('daysUntilEligible').textContent = daysUntilEligible;
+                        
+                        if (daysUntilEligible === 0) {
                             eligibilityIcon.innerHTML = '<i class="fa-solid fa-check-circle text-success"></i>';
                             eligibilityStatus.textContent = 'Eligible to Donate';
                             eligibilityStatus.className = 'text-success';
-                            eligibilityMessage.textContent = 'You are eligible to donate blood. Schedule your first donation today!';
+                            eligibilityMessage.textContent = 'You are eligible to donate blood. Schedule your next donation today!';
+                        } else {
+                            eligibilityIcon.innerHTML = '<i class="fa-solid fa-clock text-warning"></i>';
+                            eligibilityStatus.textContent = 'Not Yet Eligible';
+                            eligibilityStatus.className = 'text-warning';
+                            eligibilityMessage.textContent = `You can donate again in ${daysUntilEligible} days.`;
                         }
-                    });
+                    } else {
+                        eligibilityIcon.innerHTML = '<i class="fa-solid fa-check-circle text-success"></i>';
+                        eligibilityStatus.textContent = 'Eligible to Donate';
+                        eligibilityStatus.className = 'text-success';
+                        eligibilityMessage.textContent = 'You are eligible to donate blood. Schedule your first donation today!';
+                    }
                 }
-            });
+            } catch (error) {
+                console.error('Error checking eligibility:', error);
+                const eligibilityIcon = document.getElementById('eligibilityIcon');
+                const eligibilityStatus = document.getElementById('eligibilityStatus');
+                const eligibilityMessage = document.getElementById('eligibilityMessage');
+                
+                eligibilityIcon.innerHTML = '<i class="fa-solid fa-exclamation-triangle text-warning"></i>';
+                eligibilityStatus.textContent = 'Unable to Check Eligibility';
+                eligibilityStatus.className = 'text-warning';
+                eligibilityMessage.textContent = 'There was an error checking your eligibility. Please try again later.';
+            }
         }
 
         function getStatusClass(status) {
