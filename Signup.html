@@ -1,158 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>BloodConnect - Sign Up</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BloodConnect - Sign Up</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 
-    <style>
-        body { background-color: #f8f9fa; }
-        .signup-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .signup-box {
-            background: white; padding: 40px; border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center; width: 100%; max-width: 400px;
-        }
-        .message-display {
-            color: red;
-            margin-top: 10px;
-            display: none;
-            opacity: 0;
-            transition: opacity 1s ease-out;
-        }
-        .back-to-home {
-            position: absolute;
-            top: 70px;
-            left: 20px;
-            font-size: 16px;
-        }
-    </style>
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .header {
+      background-color: #d7393f;
+      color: white;
+      padding: 10px 15px;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .header svg {
+      height: 24px;
+      width: 24px;
+      fill: white;
+    }
+    .container {
+      max-width: 400px;
+      margin-top: 60px;
+      margin-bottom: 60px;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgb(0 0 0 / 0.1);
+    }
+    .signup-title {
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.5rem;
+    }
+    .signup-title svg {
+      width: 28px;
+      height: 28px;
+    }
+    .form-control, .form-select {
+      margin-bottom: 15px;
+    }
+    .btn-signup {
+      background-color: #d7393f;
+      border: none;
+    }
+    .btn-signup:hover {
+      background-color: #bb3238;
+    }
+    #signUpMessage {
+      margin-top: 10px;
+      color: red;
+      min-height: 1.25rem;
+      text-align: center;
+    }
+    a {
+      color: #d7393f;
+    }
+    .form-control, .form-select, .btn-signup {
+      font-size: 1rem;
+      padding: 10px;
+    }
+    .btn-signup {
+      font-size: 1.1rem;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
-    <div class="container">
-        <a class="navbar-brand" href="index.html"><i class="fa-solid fa-droplet"></i> BloodConnect</a>
+  <header class="header">
+    <!-- Simple drop blood icon SVG -->
+    <svg viewBox="0 0 24 24"><path d="M12 2C8.134 8.707 6 11.69 6 15a6 6 0 0012 0c0-3.31-2.134-6.293-6-13z"/></svg>
+    BloodConnect
+  </header>
+
+  <div class="container">
+    <a href="index.html" class="mb-3 d-block">&larr; Back to Home Page</a>
+
+    <div class="signup-title">
+      <!-- User plus icon SVG -->
+      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-person-plus-fill" viewBox="0 0 16 16">
+        <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+        <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5"/>
+      </svg>
+      Create Account
     </div>
-</nav>
 
-<p class="back-to-home"><a href="index.html" class="text-danger">Back to Home Page</a></p>
+    <!-- Sign-up form -->
+    <form id="signupForm" novalidate>
+      <div class="row">
+        <div class="col-md-6">
+          <input type="text" id="fName" class="form-control" placeholder="First Name" required />
+        </div>
+        <div class="col-md-6">
+          <input type="text" id="lName" class="form-control" placeholder="Last Name" required />
+        </div>
+      </div>
+      <input type="email" id="rEmail" class="form-control" placeholder="Email" required autocomplete="username" />
+      <input type="password" id="rPassword" class="form-control" placeholder="Password" required autocomplete="new-password" />
+      <select class="form-select" id="userRole" required>
+        <option value="" selected disabled>Select a role...</option>
+        <option value="donor">User/Donor</option>
+        <option value="hospital">Hospital</option>
+      </select>
+      <button class="btn btn-signup w-100 text-white" type="submit">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill me-1" viewBox="0 0 16 16">
+          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+        </svg>
+        Sign Up
+      </button>
+    </form>
 
-<div class="signup-container">
-    <div class="signup-box">
-        <h2><i class="fa-solid fa-user-plus"></i> Sign Up</h2>
-        <form id="signupForm">
-            <input type="text" class="form-control mb-3" id="fName" placeholder="First Name" required>
-            <input type="text" class="form-control mb-3" id="lName" placeholder="Last Name" required>
-            <input type="email" class="form-control mb-3" id="rEmail" placeholder="Email" required>
-            <input type="password" class="form-control mb-3" id="rPassword" placeholder="Password" required>
-
-            <button type="submit" class="btn btn-danger w-100" id="submitSignUp">
-                <i class="fa-solid fa-user-plus"></i> Register
-            </button>
-        </form>
-
-        <p class="mt-3">Already have an account? <a href="login.html" class="text-danger">Login</a></p>
-        <div class="message-display" id="signUpMessage"></div>
+    <div class="mt-3 text-center">
+      Already have an account? <a href="login.html">Login</a>
     </div>
-</div>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <div id="signUpMessage"></div>
+  </div>
 
-<!-- EmailJS Script -->
-<script src="https://cdn.emailjs.com/dist/email.min.js"></script>
-<script>
-<<<<<<< HEAD
-            const firebaseConfig = {
-        apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
-        authDomain: "bloodconnect2-d094a.firebaseapp.com",
-        projectId: "bloodconnect2-d094a",
-        storageBucket: "bloodconnect2-d094a.firebasestorage.app",
-        messagingSenderId: "124251937624",
-        appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
-    };
+  <!-- Bootstrap JS Bundle (includes Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+  <!-- Your Firebase auth script -->
+  <script type="module" src="firebaseauth.js"></script>
 
-    // Handle sign up form
-    document.getElementById('signupForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-        const name = document.getElementById('name').value;   // Get the name
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const role = document.getElementById('role').value;  // Get the selected role
-
-        auth.createUserWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                const user = userCredential.user;
-
-                // Create user document in Firestore first
-                const userData = {
-                    role: role,   // Store the selected role ("donor" or "hospital")
-                    email: email,
-                    name: name,    // Save the name of the user
-                    emailVerified: false,
-                    twoFactorEnabled: false,
-                    phoneNumber: '',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
-
-                // Save user data to Firestore
-                db.collection("users").doc(user.uid).set(userData)
-                    .then(() => {
-                        console.log("User document created successfully");
-                        
-                        // Store user data for verification page
-                        sessionStorage.setItem('pendingVerification', JSON.stringify({
-                            uid: user.uid,
-                            email: email,
-                            name: name,
-                            role: role
-                        }));
-
-                        // Send email verification
-                        return user.sendEmailVerification();
-                    })
-                    .then(() => {
-                        alert('Account created successfully! Please check your email to verify your account.');
-                        window.location.href = 'verify-email.html';  // Redirect to email verification page
-                    })
-                    .catch((error) => {
-                        console.error("Error during signup:", error);
-                        
-                        let errorMessage = "Account created but there was an error: ";
-                        if (error.code === 'auth/too-many-requests') {
-                            errorMessage = "Account created! However, too many requests were made. Please wait 1-2 hours before requesting a new verification email, or try a different network.";
-                        } else if (error.code === 'auth/network-request-failed') {
-                            errorMessage = "Account created! Network error occurred. Please check your internet connection and try again.";
-                        } else if (error.code === 'permission-denied') {
-                            errorMessage = "Account created! Please contact support to complete your registration.";
-                        } else {
-                            errorMessage += error.message;
-                        }
-                        
-                        alert(errorMessage);
-                    });
-            })
-            .catch((error) => {
-                console.error("Error signing up: ", error.message);
-                alert("Error signing up: " + error.message);
-            });
-    });
-=======
-    emailjs.init("YOUR_PUBLIC_KEY"); // Replace this
->>>>>>> 1aba2da41315da1b1270fd5314934f9d632fb1fc
-</script>
-
-<!-- Firebase Logic -->
-<script type="module" src="firebaseauth.js"></script>
 </body>
 </html>
-
