@@ -237,22 +237,47 @@
     <script>
         // Wait for Firebase to be loaded
         document.addEventListener('DOMContentLoaded', function() {
-            // Check if user is authenticated
-            if (window.bloodConnectDB) {
-                checkAuthentication();
-            } else {
-                // Wait for Firebase to load
-                setTimeout(checkAuthentication, 1000);
-            }
+            // Check authentication after a short delay to ensure Firebase is loaded
+            setTimeout(checkAuthentication, 2000);
         });
 
         async function checkAuthentication() {
             try {
-                // Get current user data
-                const userData = await window.BloodConnectUtils.getCurrentUserData();
-                if (userData) {
-                    console.log('User authenticated:', userData);
-                    loadDonorDashboard(userData);
+                console.log('Checking authentication...');
+                
+                // Method 1: Try to get user from Firebase Auth directly
+                const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js');
+                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js');
+                
+                const firebaseConfig = {
+                    apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
+                    authDomain: "bloodconnect-b5142.firebaseapp.com",
+                    databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
+                    projectId: "bloodconnect-b5142",
+                    storageBucket: "bloodconnect-b5142.firebasestorage.app",
+                    messagingSenderId: "631993835929",
+                    appId: "1:631993835929:web:75554aca166e9058473308"
+                };
+                
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                const user = auth.currentUser;
+                
+                if (user) {
+                    console.log('User authenticated via Firebase Auth:', user.uid);
+                    // Get user data from Firestore
+                    const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js');
+                    const db = getFirestore(app);
+                    
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        userData.uid = user.uid;
+                        loadDonorDashboard(userData);
+                    } else {
+                        console.log('User document not found in Firestore');
+                        window.location.href = 'login.html';
+                    }
                 } else {
                     console.log('No user authenticated, redirecting to login');
                     window.location.href = 'login.html';
