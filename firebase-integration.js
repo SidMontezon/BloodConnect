@@ -111,11 +111,17 @@ if (signupForm) {
         createdAt: new Date().toISOString()
       });
 
-      showMessage('Account created successfully! Redirecting to login...', 'signUpMessage');
+      showMessage('Account created successfully!', 'signUpMessage');
       
-      // Redirect to login page after successful signup
+      // Redirect based on role
       setTimeout(() => {
-        window.location.href = 'login.html';
+        if (role === 'donor') {
+          // Redirect donors to verification page
+          window.location.href = 'donor-profile-verification.html';
+        } else {
+          // Other roles go to login
+          window.location.href = 'login.html';
+        }
       }, 2000);
 
     } catch (error) {

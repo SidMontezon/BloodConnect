@@ -4,6 +4,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -20,6 +21,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const database = getDatabase(app);
 
 // Global authentication state
 let currentUser = null;
@@ -45,15 +47,25 @@ class AuthManager {
             if (user) {
                 currentUser = user;
                 try {
-                    // Get user data from Firestore
-                    const userDoc = await getDoc(doc(db, "users", user.uid));
-                    if (userDoc.exists()) {
-                        currentUserData = userDoc.data();
+                    // Try to get user data from Realtime Database first (has verification status)
+                    const dbRef = ref(database, `users/${user.uid}`);
+                    const dbSnapshot = await get(dbRef);
+                    
+                    if (dbSnapshot.exists()) {
+                        currentUserData = dbSnapshot.val();
                         currentUserData.uid = user.uid;
-                        console.log('AuthManager: User data loaded:', currentUserData);
+                        console.log('AuthManager: User data loaded from Realtime DB:', currentUserData);
                     } else {
-                        console.log('AuthManager: User document not found');
-                        currentUserData = null;
+                        // Fallback to Firestore
+                        const userDoc = await getDoc(doc(db, "users", user.uid));
+                        if (userDoc.exists()) {
+                            currentUserData = userDoc.data();
+                            currentUserData.uid = user.uid;
+                            console.log('AuthManager: User data loaded from Firestore:', currentUserData);
+                        } else {
+                            console.log('AuthManager: User document not found');
+                            currentUserData = null;
+                        }
                     }
                 } catch (error) {
                     console.error('AuthManager: Error loading user data:', error);

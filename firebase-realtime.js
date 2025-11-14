@@ -283,6 +283,168 @@ class BloodConnectRealtimeDB {
     }
   }
 
+  // Verification Management
+  async createVerification(verificationData) {
+    try {
+      const newVerificationRef = push(getDbRef('verifications'));
+      await set(newVerificationRef, {
+        ...verificationData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+      return { success: true, id: newVerificationRef.key, message: 'Verification created successfully' };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  async getVerifications() {
+    try {
+      const snapshot = await get(getDbRef('verifications'));
+      return snapshot.exists() ? snapshot.val() : {};
+    } catch (error) {
+      console.error('Error getting verifications:', error);
+      return {};
+    }
+  }
+
+  async updateVerificationStatus(verificationId, status, reviewedBy, rejectionReason = null) {
+    try {
+      const updates = {
+        verificationStatus: status,
+        reviewedBy: reviewedBy,
+        reviewedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      if (rejectionReason) {
+        updates.rejectionReason = rejectionReason;
+      }
+      await update(getDbRef(`verifications/${verificationId}`), updates);
+      return { success: true, message: 'Verification status updated successfully' };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  // Notification Management
+  async createNotification(notificationData) {
+    try {
+      const newNotificationRef = push(getDbRef('notifications'));
+      await set(newNotificationRef, {
+        ...notificationData,
+        isRead: false,
+        createdAt: new Date().toISOString()
+      });
+      return { success: true, id: newNotificationRef.key, message: 'Notification created successfully' };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  async getNotifications(userId = null) {
+    try {
+      const snapshot = await get(getDbRef('notifications'));
+      const notifications = snapshot.exists() ? snapshot.val() : {};
+      if (userId) {
+        return Object.entries(notifications)
+          .filter(([id, notif]) => notif.userId === userId || notif.userId === 'admin')
+          .map(([id, notif]) => ({ id, ...notif }));
+      }
+      return Object.entries(notifications).map(([id, notif]) => ({ id, ...notif }));
+    } catch (error) {
+      console.error('Error getting notifications:', error);
+      return [];
+    }
+  }
+
+  async markNotificationAsRead(notificationId) {
+    try {
+      await update(getDbRef(`notifications/${notificationId}`), {
+        isRead: true,
+        readAt: new Date().toISOString()
+      });
+      return { success: true, message: 'Notification marked as read' };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  // Hospital Events Management
+  async createHospitalEvent(eventData) {
+    try {
+      const newEventRef = push(getDbRef('hospitalEvents'));
+      await set(newEventRef, {
+        ...eventData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+      return { success: true, id: newEventRef.key, message: 'Hospital event created successfully' };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  async getHospitalEvents(hospitalId = null) {
+    try {
+      const snapshot = await get(getDbRef('hospitalEvents'));
+      const events = snapshot.exists() ? snapshot.val() : {};
+      if (hospitalId) {
+        return Object.entries(events)
+          .filter(([id, event]) => event.hospitalId === hospitalId)
+          .map(([id, event]) => ({ id, ...event }));
+      }
+      return Object.entries(events).map(([id, event]) => ({ id, ...event }));
+    } catch (error) {
+      console.error('Error getting hospital events:', error);
+      return [];
+    }
+  }
+
+  // Donation Scheduling
+  async scheduleDonation(donationData) {
+    try {
+      const newDonationRef = push(getDbRef('donationSchedules'));
+      await set(newDonationRef, {
+        ...donationData,
+        status: 'pending_screening',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+      return { success: true, id: newDonationRef.key, message: 'Donation scheduled successfully' };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  async getDonationSchedules(donorId = null) {
+    try {
+      const snapshot = await get(getDbRef('donationSchedules'));
+      const schedules = snapshot.exists() ? snapshot.val() : {};
+      if (donorId) {
+        return Object.entries(schedules)
+          .filter(([id, schedule]) => schedule.donorId === donorId)
+          .map(([id, schedule]) => ({ id, ...schedule }));
+      }
+      return Object.entries(schedules).map(([id, schedule]) => ({ id, ...schedule }));
+    } catch (error) {
+      console.error('Error getting donation schedules:', error);
+      return [];
+    }
+  }
+
+  async updateDonationScheduleStatus(scheduleId, status, updatedBy) {
+    try {
+      await update(getDbRef(`donationSchedules/${scheduleId}`), {
+        status: status,
+        updatedBy: updatedBy,
+        updatedAt: new Date().toISOString()
+      });
+      return { success: true, message: 'Donation schedule status updated successfully' };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
   // Cleanup function
   cleanup() {
     // This would be called when the component/page is unmounted
