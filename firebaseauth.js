@@ -1,3 +1,4 @@
+// ================= FIREBASE INIT =================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import {
   getAuth,
@@ -17,7 +18,7 @@ const firebaseConfig = {
   authDomain: "bloodconnect-b5142.firebaseapp.com",
   databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
   projectId: "bloodconnect-b5142",
-  storageBucket: "bloodconnect-b5142.firebasestorage.app",
+  storageBucket: "bloodconnect-b5142.firebaseapp.com",
   messagingSenderId: "631993835929",
   appId: "1:631993835929:web:75554aca166e9058473308"
 };
@@ -26,6 +27,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const db = getDatabase(app);
 
+// ================= UTIL =================
 function showMessage(message, divId) {
   const el = document.getElementById(divId);
   if (!el) return;
@@ -36,49 +38,57 @@ function showMessage(message, divId) {
 }
 
 async function logoutAndRedirect() {
-  try { await signOut(auth); } catch (e) { /* ignore */ }
+  try { await signOut(auth); } catch (e) {}
   sessionStorage.clear();
-  // navigate to login and replace history to avoid back
-  window.location.replace('login.html');
+  window.location.replace("login.html");
 }
 
-/* ===================== Signup ===================== */
-const signupForm = document.getElementById('signupForm');
+// ================= SIGNUP =================
+const signupForm = document.getElementById("signupForm");
+
 if (signupForm) {
-  signupForm.addEventListener('submit', async (e) => {
+  signupForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const email = (document.getElementById('signupEmail') || {}).value?.trim() || '';
-    const password = (document.getElementById('signupPassword') || {}).value || '';
-    const role = (document.getElementById('signupRole') || {}).value || 'donor';
+
+    const email = document.getElementById("signupEmail").value.trim();
+    const password = document.getElementById("signupPassword").value;
+    const role = document.getElementById("signupRole").value; // donor / hospital / admin
 
     if (!email || !password) {
-      showMessage('Please provide email and password.', 'signupMessage');
+      showMessage("Please provide email and password.", "signupMessage");
       return;
     }
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;
-      await set(ref(db, `users/${uid}`), { email, role });
-      showMessage('Account created. You may login now.', 'signupMessage');
+
+      await set(ref(db, "users/" + uid), {
+        email: email,
+        role: role
+      });
+
+      showMessage("Account created successfully! You may login now.", "signupMessage");
       signupForm.reset();
     } catch (err) {
       console.error(err);
-      showMessage('Signup failed: ' + (err.message || 'Try again'), 'signupMessage');
+      showMessage("Signup failed: " + err.message, "signupMessage");
     }
   });
 }
 
-/* ===================== SignIn ===================== */
-const signInForm = document.getElementById('signInForm');
+// ================= SIGN-IN =================
+const signInForm = document.getElementById("signInForm");
+
 if (signInForm) {
-  signInForm.addEventListener('submit', async (e) => {
+  signInForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const email = (document.getElementById('email') || {}).value?.trim() || '';
-    const password = (document.getElementById('password') || {}).value || '';
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
 
     if (!email || !password) {
-      showMessage('Provide email and password.', 'signInMessage');
+      showMessage("Provide email and password.", "signInMessage");
       return;
     }
 
@@ -86,71 +96,78 @@ if (signInForm) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;
 
-      let role = 'donor';
-      try {
-        const snap = await get(ref(db, `users/${uid}/role`));
-        if (snap.exists()) role = snap.val();
-      } catch (dbErr) {
-        console.warn('Could not read role:', dbErr);
+      // Read user role from database
+      let role = "donor"; // default
+      const snap = await get(ref(db, `users/${uid}`));
+
+      if (snap.exists()) {
+        const data = snap.val();
+        role = data.role || "donor";
       }
 
-      sessionStorage.setItem('logged_in', 'true');
-      sessionStorage.setItem('uid', uid);
-      sessionStorage.setItem('role', role);
-      sessionStorage.setItem('email', email);
+      // Save session
+      sessionStorage.setItem("logged_in", "true");
+      sessionStorage.setItem("uid", uid);
+      sessionStorage.setItem("role", role);
+      sessionStorage.setItem("email", email);
 
-      if (role === 'admin') {
-        window.location.href = 'admin/dashboard.html';
-      } else if (role === 'hospital') {
-        window.location.href = 'hospital/dashboard.html';
+      // Redirect based on role
+      if (role === "admin") {
+        window.location.href = "admin-dashboard.html";
+      } else if (role === "hospital") {
+        window.location.href = "hospital-dashboard.html";
       } else {
-        window.location.href = 'donor/dashboard.html';
+        window.location.href = "donor-dashboard.html";
       }
 
-      history.replaceState({}, '', window.location.href);
     } catch (err) {
       console.error(err);
-      showMessage('Incorrect Email or Password', 'signInMessage');
+      showMessage("Incorrect Email or Password", "signInMessage");
     }
   });
 }
 
-/* ===================== Logout binding ===================== */
-const logoutBtn = document.getElementById('logoutBtn');
+// ================= LOGOUT =================
+const logoutBtn = document.getElementById("logoutBtn");
 if (logoutBtn) {
-  logoutBtn.addEventListener('click', (e) => {
-    e.preventDefault();
+  logoutBtn.addEventListener("click", () => {
     logoutAndRedirect();
   });
 }
 
-/* ===================== Back-button / bfcache handling ===================== */
-/* Force logout/redirect when protected pages are revisited via back-button or page cache */
-window.addEventListener('pageshow', (e) => {
-  const protectedPaths = ['/admin/', '/hospital/', '/donor/', '/dashboard.html'];
-  const path = window.location.pathname;
-  const isProtected = protectedPaths.some(p => path.includes(p));
-  if (isProtected && !sessionStorage.getItem('logged_in')) {
-    window.location.replace('login.html');
-    return;
-  }
-  if (e.persisted && sessionStorage.getItem('logged_in')) {
-    logoutAndRedirect();
-  }
-});
+// ================= PROTECTED PAGE HANDLING =================
+(function protect() {
+  const protectedPages = [
+    "/admin-dashboard.html",
+    "/hospital-dashboard.html",
+    "/donor-dashboard.html"
+  ];
 
-window.addEventListener('popstate', () => {
-  if (sessionStorage.getItem('logged_in')) {
-    logoutAndRedirect();
-  }
-});
+  const currentPage = window.location.pathname;
 
-(function protectIfNeeded() {
-  const protectedPaths = ['/admin/', '/hospital/', '/donor/', '/dashboard.html'];
-  const path = window.location.pathname;
-  if (protectedPaths.some(p => path.includes(p))) {
-    if (!sessionStorage.getItem('logged_in')) {
-      window.location.replace('login.html');
+  if (protectedPages.some(page => currentPage.includes(page))) {
+    if (!sessionStorage.getItem("logged_in")) {
+      window.location.replace("login.html");
     }
   }
 })();
+
+window.addEventListener("pageshow", (e) => {
+  const protectedPages = [
+    "/admin-dashboard.html",
+    "/hospital-dashboard.html",
+    "/donor-dashboard.html"
+  ];
+
+  const currentPage = window.location.pathname;
+
+  if (protectedPages.some(page => currentPage.includes(page))) {
+    if (!sessionStorage.getItem("logged_in")) {
+      window.location.replace("login.html");
+    }
+  }
+
+  if (e.persisted && sessionStorage.getItem("logged_in")) {
+    logoutAndRedirect();
+  }
+});
