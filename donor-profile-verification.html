@@ -419,17 +419,25 @@
                 // Create verification record
                 const verificationResult = await window.bloodConnectDB.createVerification(verificationData);
 
-                // Create notification for admin
-                await window.bloodConnectDB.createNotification({
-                    userId: 'admin', // Will be handled by admin dashboard
-                    type: 'verification',
-                    title: 'New Donor Verification Request',
-                    message: `${userData.firstName} ${userData.lastName} has submitted verification documents.`,
-                    priority: 'high',
-                    actionUrl: 'admin-donor-verifications.html',
-                    relatedUserId: currentUserId,
-                    createdAt: new Date().toISOString()
-                });
+                // Get all admin users and notify them
+                const users = await window.bloodConnectDB.getUsers();
+                const adminUsers = Object.entries(users)
+                    .filter(([id, user]) => user.role === 'admin')
+                    .map(([id, user]) => id);
+
+                // Notify all admin users
+                for (const adminId of adminUsers) {
+                    await window.bloodConnectDB.createNotification({
+                        userId: adminId,
+                        type: 'verification',
+                        title: 'New Donor Verification Request',
+                        message: `${userData.firstName} ${userData.lastName} has submitted verification documents.`,
+                        priority: 'high',
+                        actionUrl: 'admin-donor-verifications.html',
+                        relatedUserId: currentUserId,
+                        createdAt: new Date().toISOString()
+                    });
+                }
 
                 alert('Verification documents submitted successfully! Your profile will be reviewed within 24-48 hours.');
                 checkVerificationStatus();

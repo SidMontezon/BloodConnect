@@ -145,6 +145,18 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-4">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-body text-center">
+                            <div class="red-cross-action-icon">
+                                <i class="fa-solid fa-calendar-star"></i>
+                            </div>
+                            <h4 class="red-cross-action-title">Schedule Event</h4>
+                            <p class="red-cross-action-description">Create a blood donation event</p>
+                            <button class="btn-red-cross" onclick="openEventModal()">Schedule Event</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -199,6 +211,63 @@
         </div>
     </section>
 
+    <!-- Donation Screenings -->
+    <section class="red-cross-donation-screenings">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-header">
+                            <i class="fa-solid fa-stethoscope text-red-cross"></i>
+                            Donation Screenings
+                        </div>
+                        <div class="red-cross-card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-red-cross">
+                                    <thead>
+                                        <tr>
+                                            <th>Donor Name</th>
+                                            <th>Blood Type</th>
+                                            <th>Donation Date</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="screeningsTable">
+                                        <tr>
+                                            <td colspan="5" class="text-center text-medical">Loading screenings...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hospital Events -->
+    <section class="red-cross-hospital-events">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-header">
+                            <i class="fa-solid fa-calendar-star text-red-cross"></i>
+                            Upcoming Events
+                        </div>
+                        <div class="red-cross-card-body">
+                            <div class="row" id="hospitalEventsList">
+                                <div class="col-12 text-center text-medical">Loading events...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Emergency Alerts -->
     <section class="red-cross-emergency-alerts">
         <div class="container">
@@ -229,8 +298,88 @@
         </div>
     </footer>
 
+    <!-- Event Modal -->
+    <div class="modal fade" id="eventModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Schedule Blood Donation Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="eventForm">
+                        <div class="mb-3">
+                            <label for="eventName" class="form-label">Event Name</label>
+                            <input type="text" class="form-control" id="eventName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="eventDate" class="form-label">Event Date</label>
+                            <input type="date" class="form-control" id="eventDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="eventTime" class="form-label">Event Time</label>
+                            <input type="time" class="form-control" id="eventTime" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="eventLocation" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="eventLocation" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="eventDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="eventDescription" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn-red-cross" onclick="submitEvent()">Schedule Event</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screening Modal -->
+    <div class="modal fade" id="screeningModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Schedule Screening</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="screeningForm">
+                        <input type="hidden" id="screeningScheduleId">
+                        <div class="mb-3">
+                            <label class="form-label">Donor: <span id="screeningDonorName"></span></label>
+                        </div>
+                        <div class="mb-3">
+                            <label for="screeningDate" class="form-label">Screening Date</label>
+                            <input type="date" class="form-control" id="screeningDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="screeningTime" class="form-label">Screening Time</label>
+                            <input type="time" class="form-control" id="screeningTime" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="screeningNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="screeningNotes" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn-red-cross" onclick="submitScreening()">Schedule Screening</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        let currentUser = null;
+        let currentUserData = null;
+        let currentHospitalId = null;
+
         // Wait for page to load
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Hospital Dashboard: Page loaded, checking authentication...');
@@ -242,6 +391,9 @@
                     
                     // Check if user is a hospital
                     if (userData.role === 'hospital') {
+                        currentUser = user;
+                        currentUserData = userData;
+                        currentHospitalId = user.uid;
                         loadHospitalDashboard(userData);
                     } else {
                         console.log('Hospital Dashboard: User is not a hospital, redirecting...');
@@ -259,84 +411,80 @@
             const hospitalName = userData.firstName || userData.hospitalName || 'Hospital';
             document.querySelector('.red-cross-page-title').textContent = `${hospitalName} Dashboard`;
             
-            // Load hospital data
-            loadHospitalData(userData);
-
             // Load hospital statistics
-            loadHospitalStats(uid);
-            loadRecentRequests(uid);
-            loadBloodTypeDistribution(uid);
-            loadEmergencyAlerts(uid);
+            loadHospitalStats();
+            loadRecentRequests();
+            loadBloodTypeDistribution();
+            loadEmergencyAlerts();
+            loadDonationScreenings();
+            loadHospitalEvents();
         }
 
-        function loadHospitalStats(uid) {
-            // Load blood inventory
-            database.ref('bloodInventory').once('value').then((snapshot) => {
-                const inventory = snapshot.val() || {};
-                const totalUnits = Object.values(inventory).reduce((sum, bloodType) => sum + (bloodType.quantity || 0), 0);
+        async function loadHospitalStats() {
+            try {
+                const inventory = await window.bloodConnectDB.getBloodInventory();
+                const totalUnits = Object.values(inventory).reduce((sum, item) => sum + (item.quantity || 0), 0);
                 document.getElementById('totalBloodUnits').textContent = totalUnits;
-            });
 
-            // Load pending requests
-            database.ref('hospitalRequests').orderByChild('hospitalId').equalTo(uid).once('value').then((snapshot) => {
-                const requests = snapshot.val() || {};
-                const pendingCount = Object.values(requests).filter(request => request.status === 'pending').length;
+                const requests = await window.bloodConnectDB.getBloodRequests();
+                const pendingCount = Object.values(requests).filter(req => req.status === 'pending').length;
                 document.getElementById('pendingRequests').textContent = pendingCount;
-            });
 
-            // Load active patients
-            database.ref('patients').orderByChild('hospitalId').equalTo(uid).once('value').then((snapshot) => {
-                const patients = snapshot.val() || {};
-                const activeCount = Object.values(patients).filter(patient => patient.status === 'active').length;
-                document.getElementById('activePatients').textContent = activeCount;
-            });
-
-            // Load urgent alerts
-            database.ref('emergencyAlerts').orderByChild('hospitalId').equalTo(uid).once('value').then((snapshot) => {
-                const alerts = snapshot.val() || {};
-                const urgentCount = Object.values(alerts).filter(alert => alert.priority === 'urgent').length;
-                document.getElementById('urgentAlerts').textContent = urgentCount;
-            });
+                document.getElementById('activePatients').textContent = 0; // Placeholder
+                document.getElementById('urgentAlerts').textContent = 0; // Placeholder
+            } catch (error) {
+                console.error('Error loading hospital stats:', error);
+            }
         }
 
-        function loadRecentRequests(uid) {
-            database.ref('hospitalRequests').orderByChild('hospitalId').equalTo(uid).limitToLast(10).once('value').then((snapshot) => {
-                const requests = snapshot.val() || {};
+        async function loadRecentRequests() {
+            try {
+                const requests = await window.bloodConnectDB.getBloodRequests();
                 const tableBody = document.getElementById('recentRequestsTable');
                 
-                if (Object.keys(requests).length === 0) {
+                const hospitalRequests = Object.entries(requests)
+                    .filter(([id, req]) => req.hospitalId === currentHospitalId || req.requesterId === currentHospitalId)
+                    .slice(-10)
+                    .reverse();
+                
+                if (hospitalRequests.length === 0) {
                     tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-medical">No recent requests found</td></tr>';
                     return;
                 }
 
                 tableBody.innerHTML = '';
-                Object.entries(requests).reverse().forEach(([key, request]) => {
+                hospitalRequests.forEach(([key, request]) => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${request.patientName}</td>
+                        <td>${request.patientName || 'N/A'}</td>
                         <td><span class="badge-red-cross">${request.bloodType}</span></td>
                         <td>${request.quantity} units</td>
                         <td><span class="badge badge-${getRequestStatusClass(request.status)}">${request.status}</span></td>
-                        <td>${new Date(request.requestDate).toLocaleDateString()}</td>
+                        <td>${new Date(request.requestedDate || request.createdAt).toLocaleDateString()}</td>
                         <td><button class="btn-red-cross-outline btn-sm" onclick="viewRequestDetails('${key}')">View</button></td>
                     `;
                     tableBody.appendChild(row);
                 });
-            });
+            } catch (error) {
+                console.error('Error loading recent requests:', error);
+            }
         }
 
-        function loadBloodTypeDistribution(uid) {
-            database.ref('bloodInventory').once('value').then((snapshot) => {
-                const inventory = snapshot.val() || {};
+        async function loadBloodTypeDistribution() {
+            try {
+                const inventory = await window.bloodConnectDB.getBloodInventory();
                 const chartContainer = document.getElementById('bloodTypeChart');
                 
+                const bloodTypeCounts = {};
+                Object.values(inventory).forEach(item => {
+                    bloodTypeCounts[item.bloodType] = (bloodTypeCounts[item.bloodType] || 0) + (item.quantity || 0);
+                });
+
+                const total = Object.values(bloodTypeCounts).reduce((sum, count) => sum + count, 0);
                 let chartHTML = '<div class="row g-2">';
-                Object.entries(inventory).forEach(([bloodType, data]) => {
-                    const quantity = data.quantity || 0;
-                    const percentage = Object.values(inventory).reduce((sum, item) => sum + (item.quantity || 0), 0) > 0 
-                        ? Math.round((quantity / Object.values(inventory).reduce((sum, item) => sum + (item.quantity || 0), 0)) * 100) 
-                        : 0;
-                    
+                
+                Object.entries(bloodTypeCounts).forEach(([bloodType, quantity]) => {
+                    const percentage = total > 0 ? Math.round((quantity / total) * 100) : 0;
                     chartHTML += `
                         <div class="col-6">
                             <div class="red-cross-chart-item">
@@ -351,40 +499,106 @@
                 });
                 chartHTML += '</div>';
                 
-                chartContainer.innerHTML = chartHTML;
-            });
+                chartContainer.innerHTML = chartHTML || '<div class="text-center text-medical">No inventory data</div>';
+            } catch (error) {
+                console.error('Error loading blood type distribution:', error);
+            }
         }
 
-        function loadEmergencyAlerts(uid) {
-            database.ref('emergencyAlerts').orderByChild('hospitalId').equalTo(uid).limitToLast(5).once('value').then((snapshot) => {
-                const alerts = snapshot.val() || {};
+        async function loadEmergencyAlerts() {
+            try {
                 const alertsContainer = document.getElementById('emergencyAlerts');
+                alertsContainer.innerHTML = '<div class="text-center text-medical">No emergency alerts at this time</div>';
+            } catch (error) {
+                console.error('Error loading emergency alerts:', error);
+            }
+        }
+
+        async function loadDonationScreenings() {
+            try {
+                const schedules = await window.bloodConnectDB.getDonationSchedules();
+                const users = await window.bloodConnectDB.getUsers();
+                const tableBody = document.getElementById('screeningsTable');
                 
-                if (Object.keys(alerts).length === 0) {
-                    alertsContainer.innerHTML = '<div class="text-center text-medical">No emergency alerts at this time</div>';
+                // Filter schedules for this hospital or pending screening
+                const hospitalSchedules = schedules.filter(schedule => 
+                    schedule.hospitalId === currentHospitalId || 
+                    schedule.status === 'pending_screening' ||
+                    schedule.status === 'screening_scheduled'
+                );
+
+                if (hospitalSchedules.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-medical">No screenings scheduled</td></tr>';
                     return;
                 }
 
-                alertsContainer.innerHTML = '';
-                Object.entries(alerts).reverse().forEach(([key, alert]) => {
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = `red-cross-alert alert-${alert.priority}`;
-                    alertDiv.innerHTML = `
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1">${alert.title}</h6>
-                                <p class="mb-0 text-sm">${alert.message}</p>
-                            </div>
-                            <div class="text-end">
-                                <small class="text-muted">${new Date(alert.timestamp).toLocaleString()}</small>
-                                <br>
-                                <span class="badge badge-${getAlertPriorityClass(alert.priority)}">${alert.priority}</span>
+                tableBody.innerHTML = '';
+                hospitalSchedules.forEach((schedule) => {
+                    const donor = users[schedule.donorId] || {};
+                    const donorName = donor.firstName && donor.lastName 
+                        ? `${donor.firstName} ${donor.lastName}` 
+                        : schedule.donorName || 'Unknown';
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${donorName}</td>
+                        <td><span class="badge-red-cross">${schedule.bloodType}</span></td>
+                        <td>${new Date(schedule.donationDate).toLocaleDateString()}</td>
+                        <td><span class="badge badge-${getScreeningStatusClass(schedule.status)}">${formatScreeningStatus(schedule.status)}</span></td>
+                        <td>
+                            ${schedule.status === 'pending_screening' ? 
+                                `<button class="btn btn-sm btn-primary" onclick="openScreeningModal('${schedule.id}', '${donorName}')">Schedule Screening</button>` :
+                                schedule.status === 'screening_scheduled' ?
+                                `<button class="btn btn-sm btn-success" onclick="markEligible('${schedule.id}', '${schedule.donorId}')">Mark Eligible</button>
+                                 <button class="btn btn-sm btn-danger" onclick="markIneligible('${schedule.id}', '${schedule.donorId}')">Mark Ineligible</button>` :
+                                '<span class="text-muted">-</span>'
+                            }
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading donation screenings:', error);
+                document.getElementById('screeningsTable').innerHTML = 
+                    '<tr><td colspan="5" class="text-center text-danger">Error loading screenings</td></tr>';
+            }
+        }
+
+        async function loadHospitalEvents() {
+            try {
+                const events = await window.bloodConnectDB.getHospitalEvents(currentHospitalId);
+                const eventsList = document.getElementById('hospitalEventsList');
+                
+                const now = new Date();
+                const upcomingEvents = events
+                    .filter(event => new Date(event.eventDate) >= now)
+                    .sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate))
+                    .slice(0, 6);
+
+                if (upcomingEvents.length === 0) {
+                    eventsList.innerHTML = '<div class="col-12 text-center text-medical py-3">No upcoming events. Schedule one now!</div>';
+                    return;
+                }
+
+                eventsList.innerHTML = '';
+                upcomingEvents.forEach((event) => {
+                    const eventCard = document.createElement('div');
+                    eventCard.className = 'col-md-6 mb-3';
+                    eventCard.innerHTML = `
+                        <div class="red-cross-card">
+                            <div class="red-cross-card-body">
+                                <h5><i class="fa-solid fa-calendar-check text-red-cross me-2"></i>${event.eventName || 'Blood Donation Event'}</h5>
+                                <p class="mb-2"><i class="fa-solid fa-map-marker-alt me-2"></i>${event.location || 'Location TBD'}</p>
+                                <p class="mb-2"><i class="fa-solid fa-clock me-2"></i>${new Date(event.eventDate).toLocaleDateString()} ${event.eventTime || ''}</p>
+                                ${event.description ? `<p class="text-medical">${event.description}</p>` : ''}
                             </div>
                         </div>
                     `;
-                    alertsContainer.appendChild(alertDiv);
+                    eventsList.appendChild(eventCard);
                 });
-            });
+            } catch (error) {
+                console.error('Error loading hospital events:', error);
+            }
         }
 
         function getRequestStatusClass(status) {
@@ -410,6 +624,287 @@
         function viewRequestDetails(requestId) {
             // Implement request details modal or redirect
             alert('Request details for ID: ' + requestId);
+        }
+
+        function getScreeningStatusClass(status) {
+            switch(status) {
+                case 'pending_screening': return 'warning';
+                case 'screening_scheduled': return 'info';
+                case 'screening_passed': return 'success';
+                case 'screening_failed': return 'danger';
+                case 'scheduled': return 'success';
+                default: return 'secondary';
+            }
+        }
+
+        function formatScreeningStatus(status) {
+            const statusMap = {
+                'pending_screening': 'Pending Screening',
+                'screening_scheduled': 'Screening Scheduled',
+                'screening_passed': 'Eligible',
+                'screening_failed': 'Not Eligible',
+                'scheduled': 'Scheduled',
+                'completed': 'Completed'
+            };
+            return statusMap[status] || status;
+        }
+
+        function openScreeningModal(scheduleId, donorName) {
+            document.getElementById('screeningScheduleId').value = scheduleId;
+            document.getElementById('screeningDonorName').textContent = donorName;
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('screeningDate').setAttribute('min', today);
+            const modal = new bootstrap.Modal(document.getElementById('screeningModal'));
+            modal.show();
+        }
+
+        async function submitScreening() {
+            const scheduleId = document.getElementById('screeningScheduleId').value;
+            const screeningDate = document.getElementById('screeningDate').value;
+            const screeningTime = document.getElementById('screeningTime').value;
+            const notes = document.getElementById('screeningNotes').value;
+
+            if (!screeningDate || !screeningTime) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            try {
+                const schedule = await window.bloodConnectDB.getDonationSchedule(scheduleId);
+                if (!schedule) {
+                    throw new Error('Schedule not found');
+                }
+
+                // Update schedule with screening date/time
+                await window.bloodConnectDB.updateDonationSchedule(scheduleId, {
+                    status: 'screening_scheduled',
+                    screeningDate: screeningDate,
+                    screeningTime: screeningTime,
+                    screeningNotes: notes,
+                    screeningScheduledBy: currentHospitalId,
+                    screeningScheduledAt: new Date().toISOString()
+                });
+
+                // Notify donor
+                await window.bloodConnectDB.createNotification({
+                    userId: schedule.donorId,
+                    type: 'screening',
+                    title: 'Screening Scheduled',
+                    message: `Your screening has been scheduled for ${new Date(screeningDate).toLocaleDateString()} at ${screeningTime}. Please arrive on time.`,
+                    priority: 'high',
+                    actionUrl: 'donor-dashboard.html',
+                    relatedScheduleId: scheduleId,
+                    createdAt: new Date().toISOString()
+                });
+
+                alert('Screening scheduled successfully!');
+                bootstrap.Modal.getInstance(document.getElementById('screeningModal')).hide();
+                loadDonationScreenings();
+            } catch (error) {
+                console.error('Error scheduling screening:', error);
+                alert('Error scheduling screening. Please try again.');
+            }
+        }
+
+        async function markEligible(scheduleId, donorId) {
+            if (!confirm('Mark this donor as eligible for donation?')) {
+                return;
+            }
+
+            try {
+                const schedule = await window.bloodConnectDB.getDonationSchedule(scheduleId);
+                if (!schedule) {
+                    throw new Error('Schedule not found');
+                }
+
+                // Update schedule status
+                await window.bloodConnectDB.updateDonationSchedule(scheduleId, {
+                    status: 'screening_passed',
+                    eligibilityStatus: 'eligible',
+                    eligibilityDeterminedBy: currentHospitalId,
+                    eligibilityDeterminedAt: new Date().toISOString()
+                });
+
+                // Update user eligibility
+                await window.bloodConnectDB.updateUser(donorId, {
+                    isEligible: true,
+                    eligibilityLastUpdated: new Date().toISOString()
+                });
+
+                // Notify donor
+                await window.bloodConnectDB.createNotification({
+                    userId: donorId,
+                    type: 'eligibility',
+                    title: 'Eligible to Donate',
+                    message: 'Congratulations! You have been cleared for blood donation. Your donation is scheduled.',
+                    priority: 'high',
+                    actionUrl: 'donor-dashboard.html',
+                    relatedScheduleId: scheduleId,
+                    createdAt: new Date().toISOString()
+                });
+
+                // Notify admin
+                const users = await window.bloodConnectDB.getUsers();
+                const adminUsers = Object.entries(users)
+                    .filter(([id, user]) => user.role === 'admin')
+                    .map(([id, user]) => id);
+
+                const donor = users[donorId] || {};
+                const donorName = donor.firstName && donor.lastName 
+                    ? `${donor.firstName} ${donor.lastName}` 
+                    : schedule.donorName || 'Unknown';
+
+                for (const adminId of adminUsers) {
+                    await window.bloodConnectDB.createNotification({
+                        userId: adminId,
+                        type: 'eligibility',
+                        title: 'Donor Eligible for Donation',
+                        message: `${donorName} has been cleared and is eligible for blood donation.`,
+                        priority: 'medium',
+                        actionUrl: 'admin-donor-eligibility.html',
+                        relatedUserId: donorId,
+                        relatedScheduleId: scheduleId,
+                        createdAt: new Date().toISOString()
+                    });
+                }
+
+                alert('Donor marked as eligible!');
+                loadDonationScreenings();
+            } catch (error) {
+                console.error('Error marking eligible:', error);
+                alert('Error marking eligible. Please try again.');
+            }
+        }
+
+        async function markIneligible(scheduleId, donorId) {
+            const reason = prompt('Please provide a reason for ineligibility:');
+            if (!reason || reason.trim() === '') {
+                alert('Reason is required.');
+                return;
+            }
+
+            try {
+                const schedule = await window.bloodConnectDB.getDonationSchedule(scheduleId);
+                if (!schedule) {
+                    throw new Error('Schedule not found');
+                }
+
+                // Update schedule status
+                await window.bloodConnectDB.updateDonationSchedule(scheduleId, {
+                    status: 'screening_failed',
+                    eligibilityStatus: 'ineligible',
+                    ineligibilityReason: reason,
+                    eligibilityDeterminedBy: currentHospitalId,
+                    eligibilityDeterminedAt: new Date().toISOString()
+                });
+
+                // Update user eligibility
+                await window.bloodConnectDB.updateUser(donorId, {
+                    isEligible: false,
+                    eligibilityLastUpdated: new Date().toISOString()
+                });
+
+                // Notify donor
+                await window.bloodConnectDB.createNotification({
+                    userId: donorId,
+                    type: 'eligibility',
+                    title: 'Screening Results',
+                    message: `Unfortunately, you are not eligible to donate at this time. Reason: ${reason}.`,
+                    priority: 'high',
+                    actionUrl: 'donor-dashboard.html',
+                    relatedScheduleId: scheduleId,
+                    createdAt: new Date().toISOString()
+                });
+
+                alert('Donor marked as ineligible.');
+                loadDonationScreenings();
+            } catch (error) {
+                console.error('Error marking ineligible:', error);
+                alert('Error marking ineligible. Please try again.');
+            }
+        }
+
+        function openEventModal() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('eventDate').setAttribute('min', today);
+            const modal = new bootstrap.Modal(document.getElementById('eventModal'));
+            modal.show();
+        }
+
+        async function submitEvent() {
+            const eventName = document.getElementById('eventName').value;
+            const eventDate = document.getElementById('eventDate').value;
+            const eventTime = document.getElementById('eventTime').value;
+            const location = document.getElementById('eventLocation').value;
+            const description = document.getElementById('eventDescription').value;
+
+            if (!eventName || !eventDate || !eventTime || !location) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            try {
+                const eventData = {
+                    hospitalId: currentHospitalId,
+                    hospitalName: currentUserData.firstName || currentUserData.hospitalName || 'Hospital',
+                    eventName: eventName,
+                    eventDate: eventDate,
+                    eventTime: eventTime,
+                    location: location,
+                    description: description,
+                    status: 'upcoming'
+                };
+
+                const result = await window.bloodConnectDB.createHospitalEvent(eventData);
+                if (!result.success) {
+                    throw new Error(result.message);
+                }
+
+                // Notify all donors
+                const users = await window.bloodConnectDB.getUsers();
+                const donorUsers = Object.entries(users)
+                    .filter(([id, user]) => user.role === 'donor')
+                    .map(([id, user]) => id);
+
+                for (const donorId of donorUsers) {
+                    await window.bloodConnectDB.createNotification({
+                        userId: donorId,
+                        type: 'event',
+                        title: 'Upcoming Blood Donation Event',
+                        message: `${eventName} on ${new Date(eventDate).toLocaleDateString()} at ${location}. ${description || ''}`,
+                        priority: 'medium',
+                        actionUrl: 'donor-dashboard.html',
+                        relatedEventId: result.id,
+                        createdAt: new Date().toISOString()
+                    });
+                }
+
+                // Notify all admins
+                const adminUsers = Object.entries(users)
+                    .filter(([id, user]) => user.role === 'admin')
+                    .map(([id, user]) => id);
+
+                for (const adminId of adminUsers) {
+                    await window.bloodConnectDB.createNotification({
+                        userId: adminId,
+                        type: 'event',
+                        title: 'New Blood Donation Event Scheduled',
+                        message: `${currentUserData.firstName || currentUserData.hospitalName || 'Hospital'} has scheduled a blood donation event: ${eventName} on ${new Date(eventDate).toLocaleDateString()}.`,
+                        priority: 'medium',
+                        actionUrl: 'admin.html',
+                        relatedEventId: result.id,
+                        createdAt: new Date().toISOString()
+                    });
+                }
+
+                alert('Event scheduled successfully! All donors and admins have been notified.');
+                bootstrap.Modal.getInstance(document.getElementById('eventModal')).hide();
+                document.getElementById('eventForm').reset();
+                loadHospitalEvents();
+            } catch (error) {
+                console.error('Error creating event:', error);
+                alert('Error creating event. Please try again.');
+            }
         }
     </script>
 </body>

@@ -445,6 +445,28 @@ class BloodConnectRealtimeDB {
     }
   }
 
+  async updateDonationSchedule(scheduleId, updateData) {
+    try {
+      await update(getDbRef(`donationSchedules/${scheduleId}`), {
+        ...updateData,
+        updatedAt: new Date().toISOString()
+      });
+      return { success: true, message: 'Donation schedule updated successfully' };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  async getDonationSchedule(scheduleId) {
+    try {
+      const snapshot = await get(getDbRef(`donationSchedules/${scheduleId}`));
+      return snapshot.exists() ? { id: scheduleId, ...snapshot.val() } : null;
+    } catch (error) {
+      console.error('Error getting donation schedule:', error);
+      return null;
+    }
+  }
+
   // Cleanup function
   cleanup() {
     // This would be called when the component/page is unmounted
