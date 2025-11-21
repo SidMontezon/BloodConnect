@@ -14,7 +14,7 @@ import {
   setDoc,
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
-import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
 // Firebase configuration
 const firebaseConfig = {
