@@ -156,17 +156,24 @@ if (signInForm) {
           updatedAt: new Date().toISOString()
         });
 
-        // Redirect based on role
-        if (role === 'admin') {
-          window.location.href = 'admin.html';
-        } else if (role === 'donor') {
-          window.location.href = 'donor-dashboard.html';
-        } else if (role === 'hospital') {
-          window.location.href = 'hospital-dashboard.html';
-        } else if (role === 'patient') {
-          window.location.href = 'patient-dashboard.html';
+        // Prefer global AuthManager redirect if available (single source of truth)
+        if (window.authManager && typeof window.authManager.redirectByRole === 'function') {
+          console.log('Login: delegating redirect to AuthManager for role:', role);
+          window.authManager.redirectByRole();
         } else {
-          window.location.href = 'dashboard.html';
+          // Fallback: redirect based on role from Firestore
+          console.log('Login: using local redirect logic for role:', role);
+          if (role === 'admin') {
+            window.location.href = 'admin.html';
+          } else if (role === 'donor') {
+            window.location.href = 'donor-dashboard.html';
+          } else if (role === 'hospital') {
+            window.location.href = 'hospital-dashboard.html';
+          } else if (role === 'patient') {
+            window.location.href = 'patient-dashboard.html';
+          } else {
+            window.location.href = 'dashboard.html';
+          }
         }
       } else {
         showMessage('User data not found. Please contact support.', 'signInMessage');

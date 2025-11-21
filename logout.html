@@ -7,43 +7,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="red-cross-styles.css">
-
-    <!-- Firebase Modular SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
-            authDomain: "bloodconnect-b5142.firebaseapp.com",
-            databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
-            projectId: "bloodconnect-b5142",
-            storageBucket: "bloodconnect-b5142.firebasestorage.app",
-            messagingSenderId: "631993835929",
-            appId: "1:631993835929:web:75554aca166e9058473308"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        // Perform logout as soon as page loads
-        document.addEventListener("DOMContentLoaded", async () => {
-            try {
-                await signOut(auth);
-                sessionStorage.clear(); // VERY IMPORTANT
-            } catch (error) {
-                console.error("Logout Error:", error);
-                document.querySelector('.red-cross-logout-title').textContent = 'Logout Error';
-            }
-
-            setTimeout(() => {
-                window.location.replace("login.html");
-            }, 1500);
-        });
-    </script>
-
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
+    <!-- Red Cross Logout Screen -->
     <div class="red-cross-logout-container">
         <div class="red-cross-logout-card">
             <div class="red-cross-logout-icon">
@@ -53,5 +22,36 @@
             <p class="red-cross-logout-subtitle">Please wait while we securely log you out</p>
         </div>
     </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
+            authDomain: "bloodconnect2-d094a.firebaseapp.com",
+            projectId: "bloodconnect2-d094a",
+            storageBucket: "bloodconnect2-d094a.firebasestorage.app",
+            messagingSenderId: "124251937624",
+            appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        document.addEventListener("DOMContentLoaded", () => {
+            auth.signOut().then(() => {
+                // Show success message briefly before redirecting
+                setTimeout(() => {
+                    window.location.href = "login.html";
+                }, 1500);
+            }).catch((error) => {
+                console.error("Logout Error:", error);
+                // Show error message and redirect anyway
+                document.querySelector('.red-cross-logout-title').textContent = 'Logout Error';
+                document.querySelector('.red-cross-logout-subtitle').textContent = 'Redirecting to login page...';
+                setTimeout(() => {
+                    window.location.href = "login.html";
+                }, 2000);
+            });
+        });
+    </script>
 </body>
 </html>
