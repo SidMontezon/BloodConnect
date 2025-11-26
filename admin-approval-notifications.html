@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Approval Notifications - BloodConnect Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="red-cross-styles.css">
+</head>
+<body>
+    <header class="red-cross-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="admin.html" class="red-cross-logo">
+                    <div class="red-cross-icon">✚</div>
+                    <div>
+                        <h1 class="red-cross-brand">BloodConnect</h1>
+                        <p class="red-cross-tagline">Medical Blood Management</p>
+                    </div>
+                </a>
+                <div class="red-cross-nav">
+                    <a href="admin.html">Admin Panel</a>
+                    <a href="logout.html" class="btn-red-cross-outline">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container py-5">
+        <div class="red-cross-page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="red-cross-page-title">Approval Notifications</h1>
+                    <p class="red-cross-page-subtitle">Review and manage all pending approvals and notifications</p>
+                </div>
+                <a href="admin.html" class="btn-red-cross-outline">
+                    <i class="fa-solid fa-arrow-left me-2"></i>Back to Admin Panel
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <ul class="nav nav-tabs mb-4" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+                    <i class="fa-solid fa-clock me-2"></i>Pending Approvals
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+                    <i class="fa-solid fa-list me-2"></i>All Notifications
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="pending" role="tabpanel">
+                <div class="red-cross-card">
+                    <div class="red-cross-card-header">
+                        <i class="fa-solid fa-bell text-red-cross"></i>
+                        Pending Approvals
+                    </div>
+                    <div class="red-cross-card-body">
+                        <div id="pendingApprovals">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-red-cross" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="all" role="tabpanel">
+                <div class="red-cross-card">
+                    <div class="red-cross-card-header">
+                        <i class="fa-solid fa-bell text-red-cross"></i>
+                        All Notifications
+                    </div>
+                    <div class="red-cross-card-body">
+                        <div id="allNotifications">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-red-cross" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="auth-manager.js"></script>
+    <script type="module" src="firebase-realtime.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            authManager.addAuthListener((user, userData) => {
+                if (!user || !userData || userData.role !== 'admin') {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                loadNotifications();
+            });
+        });
+
+        async function loadNotifications() {
+            try {
+                const notifications = await window.bloodConnectDB.getNotifications();
+                const users = await window.bloodConnectDB.getUsers();
+                
+                // Separate pending and all notifications
+                const pendingNotifications = Object.entries(notifications || {})
+                    .map(([id, notif]) => ({ id, ...notif }))
+                    .filter(notif => 
+                        (notif.type === 'verification' || notif.type === 'registration' || notif.type === 'eligibility') &&
+                        notif.status === 'pending'
+                    )
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                const allNotificationsList = Object.entries(notifications || {})
+                    .map(([id, notif]) => ({ id, ...notif }))
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                displayPendingApprovals(pendingNotifications, users);
+                displayAllNotifications(allNotificationsList, users);
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        function displayPendingApprovals(notifications, users) {
+            const container = document.getElementById('pendingApprovals');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-4">No pending approvals</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            notifications.forEach(notif => {
+                const user = users[notif.userId] || {};
+                const userName = user.firstName && user.lastName ? 
+                    `${user.firstName} ${user.lastName}` : 
+                    user.email || 'Unknown User';
+
+                const notificationCard = document.createElement('div');
+                notificationCard.className = 'red-cross-notification mb-3';
+                notificationCard.innerHTML = `
+                    <div class="d-flex align-items-start">
+                        <div class="red-cross-notification-icon">
+                            <i class="fa-solid fa-${getNotificationIcon(notif.type)}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">${notif.title || 'Pending Approval'}</h6>
+                            <p class="mb-2">${notif.message || ''}</p>
+                            <small class="text-muted">
+                                <strong>User:</strong> ${userName} | 
+                                <strong>Type:</strong> ${notif.type} | 
+                                <strong>Date:</strong> ${new Date(notif.createdAt).toLocaleString()}
+                            </small>
+                            <div class="mt-2">
+                                ${notif.type === 'verification' || notif.type === 'registration' ? 
+                                    `<button class="btn btn-sm btn-success me-2" onclick="approveNotification('${notif.id}', '${notif.userId}', '${notif.type}')">
+                                        <i class="fa-solid fa-check me-1"></i>Approve
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="rejectNotification('${notif.id}', '${notif.userId}', '${notif.type}')">
+                                        <i class="fa-solid fa-times me-1"></i>Reject
+                                    </button>` :
+                                    ''
+                                }
+                                <a href="admin-donor-verifications.html" class="btn btn-sm btn-primary">
+                                    <i class="fa-solid fa-eye me-1"></i>View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(notificationCard);
+            });
+        }
+
+        function displayAllNotifications(notifications, users) {
+            const container = document.getElementById('allNotifications');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-4">No notifications</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            notifications.forEach(notif => {
+                const user = users[notif.userId] || {};
+                const userName = user.firstName && user.lastName ? 
+                    `${user.firstName} ${user.lastName}` : 
+                    user.email || 'Unknown User';
+
+                const statusClass = notif.status === 'approved' ? 'success' : 
+                                   notif.status === 'rejected' ? 'danger' : 'warning';
+
+                const notificationCard = document.createElement('div');
+                notificationCard.className = 'red-cross-notification mb-3';
+                notificationCard.innerHTML = `
+                    <div class="d-flex align-items-start">
+                        <div class="red-cross-notification-icon">
+                            <i class="fa-solid fa-${getNotificationIcon(notif.type)}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">${notif.title || 'Notification'}</h6>
+                                    <p class="mb-2">${notif.message || ''}</p>
+                                    <small class="text-muted">
+                                        <strong>User:</strong> ${userName} | 
+                                        <strong>Type:</strong> ${notif.type} | 
+                                        <strong>Date:</strong> ${new Date(notif.createdAt).toLocaleString()}
+                                    </small>
+                                </div>
+                                <span class="badge bg-${statusClass}">${notif.status || 'pending'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(notificationCard);
+            });
+        }
+
+        function getNotificationIcon(type) {
+            switch(type) {
+                case 'verification': return 'id-card';
+                case 'registration': return 'user-plus';
+                case 'eligibility': return 'user-check';
+                case 'request': return 'hand-holding-medical';
+                default: return 'bell';
+            }
+        }
+
+        async function approveNotification(notificationId, userId, type) {
+            if (!confirm('Are you sure you want to approve this request?')) return;
+
+            try {
+                // Update notification status
+                await window.bloodConnectDB.updateNotification(notificationId, {
+                    status: 'approved',
+                    reviewedBy: authManager.getCurrentUser().uid,
+                    reviewedAt: new Date().toISOString()
+                });
+
+                // Update user based on notification type
+                if (type === 'verification') {
+                    await window.bloodConnectDB.updateUser(userId, {
+                        verificationStatus: 'approved'
+                    });
+                } else if (type === 'registration') {
+                    await window.bloodConnectDB.updateUser(userId, {
+                        registrationStatus: 'approved'
+                    });
+                }
+
+                // Notify user
+                await window.bloodConnectDB.createNotification({
+                    userId: userId,
+                    type: 'system',
+                    title: 'Request Approved',
+                    message: `Your ${type} request has been approved.`,
+                    priority: 'high',
+                    createdAt: new Date().toISOString()
+                });
+
+                alert('Request approved successfully!');
+                loadNotifications();
+            } catch (error) {
+                console.error('Error approving notification:', error);
+                alert('Error approving request. Please try again.');
+            }
+        }
+
+        async function rejectNotification(notificationId, userId, type) {
+            const reason = prompt('Please provide a reason for rejection:');
+            if (!reason || reason.trim() === '') {
+                alert('Reason is required.');
+                return;
+            }
+
+            try {
+                // Update notification status
+                await window.bloodConnectDB.updateNotification(notificationId, {
+                    status: 'rejected',
+                    rejectionReason: reason,
+                    reviewedBy: authManager.getCurrentUser().uid,
+                    reviewedAt: new Date().toISOString()
+                });
+
+                // Update user based on notification type
+                if (type === 'verification') {
+                    await window.bloodConnectDB.updateUser(userId, {
+                        verificationStatus: 'rejected'
+                    });
+                } else if (type === 'registration') {
+                    await window.bloodConnectDB.updateUser(userId, {
+                        registrationStatus: 'rejected'
+                    });
+                }
+
+                // Notify user
+                await window.bloodConnectDB.createNotification({
+                    userId: userId,
+                    type: 'system',
+                    title: 'Request Rejected',
+                    message: `Your ${type} request has been rejected. Reason: ${reason}`,
+                    priority: 'high',
+                    createdAt: new Date().toISOString()
+                });
+
+                alert('Request rejected.');
+                loadNotifications();
+            } catch (error) {
+                console.error('Error rejecting notification:', error);
+                alert('Error rejecting request. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>
+

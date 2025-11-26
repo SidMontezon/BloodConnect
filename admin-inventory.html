@@ -39,14 +39,18 @@
                         <h3 class="mb-0"><i class="fa-solid fa-warehouse me-2"></i>Blood Stock Levels</h3>
                     </div>
                     <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fa-solid fa-info-circle me-2"></i>
+                            <strong>Read-Only View:</strong> This page shows the total blood stock across all hospitals. 
+                            To manage individual hospital inventories, go to <a href="admin-manage-hospitals.html">Manage Hospitals</a>.
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
                                         <th>Blood Group</th>
-                                        <th>Current Stock (Liters)</th>
-                                        <th>Update Stock</th>
-                                        <th>Actions</th>
+                                        <th>Current Stock (units)</th>
+                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="inventoryBody"></tbody>
@@ -87,33 +91,52 @@
             setTimeout(() => { m.style.display = 'none'; }, 3000);
         }
 
-        function renderInventory(data) {
+        async function renderInventory(data) {
             const tbody = document.getElementById('inventoryBody');
             tbody.innerHTML = '';
-            groups.forEach(key => {
-                const qty = (data && data[key]) || 0;
+            
+            // Calculate totals by blood type from all inventory items
+            const totals = {
+                'A+': 0, 'A-': 0, 'B+': 0, 'B-': 0,
+                'O+': 0, 'O-': 0, 'AB+': 0, 'AB-': 0
+            };
+            
+            // If data is an object with bloodType properties (from Realtime DB structure)
+            if (data && typeof data === 'object') {
+                Object.values(data).forEach(item => {
+                    if (item.bloodType && totals.hasOwnProperty(item.bloodType)) {
+                        totals[item.bloodType] += (item.quantity || 0);
+                    }
+                });
+            }
+
+            const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+            bloodTypes.forEach(bloodType => {
+                const qty = totals[bloodType] || 0;
+                const status = qty > 0 ? 'Available' : 'Out of Stock';
+                const statusClass = qty > 0 ? 'success' : 'danger';
+                
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><span class="badge bg-primary">${key.replace('plus','+').replace('minus','-')}</span></td>
-                    <td><strong>${qty}</strong> L</td>
-                    <td><input type="number" min="0" step="0.1" class="form-control" id="q_${key}" value="${qty}" style="width: 120px;"></td>
-                    <td><button class="btn btn-success btn-sm" data-key="${key}"><i class="fa-solid fa-save me-1"></i>Update</button></td>
+                    <td><span class="badge bg-primary">${bloodType}</span></td>
+                    <td><strong>${qty.toFixed(1)}</strong> units</td>
+                    <td><span class="badge bg-${statusClass}">${status}</span></td>
                 `;
                 tbody.appendChild(tr);
-            });
-
-            tbody.querySelectorAll('button').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const key = e.target.getAttribute('data-key');
-                    const val = parseFloat(document.getElementById(`q_${key}`).value) || 0;
-                    db.ref('bloodInventory/' + key).set(val).then(() => showMessage('Saved'));
-                });
             });
         }
 
         auth.onAuthStateChanged((user) => {
             if (!user) { window.location.href = 'login.html'; return; }
-            db.ref('bloodInventory').on('value', (snap) => renderInventory(snap.val()));
+            // Load inventory from Realtime Database
+            db.ref('bloodInventory').on('value', (snap) => {
+                const inventory = snap.val();
+                if (inventory) {
+                    renderInventory(inventory);
+                } else {
+                    renderInventory({});
+                }
+            });
         });
     </script>
 </body>

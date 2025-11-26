@@ -23,27 +23,119 @@
     </nav>
 
     <div class="container py-4">
-        <h3 class="mb-3">Reports</h3>
-
-        <div class="row g-3">
-            <div class="col-md-3"><div class="card card-body"><div>Total Blood (L)</div><div class="metric" id="m_totalBlood">0</div></div></div>
-            <div class="col-md-3"><div class="card card-body"><div>Registered Donors</div><div class="metric" id="m_donors">0</div></div></div>
-            <div class="col-md-3"><div class="card card-body"><div>Pending Requests</div><div class="metric" id="m_pendingReq">0</div></div></div>
-            <div class="col-md-3"><div class="card card-body"><div>Approved Requests</div><div class="metric" id="m_approvedReq">0</div></div></div>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="mb-0">Reports & Analytics</h3>
+            <a href="admin.html" class="btn btn-outline-primary">
+                <i class="fa-solid fa-arrow-left me-2"></i>Back to Admin Panel
+            </a>
         </div>
 
-        <div class="mt-4">
-            <h5>Requests by Status</h5>
-            <div class="table-responsive">
-                <table class="table table-bordered bg-white">
-                    <thead>
-                        <tr>
-                            <th>Status</th>
-                            <th>Count</th>
-                        </tr>
-                    </thead>
-                    <tbody id="requestsSummary"></tbody>
-                </table>
+        <!-- Blood Reports -->
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fa-solid fa-tint me-2"></i>Blood Reports</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3"><div class="card card-body"><div>Total Blood (units)</div><div class="metric" id="m_totalBlood">0</div></div></div>
+                    <div class="col-md-3"><div class="card card-body"><div>Blood by Type</div><div class="metric" id="m_bloodTypes">0</div></div></div>
+                    <div class="col-md-3"><div class="card card-body"><div>Available Units</div><div class="metric" id="m_availableUnits">0</div></div></div>
+                    <div class="col-md-3"><div class="card card-body"><div>Reserved Units</div><div class="metric" id="m_reservedUnits">0</div></div></div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Blood Type</th>
+                                <th>Total Units</th>
+                                <th>Available</th>
+                                <th>Reserved</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bloodTypeBreakdown"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hospital Reports -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fa-solid fa-hospital me-2"></i>Hospital Reports</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4"><div class="card card-body"><div>Total Hospitals</div><div class="metric" id="m_totalHospitals">0</div></div></div>
+                    <div class="col-md-4"><div class="card card-body"><div>Active Hospitals</div><div class="metric" id="m_activeHospitals">0</div></div></div>
+                    <div class="col-md-4"><div class="card card-body"><div>Total Requests</div><div class="metric" id="m_hospitalRequests">0</div></div></div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Hospital Name</th>
+                                <th>Total Blood Units</th>
+                                <th>Requests Made</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hospitalBreakdown"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Reports -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fa-solid fa-users me-2"></i>User Reports</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3"><div class="card card-body"><div>Total Users</div><div class="metric" id="m_totalUsers">0</div></div></div>
+                    <div class="col-md-3"><div class="card card-body"><div>Registered Donors</div><div class="metric" id="m_donors">0</div></div></div>
+                    <div class="col-md-3"><div class="card card-body"><div>Verified Donors</div><div class="metric" id="m_verifiedDonors">0</div></div></div>
+                    <div class="col-md-3"><div class="card card-body"><div>Eligible Donors</div><div class="metric" id="m_eligibleDonors">0</div></div></div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Role</th>
+                                <th>Total</th>
+                                <th>Verified</th>
+                                <th>Active</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userRoleBreakdown"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Request Reports -->
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fa-solid fa-hand-holding-medical me-2"></i>Request Reports</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3"><div class="card card-body"><div>Pending Requests</div><div class="metric" id="m_pendingReq">0</div></div></div>
+                    <div class="col-md-3"><div class="card card-body"><div>Approved Requests</div><div class="metric" id="m_approvedReq">0</div></div></div>
+                    <div class="col-md-3"><div class="card card-body"><div>Rejected Requests</div><div class="metric" id="m_rejectedReq">0</div></div></div>
+                    <div class="col-md-3"><div class="card card-body"><div>Fulfilled Requests</div><div class="metric" id="m_fulfilledReq">0</div></div></div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requestsSummary"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -75,19 +167,111 @@
             return total.toFixed(1);
         }
 
-        function render(inv, donors, requests) {
-            setText('m_totalBlood', computeTotalBlood(inv));
-            setText('m_donors', donors ? Object.keys(donors).length : 0);
-            const counts = { pending: 0, approved: 0, rejected: 0 };
-            Object.values(requests || {}).forEach(r => { counts[r.status || 'pending'] = (counts[r.status || 'pending']||0) + 1; });
-            setText('m_pendingReq', counts.pending || 0);
-            setText('m_approvedReq', counts.approved || 0);
+        async function render(inv, users, requests) {
+            // Blood Reports
+            const totalBlood = computeTotalBlood(inv);
+            setText('m_totalBlood', totalBlood);
+            
+            const bloodByType = {};
+            let availableUnits = 0, reservedUnits = 0;
+            Object.values(inv || {}).forEach(item => {
+                if (item.bloodType) {
+                    bloodByType[item.bloodType] = (bloodByType[item.bloodType] || 0) + (item.quantity || 0);
+                    if (item.status === 'available') availableUnits += (item.quantity || 0);
+                    if (item.status === 'reserved') reservedUnits += (item.quantity || 0);
+                }
+            });
+            setText('m_bloodTypes', Object.keys(bloodByType).length);
+            setText('m_availableUnits', availableUnits.toFixed(1));
+            setText('m_reservedUnits', reservedUnits.toFixed(1));
+
+            // Render blood type breakdown
+            const bloodBreakdown = document.getElementById('bloodTypeBreakdown');
+            bloodBreakdown.innerHTML = '';
+            Object.entries(bloodByType).forEach(([type, qty]) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td><span class="badge bg-primary">${type}</span></td><td>${qty.toFixed(1)}</td><td>-</td><td>-</td>`;
+                bloodBreakdown.appendChild(tr);
+            });
+
+            // Hospital Reports
+            const hospitals = Object.values(users || {}).filter(u => u.role === 'hospital');
+            setText('m_totalHospitals', hospitals.length);
+            setText('m_activeHospitals', hospitals.filter(h => h.isActive !== false).length);
+            
+            const hospitalRequestCount = Object.values(requests || {}).filter(r => r.requesterType === 'hospital').length;
+            setText('m_hospitalRequests', hospitalRequestCount);
+
+            // Render hospital breakdown
+            const hospitalBreakdown = document.getElementById('hospitalBreakdown');
+            hospitalBreakdown.innerHTML = '';
+            hospitals.forEach(hospital => {
+                const hospitalInventory = Object.values(inv || {}).filter(item => 
+                    item.location === hospital.hospitalName || item.hospitalId === hospital.id
+                );
+                const totalUnits = hospitalInventory.reduce((sum, item) => sum + (item.quantity || 0), 0);
+                const hospitalReqs = Object.values(requests || {}).filter(r => r.requesterId === hospital.id).length;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${hospital.hospitalName || hospital.firstName || 'Unknown'}</td>
+                    <td>${totalUnits.toFixed(1)}</td>
+                    <td>${hospitalReqs}</td>
+                    <td><span class="badge bg-success">Active</span></td>
+                `;
+                hospitalBreakdown.appendChild(tr);
+            });
+
+            // User Reports
+            const allUsers = Object.values(users || {});
+            setText('m_totalUsers', allUsers.length);
+            
+            const donors = allUsers.filter(u => u.role === 'donor');
+            setText('m_donors', donors.length);
+            
+            const verifiedDonors = donors.filter(d => d.verificationStatus === 'approved');
+            setText('m_verifiedDonors', verifiedDonors.length);
+            
+            const eligibleDonors = donors.filter(d => d.isEligible === true);
+            setText('m_eligibleDonors', eligibleDonors.length);
+
+            // Render user role breakdown
+            const roleBreakdown = document.getElementById('userRoleBreakdown');
+            roleBreakdown.innerHTML = '';
+            const roles = ['admin', 'hospital', 'donor', 'patient'];
+            roles.forEach(role => {
+                const roleUsers = allUsers.filter(u => u.role === role);
+                const verified = roleUsers.filter(u => u.verificationStatus === 'approved').length;
+                const active = roleUsers.filter(u => u.isActive !== false).length;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${role.charAt(0).toUpperCase() + role.slice(1)}</td>
+                    <td>${roleUsers.length}</td>
+                    <td>${verified}</td>
+                    <td>${active}</td>
+                `;
+                roleBreakdown.appendChild(tr);
+            });
+
+            // Request Reports
+            const reqCounts = { pending: 0, approved: 0, rejected: 0, fulfilled: 0 };
+            Object.values(requests || {}).forEach(r => {
+                const status = r.status || 'pending';
+                if (reqCounts.hasOwnProperty(status)) {
+                    reqCounts[status] = (reqCounts[status] || 0) + 1;
+                }
+            });
+            setText('m_pendingReq', reqCounts.pending || 0);
+            setText('m_approvedReq', reqCounts.approved || 0);
+            setText('m_rejectedReq', reqCounts.rejected || 0);
+            setText('m_fulfilledReq', reqCounts.fulfilled || 0);
 
             const tbody = document.getElementById('requestsSummary');
             tbody.innerHTML = '';
-            Object.entries(counts).forEach(([status, count]) => {
+            Object.entries(reqCounts).forEach(([status, count]) => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${status}</td><td>${count}</td>`;
+                tr.innerHTML = `<td>${status.charAt(0).toUpperCase() + status.slice(1)}</td><td>${count}</td>`;
                 tbody.appendChild(tr);
             });
         }
@@ -96,10 +280,10 @@
             if (!user) { window.location.href = 'login.html'; return; }
             Promise.all([
                 db.ref('bloodInventory').once('value'),
-                db.ref('donors').once('value'),
-                db.ref('hospitalRequests').once('value')
-            ]).then(([invSnap, donorsSnap, reqSnap]) => {
-                render(invSnap.val(), donorsSnap.val(), reqSnap.val());
+                db.ref('users').once('value'),
+                db.ref('bloodRequests').once('value')
+            ]).then(([invSnap, usersSnap, reqSnap]) => {
+                render(invSnap.val(), usersSnap.val(), reqSnap.val());
             });
         });
     </script>

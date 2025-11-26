@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage Hospitals - BloodConnect Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="red-cross-styles.css">
+</head>
+<body>
+    <header class="red-cross-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="admin.html" class="red-cross-logo">
+                    <div class="red-cross-icon">✚</div>
+                    <div>
+                        <h1 class="red-cross-brand">BloodConnect</h1>
+                        <p class="red-cross-tagline">Medical Blood Management</p>
+                    </div>
+                </a>
+                <div class="red-cross-nav">
+                    <a href="admin.html">Admin Panel</a>
+                    <a href="logout.html" class="btn-red-cross-outline">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container py-5">
+        <div class="red-cross-page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="red-cross-page-title">Manage Hospitals</h1>
+                    <p class="red-cross-page-subtitle">View and manage all registered hospitals and their blood inventory</p>
+                </div>
+                <a href="admin.html" class="btn-red-cross-outline">
+                    <i class="fa-solid fa-arrow-left me-2"></i>Back to Admin Panel
+                </a>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <input type="text" class="red-cross-form-control" id="searchHospitals" placeholder="Search hospitals by name or location...">
+            </div>
+        </div>
+
+        <!-- Hospitals List -->
+        <div class="row">
+            <div class="col-12">
+                <div class="red-cross-card">
+                    <div class="red-cross-card-header">
+                        <i class="fa-solid fa-hospital text-red-cross"></i>
+                        Registered Hospitals
+                    </div>
+                    <div class="red-cross-card-body">
+                        <div id="hospitalsList">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-red-cross" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hospital Details Modal -->
+    <div class="modal fade" id="hospitalDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Hospital Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="hospitalDetailsContent">
+                    Loading...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="auth-manager.js"></script>
+    <script type="module" src="firebase-realtime.js"></script>
+    <script>
+        let allHospitals = [];
+        let allInventory = {};
+
+        document.addEventListener('DOMContentLoaded', function() {
+            authManager.addAuthListener((user, userData) => {
+                if (!user || !userData || userData.role !== 'admin') {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                loadHospitals();
+            });
+        });
+
+        async function loadHospitals() {
+            try {
+                const users = await window.bloodConnectDB.getUsers();
+                const inventory = await window.bloodConnectDB.getBloodInventory();
+                allInventory = inventory;
+
+                // Filter hospitals
+                allHospitals = Object.entries(users)
+                    .filter(([id, user]) => user.role === 'hospital')
+                    .map(([id, user]) => ({ id, ...user }));
+
+                displayHospitals(allHospitals);
+            } catch (error) {
+                console.error('Error loading hospitals:', error);
+                document.getElementById('hospitalsList').innerHTML = 
+                    '<div class="text-center text-danger py-4">Error loading hospitals</div>';
+            }
+        }
+
+        function displayHospitals(hospitals) {
+            const container = document.getElementById('hospitalsList');
+            
+            if (hospitals.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-4">No hospitals found</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            hospitals.forEach(hospital => {
+                // Calculate hospital's inventory
+                const hospitalInventory = Object.values(allInventory).filter(item => 
+                    item.location === hospital.hospitalName || 
+                    item.hospitalId === hospital.id
+                );
+
+                const totalUnits = hospitalInventory.reduce((sum, item) => sum + (item.quantity || 0), 0);
+                const bloodTypes = [...new Set(hospitalInventory.map(item => item.bloodType))];
+
+                const card = document.createElement('div');
+                card.className = 'red-cross-card mb-3';
+                card.innerHTML = `
+                    <div class="red-cross-card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <h5 class="mb-1">${hospital.hospitalName || hospital.firstName || 'Unknown Hospital'}</h5>
+                                <p class="text-muted mb-1">
+                                    <i class="fa-solid fa-envelope me-2"></i>${hospital.email || 'N/A'}
+                                </p>
+                                <p class="text-muted mb-0">
+                                    <i class="fa-solid fa-phone me-2"></i>${hospital.phone || 'N/A'}
+                                </p>
+                                ${hospital.address ? `<p class="text-muted mb-0"><i class="fa-solid fa-map-marker-alt me-2"></i>${hospital.address}</p>` : ''}
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="red-cross-metric-value" style="font-size: 1.5rem;">${totalUnits.toFixed(1)}</div>
+                                    <div class="red-cross-metric-label">Total Units</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div>
+                                    <small class="text-muted d-block mb-1">Blood Types Available:</small>
+                                    <div>
+                                        ${bloodTypes.length > 0 ? 
+                                            bloodTypes.map(type => `<span class="badge bg-primary me-1">${type}</span>`).join('') :
+                                            '<span class="text-muted">None</span>'
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <button class="btn-red-cross btn-sm" onclick="viewHospitalDetails('${hospital.id}')">
+                                    <i class="fa-solid fa-eye me-1"></i>View Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function viewHospitalDetails(hospitalId) {
+            try {
+                const hospital = allHospitals.find(h => h.id === hospitalId);
+                if (!hospital) return;
+
+                const hospitalInventory = Object.values(allInventory).filter(item => 
+                    item.location === hospital.hospitalName || 
+                    item.hospitalId === hospital.id
+                );
+
+                const inventoryByType = {};
+                hospitalInventory.forEach(item => {
+                    if (!inventoryByType[item.bloodType]) {
+                        inventoryByType[item.bloodType] = 0;
+                    }
+                    inventoryByType[item.bloodType] += (item.quantity || 0);
+                });
+
+                const content = document.getElementById('hospitalDetailsContent');
+                content.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Hospital Information</h6>
+                            <table class="table table-sm">
+                                <tr><td><strong>Name:</strong></td><td>${hospital.hospitalName || hospital.firstName || 'N/A'}</td></tr>
+                                <tr><td><strong>Email:</strong></td><td>${hospital.email || 'N/A'}</td></tr>
+                                <tr><td><strong>Phone:</strong></td><td>${hospital.phone || 'N/A'}</td></tr>
+                                <tr><td><strong>Address:</strong></td><td>${hospital.address || 'N/A'}</td></tr>
+                                <tr><td><strong>License:</strong></td><td>${hospital.licenseNumber || 'N/A'}</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Blood Inventory</h6>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Blood Type</th>
+                                        <th>Quantity (units)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${Object.entries(inventoryByType).length > 0 ? 
+                                        Object.entries(inventoryByType).map(([type, qty]) => `
+                                            <tr>
+                                                <td><span class="badge bg-primary">${type}</span></td>
+                                                <td><strong>${qty.toFixed(1)}</strong></td>
+                                            </tr>
+                                        `).join('') :
+                                        '<tr><td colspan="2" class="text-center text-muted">No inventory</td></tr>'
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+
+                const modal = new bootstrap.Modal(document.getElementById('hospitalDetailsModal'));
+                modal.show();
+            } catch (error) {
+                console.error('Error loading hospital details:', error);
+                alert('Error loading hospital details');
+            }
+        }
+
+        // Search functionality
+        document.getElementById('searchHospitals').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = allHospitals.filter(hospital => {
+                const name = (hospital.hospitalName || hospital.firstName || '').toLowerCase();
+                const email = (hospital.email || '').toLowerCase();
+                const address = (hospital.address || '').toLowerCase();
+                return name.includes(searchTerm) || email.includes(searchTerm) || address.includes(searchTerm);
+            });
+            displayHospitals(filtered);
+        });
+    </script>
+</body>
+</html>
+

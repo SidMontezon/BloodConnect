@@ -146,6 +146,62 @@
         </div>
     </section>
 
+    <!-- Verification Section -->
+    <section class="red-cross-eligibility">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-header">
+                            <i class="fa-solid fa-id-card text-red-cross"></i>
+                            Profile Verification
+                        </div>
+                        <div class="red-cross-card-body">
+                            <div id="verificationStatusSection">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <h4 id="verificationStatusTitle">Checking verification status...</h4>
+                                        <p id="verificationStatusMessage" class="text-medical">Please wait while we check your verification status.</p>
+                                    </div>
+                                    <div class="col-md-4 text-center">
+                                        <div id="verificationStatusIcon">
+                                            <i class="fa-solid fa-spinner fa-spin fa-3x text-muted"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3" id="verificationActionButtons"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Eligibility Application Section -->
+    <section class="red-cross-eligibility" id="eligibilityApplicationSection" style="display: none;">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-header">
+                            <i class="fa-solid fa-stethoscope text-red-cross"></i>
+                            Apply for Eligibility Check
+                        </div>
+                        <div class="red-cross-card-body">
+                            <p class="text-medical mb-4">
+                                Apply for an eligibility check. A hospital will review your application and schedule a screening appointment if approved.
+                            </p>
+                            <button class="btn-red-cross" onclick="applyForEligibility()">
+                                <i class="fa-solid fa-clipboard-check me-2"></i>Apply for Eligibility Check
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Recent Activity -->
     <section class="red-cross-recent-activity">
         <div class="container">
@@ -343,6 +399,8 @@
             checkEligibility(userData);
             loadDonationSchedules(userData);
             loadHospitalEvents(userData);
+            loadVerificationStatus(userData);
+            checkEligibilityApplicationStatus(userData);
         }
 
         async function loadDonationStats(userData) {
@@ -582,6 +640,141 @@
         function viewScheduleDetails(scheduleId) {
             // Implement schedule details view
             alert('Schedule details for ID: ' + scheduleId);
+        }
+
+        async function loadVerificationStatus(userData) {
+            try {
+                const verificationStatus = userData.verificationStatus || 'not_verified';
+                const titleEl = document.getElementById('verificationStatusTitle');
+                const messageEl = document.getElementById('verificationStatusMessage');
+                const iconEl = document.getElementById('verificationStatusIcon');
+                const buttonsEl = document.getElementById('verificationActionButtons');
+
+                if (verificationStatus === 'approved') {
+                    titleEl.textContent = 'Profile Verified';
+                    titleEl.className = 'text-success';
+                    messageEl.textContent = 'Your profile has been verified. You can now apply for eligibility checks and schedule donations.';
+                    iconEl.innerHTML = '<i class="fa-solid fa-check-circle fa-3x text-success"></i>';
+                    buttonsEl.innerHTML = '';
+                } else if (verificationStatus === 'pending') {
+                    titleEl.textContent = 'Verification Pending';
+                    titleEl.className = 'text-warning';
+                    messageEl.textContent = 'Your verification documents are under review. You will be notified once approved.';
+                    iconEl.innerHTML = '<i class="fa-solid fa-clock fa-3x text-warning"></i>';
+                    buttonsEl.innerHTML = '<a href="donor-profile-verification.html" class="btn-red-cross-outline"><i class="fa-solid fa-eye me-2"></i>View Status</a>';
+                } else if (verificationStatus === 'rejected') {
+                    titleEl.textContent = 'Verification Rejected';
+                    titleEl.className = 'text-danger';
+                    messageEl.textContent = 'Your verification was rejected. Please resubmit your documents.';
+                    iconEl.innerHTML = '<i class="fa-solid fa-times-circle fa-3x text-danger"></i>';
+                    buttonsEl.innerHTML = '<a href="donor-profile-verification.html" class="btn-red-cross"><i class="fa-solid fa-upload me-2"></i>Resubmit Documents</a>';
+                } else {
+                    titleEl.textContent = 'Profile Not Verified';
+                    titleEl.className = 'text-info';
+                    messageEl.textContent = 'Please verify your profile by uploading your ID and address proof documents.';
+                    iconEl.innerHTML = '<i class="fa-solid fa-exclamation-circle fa-3x text-info"></i>';
+                    buttonsEl.innerHTML = '<a href="donor-profile-verification.html" class="btn-red-cross"><i class="fa-solid fa-upload me-2"></i>Upload Verification Documents</a>';
+                }
+            } catch (error) {
+                console.error('Error loading verification status:', error);
+            }
+        }
+
+        async function checkEligibilityApplicationStatus(userData) {
+            try {
+                // Check if user has already applied for eligibility
+                const schedules = await window.bloodConnectDB.getDonationSchedules(userData.uid);
+                const hasPendingEligibility = schedules.some(schedule => 
+                    schedule.status === 'pending_screening' || 
+                    schedule.status === 'screening_scheduled' ||
+                    schedule.status === 'screening_passed'
+                );
+
+                // Show eligibility section only if verified and not already applied
+                const verificationStatus = userData.verificationStatus;
+                if (verificationStatus === 'approved' && !hasPendingEligibility && userData.isEligible !== true) {
+                    document.getElementById('eligibilityApplicationSection').style.display = 'block';
+                } else {
+                    document.getElementById('eligibilityApplicationSection').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error checking eligibility application status:', error);
+            }
+        }
+
+        async function applyForEligibility() {
+            if (!confirm('Apply for eligibility check? A hospital will review your application and schedule a screening appointment.')) {
+                return;
+            }
+
+            try {
+                const userData = authManager.getCurrentUserData();
+                if (!userData) {
+                    alert('User data not found. Please log in again.');
+                    return;
+                }
+
+                // Create eligibility application notification for hospitals
+                const hospitals = await window.bloodConnectDB.getHospitals();
+                const hospitalIds = Object.keys(hospitals).filter(id => hospitals[id].role === 'hospital');
+
+                // Create notification for all hospitals
+                for (const hospitalId of hospitalIds) {
+                    await window.bloodConnectDB.createNotification({
+                        userId: hospitalId,
+                        type: 'eligibility',
+                        title: 'New Eligibility Application',
+                        message: `${userData.firstName || 'A donor'} has applied for eligibility check.`,
+                        priority: 'medium',
+                        actionUrl: 'hospital-dashboard.html',
+                        relatedUserId: userData.uid,
+                        status: 'pending',
+                        createdAt: new Date().toISOString()
+                    });
+                }
+
+                // Create a donation schedule with pending_screening status
+                await window.bloodConnectDB.createDonationSchedule({
+                    donorId: userData.uid,
+                    donorName: `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
+                    bloodType: userData.bloodType || 'Unknown',
+                    status: 'pending_screening',
+                    applicationDate: new Date().toISOString(),
+                    createdAt: new Date().toISOString()
+                });
+
+                // Update user data
+                await window.bloodConnectDB.updateUser(userData.uid, {
+                    eligibilityApplicationDate: new Date().toISOString(),
+                    eligibilityStatus: 'pending'
+                });
+
+                // Notify admin
+                const users = await window.bloodConnectDB.getUsers();
+                const adminUsers = Object.entries(users)
+                    .filter(([id, user]) => user.role === 'admin')
+                    .map(([id, user]) => id);
+
+                for (const adminId of adminUsers) {
+                    await window.bloodConnectDB.createNotification({
+                        userId: adminId,
+                        type: 'eligibility',
+                        title: 'New Eligibility Application',
+                        message: `${userData.firstName || 'A donor'} has applied for eligibility check.`,
+                        priority: 'medium',
+                        actionUrl: 'admin-approval-notifications.html',
+                        relatedUserId: userData.uid,
+                        createdAt: new Date().toISOString()
+                    });
+                }
+
+                alert('Eligibility application submitted successfully! Hospitals will review your application and schedule a screening appointment.');
+                document.getElementById('eligibilityApplicationSection').style.display = 'none';
+                loadDonationSchedules(userData);
+            } catch (error) {
+                console.error('Error applying for eligibility:', error);
+                alert('Error submitting eligibility application. Please try again.');
+            }
         }
     </script>
 </body>

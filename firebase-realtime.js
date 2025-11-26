@@ -369,6 +369,18 @@ class BloodConnectRealtimeDB {
     }
   }
 
+  async updateNotification(notificationId, updateData) {
+    try {
+      await update(getDbRef(`notifications/${notificationId}`), {
+        ...updateData,
+        updatedAt: new Date().toISOString()
+      });
+      return { success: true, message: 'Notification updated successfully' };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
   // Hospital Events Management
   async createHospitalEvent(eventData) {
     try {
@@ -406,7 +418,7 @@ class BloodConnectRealtimeDB {
       const newDonationRef = push(getDbRef('donationSchedules'));
       await set(newDonationRef, {
         ...donationData,
-        status: 'pending_screening',
+        status: donationData.status || 'pending_screening',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       });
@@ -414,6 +426,11 @@ class BloodConnectRealtimeDB {
     } catch (error) {
       return { success: false, message: error.message };
     }
+  }
+
+  async createDonationSchedule(donationData) {
+    // Alias for scheduleDonation
+    return this.scheduleDonation(donationData);
   }
 
   async getDonationSchedules(donorId = null) {

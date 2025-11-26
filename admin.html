@@ -35,18 +35,63 @@
             </div>
         </div>
         
+        <!-- Blood Stock Overview (Read-only) -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="red-cross-card">
+                    <div class="red-cross-card-header">
+                        <i class="fa-solid fa-tint text-red-cross"></i>
+                        Total Blood Stock Across All Hospitals (Read-Only)
+                    </div>
+                    <div class="red-cross-card-body">
+                        <div class="row g-3" id="bloodStockOverview">
+                            <div class="col-12 text-center">
+                                <div class="spinner-border text-red-cross" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="red-cross-admin-grid">
+            <a href="admin-users.html" class="red-cross-admin-card red-cross-fade-in">
+                <div class="red-cross-admin-card-icon">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <h3 class="red-cross-admin-card-title">Manage Users</h3>
+                <p class="red-cross-admin-card-description">View, add, edit, and manage all user accounts</p>
+            </a>
+            
+            <a href="admin-manage-hospitals.html" class="red-cross-admin-card red-cross-fade-in">
+                <div class="red-cross-admin-card-icon">
+                    <i class="fa-solid fa-hospital"></i>
+                </div>
+                <h3 class="red-cross-admin-card-title">Manage Hospitals</h3>
+                <p class="red-cross-admin-card-description">Manage hospital accounts and their blood inventory</p>
+            </a>
+            
             <a href="admin-inventory.html" class="red-cross-admin-card red-cross-fade-in">
                 <div class="red-cross-admin-card-icon">
                     <i class="fa-solid fa-warehouse"></i>
                 </div>
                 <h3 class="red-cross-admin-card-title">Blood Inventory</h3>
-                <p class="red-cross-admin-card-description">View and update blood stock levels across all blood groups</p>
+                <p class="red-cross-admin-card-description">View total blood stock levels across all blood groups</p>
+            </a>
+            
+            <a href="admin-approval-notifications.html" class="red-cross-admin-card red-cross-fade-in">
+                <div class="red-cross-admin-card-icon">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+                <h3 class="red-cross-admin-card-title">Approval Notifications</h3>
+                <p class="red-cross-admin-card-description">Review and manage all pending approvals and notifications</p>
             </a>
             
             <a href="admin-hospital-requests.html" class="red-cross-admin-card red-cross-fade-in">
                 <div class="red-cross-admin-card-icon">
-                    <i class="fa-solid fa-hospital"></i>
+                    <i class="fa-solid fa-hand-holding-medical"></i>
                 </div>
                 <h3 class="red-cross-admin-card-title">Hospital Requests</h3>
                 <p class="red-cross-admin-card-description">Review and approve blood requests from hospitals</p>
@@ -81,30 +126,66 @@
                     <i class="fa-solid fa-chart-line"></i>
                 </div>
                 <h3 class="red-cross-admin-card-title">Reports & Analytics</h3>
-                <p class="red-cross-admin-card-description">Generate comprehensive reports on inventory, donors, and requests</p>
+                <p class="red-cross-admin-card-description">Generate comprehensive reports on blood, hospitals, and users</p>
             </a>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script type="module" src="auth-manager.js"></script>
+    <script type="module" src="firebase-realtime.js"></script>
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
-            authDomain: "bloodconnect-b5142.firebaseapp.com",
-            databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
-            projectId: "bloodconnect-b5142",
-            storageBucket: "bloodconnect-b5142.appspot.com",
-            messagingSenderId: "631993835929",
-            appId: "1:631993835929:web:75554aca166e9058473308"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        auth.onAuthStateChanged((user) => {
-            if (!user) { window.location.href = "login.html"; }
+        // Check authentication and load blood stock overview
+        document.addEventListener('DOMContentLoaded', function() {
+            authManager.addAuthListener((user, userData) => {
+                if (!user || !userData || userData.role !== 'admin') {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                loadBloodStockOverview();
+            });
         });
+
+        async function loadBloodStockOverview() {
+            try {
+                // Get all hospitals
+                const hospitals = await window.bloodConnectDB.getHospitals();
+                // Get all hospital inventory
+                const inventory = await window.bloodConnectDB.getBloodInventory();
+                
+                // Calculate total by blood type across all hospitals
+                const totals = {
+                    'A+': 0, 'A-': 0, 'B+': 0, 'B-': 0,
+                    'O+': 0, 'O-': 0, 'AB+': 0, 'AB-': 0
+                };
+                
+                Object.values(inventory).forEach(item => {
+                    if (item.bloodType && totals.hasOwnProperty(item.bloodType)) {
+                        totals[item.bloodType] += (item.quantity || 0);
+                    }
+                });
+                
+                const overviewContainer = document.getElementById('bloodStockOverview');
+                overviewContainer.innerHTML = '';
+                
+                Object.entries(totals).forEach(([bloodType, quantity]) => {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-3 col-sm-6';
+                    col.innerHTML = `
+                        <div class="red-cross-metric-card">
+                            <div class="red-cross-metric-value">${quantity.toFixed(1)}</div>
+                            <div class="red-cross-metric-label">${bloodType}</div>
+                            <small class="text-muted">units</small>
+                        </div>
+                    `;
+                    overviewContainer.appendChild(col);
+                });
+            } catch (error) {
+                console.error('Error loading blood stock overview:', error);
+                document.getElementById('bloodStockOverview').innerHTML = 
+                    '<div class="col-12 text-center text-danger">Error loading blood stock data</div>';
+            }
+        }
     </script>
 </body>
 </html>
