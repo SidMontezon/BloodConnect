@@ -194,15 +194,82 @@
         const storage = getStorage(app);
         
         window.firebaseStorage = storage;
-        window.uploadFile = async (file, path) => {
+        window.uploadFile = async (file, path, onProgress) => {
             try {
+                console.log('Starting upload for:', path, 'File size:', file.size, 'File type:', file.type);
+                
+                if (!file || file.size === 0) {
+                    throw new Error('Invalid file. File is empty or not selected.');
+                }
+                
+                // Create a timeout promise (60 seconds)
+                const uploadTimeout = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('Upload timeout. Please check your internet connection and try again.')), 60000);
+                });
+                
                 const storageRef = ref(storage, path);
-                await uploadBytes(storageRef, file);
-                const downloadURL = await getDownloadURL(storageRef);
+                console.log('Storage reference created:', storageRef.fullPath);
+                
+                // Upload file with timeout
+                const uploadPromise = uploadBytes(storageRef, file);
+                const snapshot = await Promise.race([uploadPromise, uploadTimeout]);
+                
+                if (!snapshot) {
+                    throw new Error('Upload failed. No data received.');
+                }
+                
+                console.log('Upload completed. Bytes uploaded:', snapshot.bytesTransferred);
+                
+                // Get download URL with timeout
+                const urlPromise = getDownloadURL(storageRef);
+                const downloadURL = await Promise.race([
+                    urlPromise,
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Failed to get download URL.')), 10000))
+                ]);
+                
+                if (!downloadURL) {
+                    throw new Error('Failed to get download URL after upload.');
+                }
+                
+                console.log('Download URL obtained successfully');
                 return downloadURL;
+                
             } catch (error) {
                 console.error('Error uploading file:', error);
-                throw error;
+                console.error('Error details:', {
+                    code: error.code,
+                    message: error.message,
+                    stack: error.stack
+                });
+                
+                // Provide more specific error messages
+                let errorMessage = 'Failed to upload file. ';
+                
+                if (error.code) {
+                    switch (error.code) {
+                        case 'storage/unauthorized':
+                            errorMessage += 'You do not have permission to upload files. Please contact support.';
+                            break;
+                        case 'storage/canceled':
+                            errorMessage += 'Upload was canceled. Please try again.';
+                            break;
+                        case 'storage/unknown':
+                            errorMessage += 'An unknown error occurred. Please try again.';
+                            break;
+                        case 'storage/invalid-argument':
+                            errorMessage += 'Invalid file. Please check your file and try again.';
+                            break;
+                        case 'storage/quota-exceeded':
+                            errorMessage += 'Storage quota exceeded. Please contact support.';
+                            break;
+                        default:
+                            errorMessage += error.message || 'Please check your internet connection and try again.';
+                    }
+                } else {
+                    errorMessage += error.message || 'Please check your internet connection and try again.';
+                }
+                
+                throw new Error(errorMessage);
             }
         };
     </script>
@@ -383,19 +450,50 @@
 
             const submitBtn = document.getElementById('submitVerificationBtn');
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Uploading...';
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Uploading files...';
+
+            let idUrl = null;
+            let addressUrl = null;
 
             try {
-                // Upload files to Firebase Storage
+                // Check if uploadFile function is available
+                if (!window.uploadFile) {
+                    throw new Error('Upload function not available. Please refresh the page and try again.');
+                }
+
+                // Upload files to Firebase Storage one at a time with better error handling
                 const idPath = `verifications/${currentUserId}/id_${Date.now()}.${idFile.name.split('.').pop()}`;
                 const addressPath = `verifications/${currentUserId}/address_${Date.now()}.${addressFile.name.split('.').pop()}`;
 
-                const [idUrl, addressUrl] = await Promise.all([
-                    window.uploadFile(idFile, idPath),
-                    window.uploadFile(addressFile, addressPath)
-                ]);
+                console.log('Uploading ID file...');
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Uploading ID document...';
+                
+                try {
+                    idUrl = await window.uploadFile(idFile, idPath);
+                    console.log('ID file uploaded successfully:', idUrl);
+                } catch (error) {
+                    console.error('Failed to upload ID file:', error);
+                    throw new Error('Failed to upload ID document: ' + error.message);
+                }
+
+                console.log('Uploading address file...');
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Uploading address proof...';
+                
+                try {
+                    addressUrl = await window.uploadFile(addressFile, addressPath);
+                    console.log('Address file uploaded successfully:', addressUrl);
+                } catch (error) {
+                    console.error('Failed to upload address file:', error);
+                    throw new Error('Failed to upload address proof: ' + error.message);
+                }
+
+                if (!idUrl || !addressUrl) {
+                    throw new Error('File upload failed. Please try again.');
+                }
 
                 // Save verification data to Realtime Database
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Saving verification data...';
+                
                 const verificationData = {
                     userId: currentUserId,
                     idDocumentUrl: idUrl,
@@ -408,45 +506,95 @@
                     rejectionReason: null
                 };
 
+                console.log('Updating user record...');
                 // Update user record
-                await window.bloodConnectDB.updateUser(currentUserId, {
+                const updateResult = await window.bloodConnectDB.updateUser(currentUserId, {
                     verificationStatus: 'pending',
                     idDocumentUrl: idUrl,
                     addressDocumentUrl: addressUrl,
                     verificationSubmittedAt: new Date().toISOString()
                 });
 
-                // Create verification record
-                const verificationResult = await window.bloodConnectDB.createVerification(verificationData);
-
-                // Get all admin users and notify them
-                const users = await window.bloodConnectDB.getUsers();
-                const adminUsers = Object.entries(users)
-                    .filter(([id, user]) => user.role === 'admin')
-                    .map(([id, user]) => id);
-
-                // Notify all admin users
-                for (const adminId of adminUsers) {
-                    await window.bloodConnectDB.createNotification({
-                        userId: adminId,
-                        type: 'verification',
-                        title: 'New Donor Verification Request',
-                        message: `${userData.firstName} ${userData.lastName} has submitted verification documents.`,
-                        priority: 'high',
-                        actionUrl: 'admin-donor-verifications.html',
-                        relatedUserId: currentUserId,
-                        createdAt: new Date().toISOString()
-                    });
+                if (!updateResult.success) {
+                    throw new Error('Failed to update user record: ' + updateResult.message);
                 }
 
+                console.log('Creating verification record...');
+                // Create verification record
+                const verificationResult = await window.bloodConnectDB.createVerification(verificationData);
+                
+                if (!verificationResult.success) {
+                    throw new Error('Failed to create verification record: ' + verificationResult.message);
+                }
+
+                // Get all admin users and notify them
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Sending notifications...';
+                
+                try {
+                    const users = await window.bloodConnectDB.getUsers();
+                    const adminUsers = Object.entries(users)
+                        .filter(([id, user]) => user.role === 'admin')
+                        .map(([id, user]) => id);
+
+                    // Notify all admin users
+                    for (const adminId of adminUsers) {
+                        try {
+                            await window.bloodConnectDB.createNotification({
+                                userId: adminId,
+                                type: 'verification',
+                                title: 'New Donor Verification Request',
+                                message: `${userData.firstName || 'A donor'} ${userData.lastName || ''} has submitted verification documents.`,
+                                priority: 'high',
+                                actionUrl: 'admin-donor-verifications.html',
+                                relatedUserId: currentUserId,
+                                status: 'pending',
+                                createdAt: new Date().toISOString()
+                            });
+                        } catch (notifError) {
+                            console.warn('Failed to notify admin:', adminId, notifError);
+                            // Continue even if notification fails
+                        }
+                    }
+                } catch (notifError) {
+                    console.warn('Error creating notifications:', notifError);
+                    // Continue even if notifications fail
+                }
+
+                submitBtn.innerHTML = '<i class="fa-solid fa-check me-2"></i>Success!';
+                submitBtn.classList.add('btn-success');
+                
                 alert('Verification documents submitted successfully! Your profile will be reviewed within 24-48 hours.');
-                checkVerificationStatus();
+                
+                // Reset form and reload status
+                setTimeout(() => {
+                    checkVerificationStatus();
+                    submitBtn.classList.remove('btn-success');
+                }, 1000);
+                
             } catch (error) {
                 console.error('Error submitting verification:', error);
-                alert('Error submitting verification. Please try again.');
+                
+                // More detailed error message
+                let errorMsg = 'Error submitting verification: ';
+                if (error.message) {
+                    errorMsg += error.message;
+                } else {
+                    errorMsg += 'Please check your internet connection and try again.';
+                }
+                
+                alert(errorMsg);
+                submitBtn.innerHTML = '<i class="fa-solid fa-exclamation-triangle me-2"></i>Upload Failed - Try Again';
+                submitBtn.classList.add('btn-danger');
+                
+                // Reset button after 3 seconds
+                setTimeout(() => {
+                    submitBtn.classList.remove('btn-danger');
+                }, 3000);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i>Submit for Verification';
+                if (!submitBtn.classList.contains('btn-success') && !submitBtn.classList.contains('btn-danger')) {
+                    submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i>Submit for Verification';
+                }
             }
         });
     </script>
