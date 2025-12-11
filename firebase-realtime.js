@@ -79,7 +79,44 @@ class BloodConnectRealtimeDB {
   async getBloodInventory() {
     try {
       const snapshot = await get(getDbRef('bloodInventory'));
-      return snapshot.exists() ? snapshot.val() : {};
+      const raw = snapshot.exists() ? snapshot.val() : {};
+
+      // If the DB uses a nested shape like: { "A+": { hospitals: { "hid": { quantity: 1 }}}}
+      // normalize into a flat map keyed by id with fields { bloodType, quantity, hospitalId, location, status }
+      const looksNested = Object.keys(raw).some(k => {
+        const v = raw[k];
+        return v && typeof v === 'object' && ('hospitals' in v || Object.keys(v).some(x => x === 'hospitals'));
+      });
+
+      if (!looksNested) {
+        return raw;
+      }
+
+      // fetch hospitals to read locations if available
+      const hospitalsSnap = await get(getDbRef('hospitals'));
+      const hospitals = hospitalsSnap.exists() ? hospitalsSnap.val() : {};
+
+      const flat = {};
+      for (const [bloodTypeKey, node] of Object.entries(raw)) {
+        const hospitalsObj = node && node.hospitals ? node.hospitals : null;
+        if (!hospitalsObj) continue;
+        for (const [hid, info] of Object.entries(hospitalsObj)) {
+          const qty = info && (info.quantity || info.qty || info) || 0;
+          // create a stable id
+          const id = `${bloodTypeKey.replace(/[^A-Za-z0-9]/g,'')}_${hid}`;
+          flat[id] = {
+            bloodType: bloodTypeKey,
+            quantity: Number(qty) || 0,
+            hospitalId: hid,
+            location: (hospitals[hid] && (hospitals[hid].location || hospitals[hid].hospitalName)) || null,
+            status: 'available',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+        }
+      }
+
+      return flat;
     } catch (error) {
       console.error('Error getting blood inventory:', error);
       return {};

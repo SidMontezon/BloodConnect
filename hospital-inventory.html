@@ -172,23 +172,23 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="auth-manager.js"></script>
-    <script type="module" src="firebase-realtime.js"></script>
-    <script>
+    <script type="module">
+        import authManager from './auth-manager.js';
+        import bloodConnectDB from './bloodConnectDB.js';
+
         let currentHospitalId = null;
         let currentHospitalData = null;
-
-        document.addEventListener('DOMContentLoaded', function() {
-            authManager.addAuthListener((user, userData) => {
-                if (!user || !userData || userData.role !== 'hospital') {
-                    window.location.href = 'login.html';
-                    return;
-                }
-                currentHospitalId = user.uid;
-                currentHospitalData = userData;
-                loadInventory();
-            });
+        authManager.addAuthListener((user, userData) => {
+            if (!user || !userData || userData.role !== 'hospital') {
+                window.location.href = 'login.html';
+                return;
+            }
+            currentHospitalId = user.uid;
+            currentHospitalData = userData;
+            loadInventory();
         });
+
+
 
         async function loadInventory() {
             try {

@@ -141,29 +141,25 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
-            authDomain: "bloodconnect-b5142.firebaseapp.com",
-            databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
-            projectId: "bloodconnect-b5142",
-            storageBucket: "bloodconnect-b5142.appspot.com",
-            messagingSenderId: "631993835929",
-            appId: "1:631993835929:web:75554aca166e9058473308"
-        };
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js"></script>
+    <script type="module">
+        import authManager from './auth-manager.js';
+        import bloodConnectDB from './bloodConnectDB.js';
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
-
-        function setText(id, value) { document.getElementById(id).innerText = value; }
+        function setText(id, value) { 
+            const el = document.getElementById(id);
+            if (el) el.innerText = value; 
+        }
 
         function computeTotalBlood(inv) {
-            let total = 0; if (!inv) return 0;
-            Object.values(inv).forEach(v => { const n = parseFloat(v); if (!isNaN(n)) total += n; });
+            let total = 0; 
+            if (!inv) return 0;
+            Object.values(inv).forEach(v => { 
+                const n = typeof v === 'object' ? (v.quantity || 0) : parseFloat(v); 
+                if (!isNaN(n)) total += n; 
+            });
             return total.toFixed(1);
         }
 
@@ -175,7 +171,7 @@
             const bloodByType = {};
             let availableUnits = 0, reservedUnits = 0;
             Object.values(inv || {}).forEach(item => {
-                if (item.bloodType) {
+                if (item && item.bloodType) {
                     bloodByType[item.bloodType] = (bloodByType[item.bloodType] || 0) + (item.quantity || 0);
                     if (item.status === 'available') availableUnits += (item.quantity || 0);
                     if (item.status === 'reserved') reservedUnits += (item.quantity || 0);
@@ -187,79 +183,84 @@
 
             // Render blood type breakdown
             const bloodBreakdown = document.getElementById('bloodTypeBreakdown');
-            bloodBreakdown.innerHTML = '';
-            Object.entries(bloodByType).forEach(([type, qty]) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td><span class="badge bg-primary">${type}</span></td><td>${qty.toFixed(1)}</td><td>-</td><td>-</td>`;
-                bloodBreakdown.appendChild(tr);
-            });
+            if (bloodBreakdown) {
+                bloodBreakdown.innerHTML = '';
+                Object.entries(bloodByType).forEach(([type, qty]) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td><span class="badge bg-primary">${type}</span></td><td>${qty.toFixed(1)}</td><td>-</td><td>-</td>`;
+                    bloodBreakdown.appendChild(tr);
+                });
+            }
 
             // Hospital Reports
-            const hospitals = Object.values(users || {}).filter(u => u.role === 'hospital');
+            const hospitals = Object.values(users || {}).filter(u => u && u.role === 'hospital');
             setText('m_totalHospitals', hospitals.length);
-            setText('m_activeHospitals', hospitals.filter(h => h.isActive !== false).length);
+            setText('m_activeHospitals', hospitals.filter(h => h && h.isActive !== false).length);
             
-            const hospitalRequestCount = Object.values(requests || {}).filter(r => r.requesterType === 'hospital').length;
+            const hospitalRequestCount = Object.values(requests || {}).filter(r => r && r.requesterType === 'hospital').length;
             setText('m_hospitalRequests', hospitalRequestCount);
 
             // Render hospital breakdown
             const hospitalBreakdown = document.getElementById('hospitalBreakdown');
-            hospitalBreakdown.innerHTML = '';
-            hospitals.forEach(hospital => {
-                const hospitalInventory = Object.values(inv || {}).filter(item => 
-                    item.location === hospital.hospitalName || item.hospitalId === hospital.id
-                );
-                const totalUnits = hospitalInventory.reduce((sum, item) => sum + (item.quantity || 0), 0);
-                const hospitalReqs = Object.values(requests || {}).filter(r => r.requesterId === hospital.id).length;
-                
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${hospital.hospitalName || hospital.firstName || 'Unknown'}</td>
-                    <td>${totalUnits.toFixed(1)}</td>
-                    <td>${hospitalReqs}</td>
-                    <td><span class="badge bg-success">Active</span></td>
-                `;
-                hospitalBreakdown.appendChild(tr);
-            });
+            if (hospitalBreakdown) {
+                hospitalBreakdown.innerHTML = '';
+                hospitals.forEach(hospital => {
+                    const totalUnits = 0; // Simplified - hospitals manage their own inventory
+                    const hospitalReqs = Object.values(requests || {}).filter(r => r && r.requesterId === hospital.id).length;
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${hospital.hospitalName || hospital.firstName || 'Unknown'}</td>
+                        <td>${totalUnits.toFixed(1)}</td>
+                        <td>${hospitalReqs}</td>
+                        <td><span class="badge bg-success">Active</span></td>
+                    `;
+                    hospitalBreakdown.appendChild(tr);
+                });
+            }
 
             // User Reports
             const allUsers = Object.values(users || {});
             setText('m_totalUsers', allUsers.length);
             
-            const donors = allUsers.filter(u => u.role === 'donor');
+            const donors = allUsers.filter(u => u && u.role === 'donor');
             setText('m_donors', donors.length);
             
-            const verifiedDonors = donors.filter(d => d.verificationStatus === 'approved');
+            const verifiedDonors = donors.filter(d => d && d.verificationStatus === 'approved');
             setText('m_verifiedDonors', verifiedDonors.length);
             
-            const eligibleDonors = donors.filter(d => d.isEligible === true);
+            const eligibleDonors = donors.filter(d => d && d.isEligible === true);
             setText('m_eligibleDonors', eligibleDonors.length);
 
             // Render user role breakdown
             const roleBreakdown = document.getElementById('userRoleBreakdown');
-            roleBreakdown.innerHTML = '';
-            const roles = ['admin', 'hospital', 'donor', 'patient'];
-            roles.forEach(role => {
-                const roleUsers = allUsers.filter(u => u.role === role);
-                const verified = roleUsers.filter(u => u.verificationStatus === 'approved').length;
-                const active = roleUsers.filter(u => u.isActive !== false).length;
-                
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${role.charAt(0).toUpperCase() + role.slice(1)}</td>
-                    <td>${roleUsers.length}</td>
-                    <td>${verified}</td>
-                    <td>${active}</td>
-                `;
-                roleBreakdown.appendChild(tr);
-            });
+            if (roleBreakdown) {
+                roleBreakdown.innerHTML = '';
+                const roles = ['admin', 'hospital', 'donor'];
+                roles.forEach(role => {
+                    const roleUsers = allUsers.filter(u => u && u.role === role);
+                    const verified = roleUsers.filter(u => u && u.verificationStatus === 'approved').length;
+                    const active = roleUsers.filter(u => u && u.isActive !== false).length;
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${role.charAt(0).toUpperCase() + role.slice(1)}</td>
+                        <td>${roleUsers.length}</td>
+                        <td>${verified}</td>
+                        <td>${active}</td>
+                    `;
+                    roleBreakdown.appendChild(tr);
+                });
+            }
 
             // Request Reports
             const reqCounts = { pending: 0, approved: 0, rejected: 0, fulfilled: 0 };
             Object.values(requests || {}).forEach(r => {
-                const status = r.status || 'pending';
-                if (reqCounts.hasOwnProperty(status)) {
-                    reqCounts[status] = (reqCounts[status] || 0) + 1;
+                if (r) {
+                    const status = r.status || 'pending';
+                    if (reqCounts.hasOwnProperty(status)) {
+                        reqCounts[status] = (reqCounts[status] || 0) + 1;
+                    }
                 }
             });
             setText('m_pendingReq', reqCounts.pending || 0);
@@ -268,23 +269,48 @@
             setText('m_fulfilledReq', reqCounts.fulfilled || 0);
 
             const tbody = document.getElementById('requestsSummary');
-            tbody.innerHTML = '';
-            Object.entries(reqCounts).forEach(([status, count]) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${status.charAt(0).toUpperCase() + status.slice(1)}</td><td>${count}</td>`;
-                tbody.appendChild(tr);
-            });
+            if (tbody) {
+                tbody.innerHTML = '';
+                Object.entries(reqCounts).forEach(([status, count]) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${status.charAt(0).toUpperCase() + status.slice(1)}</td><td>${count}</td>`;
+                    tbody.appendChild(tr);
+                });
+            }
         }
 
-        auth.onAuthStateChanged((user) => {
-            if (!user) { window.location.href = 'login.html'; return; }
-            Promise.all([
-                db.ref('bloodInventory').once('value'),
-                db.ref('users').once('value'),
-                db.ref('bloodRequests').once('value')
-            ]).then(([invSnap, usersSnap, reqSnap]) => {
-                render(invSnap.val(), usersSnap.val(), reqSnap.val());
-            });
+        // Verify user is admin before loading page
+        authManager.addAuthListener(async (user, userData) => {
+            if (!user) { 
+                window.location.href = 'login.html'; 
+                return; 
+            }
+            if (!userData || userData.role !== 'admin') {
+                console.warn('User is not an admin. Redirecting...');
+                await authManager.redirectByRole();
+                return;
+            }
+            // Load report data
+            loadReports();
+        });
+
+        async function loadReports() {
+            try {
+                const inv = await bloodConnectDB.getBloodInventory();
+                const users = await bloodConnectDB.getUsers();
+                const requests = await bloodConnectDB.getBloodRequests ? await bloodConnectDB.getBloodRequests() : {};
+                render(inv || {}, users || {}, requests || {});
+            } catch (error) {
+                console.error('Error loading reports:', error);
+            }
+        }
+
+        // Handle logout button
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'logoutBtn') {
+                e.preventDefault();
+                authManager.logoutAndRedirect();
+            }
         });
     </script>
 </body>

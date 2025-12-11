@@ -2,14 +2,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/fireba
 import {
   getAuth,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword
+  createUserWithEmailAndPassword,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
 import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc
-} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+  getDatabase,
+  ref,
+  set,
+  get
+} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -25,7 +26,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+const db = getDatabase(app);
 
 // Message display helper
 function showMessage(message, divId) {
@@ -36,10 +37,13 @@ function showMessage(message, divId) {
   messageDiv.style.opacity = 1;
   setTimeout(() => {
     messageDiv.style.opacity = 0;
-    setTimeout(() => {
-      messageDiv.style.display = "none";
-    }, 500);
   }, 4000);
+}
+
+async function logoutAndRedirect() {
+  try { await signOut(auth); } catch (e) { /* noop */ }
+  sessionStorage.clear();
+  window.location.replace('login.html');
 }
 
 // ==================== SIGNUP ====================
@@ -47,34 +51,24 @@ const signupForm = document.getElementById("signupForm");
 if (signupForm) {
   signupForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const email = (document.getElementById("signupEmail") || document.getElementById("rEmail") || {}).value?.trim() || '';
+    const password = (document.getElementById("signupPassword") || document.getElementById("rPassword") || {}).value || '';
+    const role = (document.getElementById("signupRole") || document.getElementById("userRole") || {}).value || 'donor';
 
-    const fName = document.getElementById("fName").value.trim();
-    const lName = document.getElementById("lName").value.trim();
-    const email = document.getElementById("rEmail").value.trim();
-    const password = document.getElementById("rPassword").value;
-    const role = document.getElementById("userRole").value;
-
-    if (!role) {
-      showMessage("Please select your role.", "signUpMessage");
+    if (!email || !password) {
+      showMessage("Please provide email and password.", "signupMessage");
       return;
     }
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      await setDoc(doc(db, "users", user.uid), {
-        firstName: fName,
-        lastName: lName,
-        email: email,
-        role: role,
-        createdAt: new Date()
-      });
-
-      showMessage("Account created successfully! Redirecting...", "signUpMessage");
-      setTimeout(() => (window.location.href = "login.html"), 1500);
-    } catch (error) {
-      showMessage(error.message, "signUpMessage");
+      const uid = userCredential.user.uid;
+      await set(ref(db, `users/${uid}`), { email, role });
+      showMessage("Account created. You may login now.", "signupMessage");
+      signupForm.reset();
+    } catch (err) {
+      console.error(err);
+      showMessage("Signup failed: " + (err.message || "Try again"), "signupMessage");
     }
   });
 }
@@ -84,49 +78,75 @@ const signInForm = document.getElementById("signInForm");
 if (signInForm) {
   signInForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const email = (document.getElementById("email") || {}).value?.trim() || '';
+    const password = (document.getElementById("password") || {}).value || '';
 
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
+    if (!email || !password) {
+      showMessage("Provide email and password.", "signInMessage");
+      return;
+    }
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      const userDoc = await getDoc(doc(db, "users", user.uid));
+      const uid = userCredential.user.uid;
 
-      if (userDoc.exists()) {
-        const role = userDoc.data().role;
+      // Read role from Realtime DB
+      let role = 'donor';
+      try {
+        const snap = await get(ref(db, `users/${uid}/role`));
+        if (snap.exists()) role = snap.val();
+      } catch (dbErr) {
+        console.warn('Could not read role:', dbErr);
+      }
 
-        // Redirect based on role
-        switch (role) {
-          case "admin":
-            window.location.href = "admin.html";
-            break;
-          case "donor":
-            window.location.href = "donor-dashboard.html";
-            break;
-          case "hospital":
-            window.location.href = "hospital-dashboard.html";
-            break;
-          case "patient":
-            window.location.href = "patient-dashboard.html";
-            break;
-          default:
-            window.location.href = "dashboard.html";
-            break;
-        }
+      // Create session
+      sessionStorage.setItem('logged_in', 'true');
+      sessionStorage.setItem('uid', uid);
+      sessionStorage.setItem('role', role);
+      sessionStorage.setItem('email', email);
+
+      // Redirect by role
+      if (role === 'admin') {
+        window.location.href = 'admin.html';
+      } else if (role === 'hospital') {
+        window.location.href = 'hospital-dashboard.html';
       } else {
-        showMessage("User data not found. Please contact support.", "signInMessage");
+        window.location.href = 'donor-dashboard.html';
       }
-    } catch (error) {
-      if (
-        error.code === "auth/wrong-password" ||
-        error.code === "auth/user-not-found" ||
-        error.code === "auth/invalid-credential"
-      ) {
-        showMessage("Incorrect email or password.", "signInMessage");
-      } else {
-        showMessage(error.message, "signInMessage");
-      }
+      history.replaceState({}, '', window.location.href);
+    } catch (err) {
+      console.error(err);
+      showMessage("Incorrect Email or Password", "signInMessage");
     }
   });
 }
+
+// ==================== Back button / bfcache handling =====================
+window.addEventListener('pageshow', (e) => {
+  const protectedPaths = ['/admin/', '/hospital/', '/donor/', '/patient/', '/dashboard.html'];
+  const path = window.location.pathname;
+  const isProtected = protectedPaths.some(p => path.includes(p));
+  if (isProtected && !sessionStorage.getItem('logged_in')) {
+    window.location.replace('login.html');
+    return;
+  }
+  if (e.persisted && sessionStorage.getItem('logged_in')) {
+    logoutAndRedirect();
+  }
+});
+
+window.addEventListener('popstate', () => {
+  if (sessionStorage.getItem('logged_in')) {
+    logoutAndRedirect();
+  }
+});
+
+(function protectIfNeeded() {
+  const protectedPaths = ['/admin/', '/hospital/', '/donor/', '/patient/', '/dashboard.html'];
+  const path = window.location.pathname;
+  if (protectedPaths.some(p => path.includes(p))) {
+    if (!sessionStorage.getItem('logged_in')) {
+      window.location.replace('login.html');
+    }
+  }
+})();

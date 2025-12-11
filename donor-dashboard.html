@@ -7,6 +7,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="red-cross-styles.css">
+    <script type="module" src="auth-manager.js"></script>
+    <script type="module" src="bloodConnectDB.js"></script>
 </head>
 <body>
     <!-- Red Cross Header -->
@@ -25,7 +27,7 @@
                     <a href="donate.html">Schedule Donation</a>
                     <a href="donor-profile.html">Profile</a>
                     <a href="donor-history.html">History</a>
-                    <a href="logout.html" class="btn-red-cross-outline">Logout</a>
+                    <button id="logoutBtn" class="btn-red-cross-outline" style="border:none; background:transparent; cursor:pointer;">Logout</button>
                 </div>
             </div>
         </div>
@@ -146,37 +148,6 @@
         </div>
     </section>
 
-    <!-- Verification Section -->
-    <section class="red-cross-eligibility">
-        <div class="container">
-            <div class="row">
-                <div class="col-12">
-                    <div class="red-cross-card">
-                        <div class="red-cross-card-header">
-                            <i class="fa-solid fa-id-card text-red-cross"></i>
-                            Profile Verification
-                        </div>
-                        <div class="red-cross-card-body">
-                            <div id="verificationStatusSection">
-                                <div class="row align-items-center">
-                                    <div class="col-md-8">
-                                        <h4 id="verificationStatusTitle">Checking verification status...</h4>
-                                        <p id="verificationStatusMessage" class="text-medical">Please wait while we check your verification status.</p>
-                                    </div>
-                                    <div class="col-md-4 text-center">
-                                        <div id="verificationStatusIcon">
-                                            <i class="fa-solid fa-spinner fa-spin fa-3x text-muted"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="mt-3" id="verificationActionButtons"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- Eligibility Application Section -->
     <section class="red-cross-eligibility" id="eligibilityApplicationSection" style="display: none;">
@@ -342,83 +313,64 @@
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Unified Authentication Manager -->
-    <script type="module" src="auth-manager.js"></script>
-    <script type="module" src="firebase-realtime.js"></script>
+    <script type="module">
+        import authManager from './auth-manager.js';
+        import bloodConnectDB from './bloodConnectDB.js';
 
-    <script>
-        // Wait for page to load
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Donor Dashboard: Page loaded, checking authentication...');
-            
-            // Use the unified authentication system
-            authManager.addAuthListener((user, userData) => {
-                if (user && userData) {
-                    console.log('Donor Dashboard: User authenticated:', userData.role);
-                    
-                    // Check if user is a donor
-                    if (userData.role === 'donor') {
-                        loadDonorDashboard(userData);
-                    } else {
-                        console.log('Donor Dashboard: User is not a donor, redirecting...');
-                        authManager.redirectByRole();
-                    }
-                } else {
-                    console.log('Donor Dashboard: No user authenticated, redirecting to login');
-                    window.location.href = 'login.html';
-                }
-            });
+        // Verify user is donor before loading dashboard
+        authManager.addAuthListener(async (user, userData) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            if (!userData || userData.role !== 'donor') {
+                console.warn('User is not a donor. Redirecting...');
+                await authManager.redirectByRole();
+                return;
+            }
+            // User is authenticated and is a donor - load data
+            loadDonorDashboard(user, userData);
         });
 
-        function loadDonorDashboard(userData) {
-            // Check verification status
-            if (userData.verificationStatus !== 'approved') {
-                if (userData.verificationStatus === 'pending') {
-                    alert('Your profile is under verification. You will be notified once approved.');
-                    window.location.href = 'donor-profile-verification.html';
-                    return;
-                } else if (userData.verificationStatus === 'rejected') {
-                    alert('Your verification was rejected. Please resubmit your documents.');
-                    window.location.href = 'donor-profile-verification.html';
-                    return;
-                } else {
-                    // Not verified yet
-                    window.location.href = 'donor-profile-verification.html';
-                    return;
-                }
+        function loadDonorDashboard(user, userData) {
+            try {
+                // Update donor name
+                const donorName = userData.firstName || userData.email || 'Donor';
+                const nameEl = document.getElementById('donorName');
+                if (nameEl) nameEl.textContent = donorName;
+
+                // Load all dashboard data
+                loadDonationStats(userData);
+                loadRecentDonations(userData);
+                checkEligibility(userData);
+                loadDonationSchedules(userData);
+                loadHospitalEvents(userData);
+            } catch (error) {
+                console.error('Error loading donor dashboard:', error);
             }
-
-            // Update donor name
-            const donorName = userData.firstName || 'Donor';
-            document.getElementById('donorName').textContent = donorName;
-
-            // Load donation statistics
-            loadDonationStats(userData);
-            loadRecentDonations(userData);
-            checkEligibility(userData);
-            loadDonationSchedules(userData);
-            loadHospitalEvents(userData);
-            loadVerificationStatus(userData);
-            checkEligibilityApplicationStatus(userData);
         }
 
         async function loadDonationStats(userData) {
             try {
-                const donations = await window.bloodConnectDB.getDonations();
-                const userDonations = Object.values(donations).filter(donation => 
-                    donation.donorId === userData.uid || donation.donorId === userData.email
+                const donations = await bloodConnectDB.getDonations();
+                if (!donations) return;
+                
+                const userDonations = Object.values(donations).filter(d => 
+                    d && (d.donorId === userData.uid || d.donorId === userData.email)
                 );
                 
-                const donationCount = userDonations.length;
-                document.getElementById('totalDonations').textContent = donationCount;
-                document.getElementById('livesSaved').textContent = donationCount * 3; // Each donation saves 3 lives
+                const totalEl = document.getElementById('totalDonations');
+                const livesEl = document.getElementById('livesSaved');
+                const upcomingEl = document.getElementById('upcomingAppointments');
                 
-                // Count upcoming appointments
-                const upcomingCount = userDonations.filter(donation => 
-                    new Date(donation.donationDate) > new Date() && donation.status === 'scheduled'
-                ).length;
-                document.getElementById('upcomingAppointments').textContent = upcomingCount;
+                if (totalEl) totalEl.textContent = userDonations.length;
+                if (livesEl) livesEl.textContent = userDonations.length * 3;
+                if (upcomingEl) {
+                    const upcoming = userDonations.filter(d => 
+                        d.donationDate && new Date(d.donationDate) > new Date() && d.status === 'scheduled'
+                    ).length;
+                    upcomingEl.textContent = upcoming;
+                }
             } catch (error) {
                 console.error('Error loading donation stats:', error);
             }
@@ -426,27 +378,28 @@
 
         async function loadRecentDonations(userData) {
             try {
-                const donations = await window.bloodConnectDB.getDonations();
-                const userDonations = Object.values(donations).filter(donation => 
-                    donation.donorId === userData.uid || donation.donorId === userData.email
-                );
-                
+                const donations = await bloodConnectDB.getDonations();
                 const tableBody = document.getElementById('recentDonationsTable');
-                
-                if (userDonations.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-medical">No recent donations found</td></tr>';
+                if (!tableBody) return;
+
+                if (!donations || Object.keys(donations).length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No donations found</td></tr>';
                     return;
                 }
 
+                const userDonations = Object.values(donations).filter(d => 
+                    d && (d.donorId === userData.uid || d.donorId === userData.email)
+                );
+                
                 tableBody.innerHTML = '';
-                userDonations.slice(-5).reverse().forEach((donation, index) => {
+                userDonations.slice(-5).reverse().forEach((donation) => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${new Date(donation.donationDate).toLocaleDateString()}</td>
-                        <td>${donation.location || 'Unknown Hospital'}</td>
-                        <td><span class="badge-red-cross">${donation.bloodType}</span></td>
-                        <td><span class="badge badge-${getStatusClass(donation.status)}">${donation.status}</span></td>
-                        <td><button class="btn-red-cross-outline btn-sm" onclick="viewDonationDetails('${index}')">View</button></td>
+                        <td>${donation.donationDate ? new Date(donation.donationDate).toLocaleDateString() : 'TBD'}</td>
+                        <td>${donation.location || 'Unknown'}</td>
+                        <td><span class="badge bg-danger">${donation.bloodType || 'N/A'}</span></td>
+                        <td><span class="badge bg-secondary">${donation.status || 'pending'}</span></td>
+                        <td><button class="btn btn-sm btn-outline-danger">View</button></td>
                     `;
                     tableBody.appendChild(row);
                 });
@@ -457,325 +410,127 @@
 
         async function checkEligibility(userData) {
             try {
-                const eligibilityIcon = document.getElementById('eligibilityIcon');
-                const eligibilityStatus = document.getElementById('eligibilityStatus');
-                const eligibilityMessage = document.getElementById('eligibilityMessage');
+                const iconEl = document.getElementById('eligibilityIcon');
+                const statusEl = document.getElementById('eligibilityStatus');
+                const messageEl = document.getElementById('eligibilityMessage');
+                
+                if (!statusEl) return;
 
-                if (userData.isEligible === false) {
-                    eligibilityIcon.innerHTML = '<i class="fa-solid fa-times-circle text-danger"></i>';
-                    eligibilityStatus.textContent = 'Not Eligible';
-                    eligibilityStatus.className = 'text-danger';
-                    eligibilityMessage.textContent = 'You are currently not eligible to donate blood. Please contact support for more information.';
+                const donations = await bloodConnectDB.getDonations();
+                if (!donations) {
+                    if (statusEl) statusEl.textContent = 'Eligible to Donate';
+                    if (messageEl) messageEl.textContent = 'No donation history found. You are eligible!';
+                    return;
+                }
+
+                const userDonations = Object.values(donations).filter(d => 
+                    d && (d.donorId === userData.uid || d.donorId === userData.email)
+                );
+
+                if (userDonations.length === 0) {
+                    if (statusEl) statusEl.textContent = 'Eligible to Donate';
+                    if (messageEl) messageEl.textContent = 'Schedule your first donation today!';
                 } else {
-                    // Check last donation date
-                    const donations = await window.bloodConnectDB.getDonations();
-                    const userDonations = Object.values(donations).filter(donation => 
-                        donation.donorId === userData.uid || donation.donorId === userData.email
-                    );
+                    const lastDonation = userDonations.sort((a, b) => 
+                        new Date(b.donationDate || 0) - new Date(a.donationDate || 0)
+                    )[0];
                     
-                    const now = new Date();
+                    const lastDate = new Date(lastDonation.donationDate);
+                    const daysSince = Math.floor((new Date() - lastDate) / (1000 * 60 * 60 * 24));
+                    const daysUntil = Math.max(0, 56 - daysSince);
                     
-                    if (userDonations.length > 0) {
-                        const lastDonation = userDonations.sort((a, b) => 
-                            new Date(b.donationDate) - new Date(a.donationDate)
-                        )[0];
-                        
-                        const lastDonationDate = new Date(lastDonation.donationDate);
-                        const daysSinceLastDonation = Math.floor((now - lastDonationDate) / (1000 * 60 * 60 * 24));
-                        const daysUntilEligible = Math.max(0, 56 - daysSinceLastDonation);
-                        
-                        document.getElementById('daysUntilEligible').textContent = daysUntilEligible;
-                        
-                        if (daysUntilEligible === 0) {
-                            eligibilityIcon.innerHTML = '<i class="fa-solid fa-check-circle text-success"></i>';
-                            eligibilityStatus.textContent = 'Eligible to Donate';
-                            eligibilityStatus.className = 'text-success';
-                            eligibilityMessage.textContent = 'You are eligible to donate blood. Schedule your next donation today!';
-                        } else {
-                            eligibilityIcon.innerHTML = '<i class="fa-solid fa-clock text-warning"></i>';
-                            eligibilityStatus.textContent = 'Not Yet Eligible';
-                            eligibilityStatus.className = 'text-warning';
-                            eligibilityMessage.textContent = `You can donate again in ${daysUntilEligible} days.`;
-                        }
+                    const daysEl = document.getElementById('daysUntilEligible');
+                    if (daysEl) daysEl.textContent = daysUntil;
+                    
+                    if (daysUntil === 0) {
+                        if (statusEl) statusEl.textContent = 'Eligible to Donate';
+                        if (messageEl) messageEl.textContent = 'You can donate now!';
                     } else {
-                        eligibilityIcon.innerHTML = '<i class="fa-solid fa-check-circle text-success"></i>';
-                        eligibilityStatus.textContent = 'Eligible to Donate';
-                        eligibilityStatus.className = 'text-success';
-                        eligibilityMessage.textContent = 'You are eligible to donate blood. Schedule your first donation today!';
+                        if (statusEl) statusEl.textContent = 'Not Yet Eligible';
+                        if (messageEl) messageEl.textContent = `You can donate again in ${daysUntil} days.`;
                     }
                 }
             } catch (error) {
                 console.error('Error checking eligibility:', error);
-                const eligibilityIcon = document.getElementById('eligibilityIcon');
-                const eligibilityStatus = document.getElementById('eligibilityStatus');
-                const eligibilityMessage = document.getElementById('eligibilityMessage');
-                
-                eligibilityIcon.innerHTML = '<i class="fa-solid fa-exclamation-triangle text-warning"></i>';
-                eligibilityStatus.textContent = 'Unable to Check Eligibility';
-                eligibilityStatus.className = 'text-warning';
-                eligibilityMessage.textContent = 'There was an error checking your eligibility. Please try again later.';
             }
-        }
-
-        function getStatusClass(status) {
-            switch(status) {
-                case 'completed': return 'success';
-                case 'scheduled': return 'primary';
-                case 'cancelled': return 'danger';
-                case 'pending': return 'warning';
-                default: return 'secondary';
-            }
-        }
-
-        function viewDonationDetails(donationId) {
-            // Implement donation details modal or redirect
-            alert('Donation details for ID: ' + donationId);
         }
 
         async function loadDonationSchedules(userData) {
             try {
-                const schedules = await window.bloodConnectDB.getDonationSchedules(userData.uid);
-                const hospitals = await window.bloodConnectDB.getHospitals();
+                const schedules = await bloodConnectDB.getDonationSchedules(userData.uid);
                 const tableBody = document.getElementById('donationSchedulesTable');
-                
-                if (schedules.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-medical">No scheduled donations. <a href="donate.html">Schedule one now!</a></td></tr>';
+                if (!tableBody) return;
+
+                if (!schedules || schedules.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No scheduled donations. <a href="donate.html">Schedule one now!</a></td></tr>';
                     return;
                 }
 
                 tableBody.innerHTML = '';
-                schedules.sort((a, b) => new Date(a.donationDate) - new Date(b.donationDate)).forEach((schedule) => {
-                    const hospital = hospitals[schedule.hospitalId] || { name: schedule.hospitalName || 'Unknown Hospital' };
+                schedules.forEach((schedule) => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${new Date(schedule.donationDate).toLocaleDateString()}</td>
+                        <td>${schedule.donationDate ? new Date(schedule.donationDate).toLocaleDateString() : 'TBD'}</td>
                         <td>${schedule.donationTime || 'TBD'}</td>
-                        <td>${hospital.name || schedule.hospitalName}</td>
-                        <td><span class="badge badge-${getScheduleStatusClass(schedule.status)}">${formatScheduleStatus(schedule.status)}</span></td>
-                        <td>
-                            ${schedule.status === 'pending_screening' ? 
-                                '<span class="text-muted">Awaiting screening</span>' : 
-                                schedule.status === 'scheduled' ? 
-                                '<button class="btn-red-cross-outline btn-sm" onclick="viewScheduleDetails(\'' + schedule.id + '\')">View</button>' :
-                                '<span class="text-muted">-</span>'
-                            }
-                        </td>
+                        <td>${schedule.hospitalName || 'Unknown'}</td>
+                        <td><span class="badge bg-primary">${schedule.status || 'pending'}</span></td>
+                        <td><button class="btn btn-sm btn-outline-danger">View</button></td>
                     `;
                     tableBody.appendChild(row);
                 });
             } catch (error) {
                 console.error('Error loading donation schedules:', error);
-                document.getElementById('donationSchedulesTable').innerHTML = 
-                    '<tr><td colspan="5" class="text-center text-danger">Error loading schedules</td></tr>';
             }
         }
 
         async function loadHospitalEvents(userData) {
             try {
-                const events = await window.bloodConnectDB.getHospitalEvents();
-                const hospitals = await window.bloodConnectDB.getHospitals();
+                const events = await bloodConnectDB.getHospitalEvents();
                 const eventsList = document.getElementById('hospitalEventsList');
-                
-                // Filter upcoming events
-                const now = new Date();
-                const upcomingEvents = events
-                    .filter(event => new Date(event.eventDate) >= now)
-                    .sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate))
-                    .slice(0, 6); // Show up to 6 events
+                if (!eventsList) return;
 
-                if (upcomingEvents.length === 0) {
-                    eventsList.innerHTML = '<div class="col-12 text-center text-medical py-3">No upcoming hospital events at this time.</div>';
+                if (!events || events.length === 0) {
+                    eventsList.innerHTML = '<div class="col-12 text-center">No upcoming events</div>';
                     return;
                 }
+
+                const now = new Date();
+                const upcomingEvents = events.filter(e => 
+                    e && e.eventDate && new Date(e.eventDate) >= now
+                ).slice(0, 6);
 
                 eventsList.innerHTML = '';
                 upcomingEvents.forEach((event) => {
-                    const hospital = hospitals[event.hospitalId] || { name: event.hospitalName || 'Unknown Hospital', location: event.location || '' };
-                    const eventCard = document.createElement('div');
-                    eventCard.className = 'col-md-6 mb-3';
-                    eventCard.innerHTML = `
-                        <div class="red-cross-card">
-                            <div class="red-cross-card-body">
-                                <h5><i class="fa-solid fa-calendar-check text-red-cross me-2"></i>${event.eventName || 'Blood Donation Event'}</h5>
-                                <p class="mb-2"><i class="fa-solid fa-hospital me-2"></i>${hospital.name}</p>
-                                <p class="mb-2"><i class="fa-solid fa-map-marker-alt me-2"></i>${hospital.location || event.location || 'Location TBD'}</p>
-                                <p class="mb-2"><i class="fa-solid fa-clock me-2"></i>${new Date(event.eventDate).toLocaleDateString()} ${event.eventTime || ''}</p>
-                                ${event.description ? `<p class="text-medical">${event.description}</p>` : ''}
+                    const card = document.createElement('div');
+                    card.className = 'col-md-6 mb-3';
+                    card.innerHTML = `
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">${event.eventName || 'Blood Drive'}</h5>
+                                <p class="card-text">
+                                    <i class="fa-solid fa-hospital"></i> ${event.hospitalName || 'Unknown Hospital'}<br>
+                                    <i class="fa-solid fa-calendar"></i> ${event.eventDate ? new Date(event.eventDate).toLocaleDateString() : 'TBD'}<br>
+                                    <i class="fa-solid fa-map"></i> ${event.location || 'Location TBD'}
+                                </p>
                             </div>
                         </div>
                     `;
-                    eventsList.appendChild(eventCard);
+                    eventsList.appendChild(card);
                 });
             } catch (error) {
                 console.error('Error loading hospital events:', error);
-                document.getElementById('hospitalEventsList').innerHTML = 
-                    '<div class="col-12 text-center text-danger">Error loading events</div>';
             }
         }
 
-        function getScheduleStatusClass(status) {
-            switch(status) {
-                case 'scheduled': return 'success';
-                case 'pending_screening': return 'warning';
-                case 'screening_passed': return 'info';
-                case 'screening_failed': return 'danger';
-                case 'completed': return 'success';
-                case 'cancelled': return 'secondary';
-                default: return 'secondary';
+
+
+        // Handle logout button
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'logoutBtn') {
+                e.preventDefault();
+                authManager.logoutAndRedirect();
             }
-        }
-
-        function formatScheduleStatus(status) {
-            const statusMap = {
-                'pending_screening': 'Pending Screening',
-                'screening_passed': 'Screening Passed',
-                'screening_failed': 'Screening Failed',
-                'scheduled': 'Scheduled',
-                'completed': 'Completed',
-                'cancelled': 'Cancelled'
-            };
-            return statusMap[status] || status;
-        }
-
-        function viewScheduleDetails(scheduleId) {
-            // Implement schedule details view
-            alert('Schedule details for ID: ' + scheduleId);
-        }
-
-        async function loadVerificationStatus(userData) {
-            try {
-                const verificationStatus = userData.verificationStatus || 'not_verified';
-                const titleEl = document.getElementById('verificationStatusTitle');
-                const messageEl = document.getElementById('verificationStatusMessage');
-                const iconEl = document.getElementById('verificationStatusIcon');
-                const buttonsEl = document.getElementById('verificationActionButtons');
-
-                if (verificationStatus === 'approved') {
-                    titleEl.textContent = 'Profile Verified';
-                    titleEl.className = 'text-success';
-                    messageEl.textContent = 'Your profile has been verified. You can now apply for eligibility checks and schedule donations.';
-                    iconEl.innerHTML = '<i class="fa-solid fa-check-circle fa-3x text-success"></i>';
-                    buttonsEl.innerHTML = '';
-                } else if (verificationStatus === 'pending') {
-                    titleEl.textContent = 'Verification Pending';
-                    titleEl.className = 'text-warning';
-                    messageEl.textContent = 'Your verification documents are under review. You will be notified once approved.';
-                    iconEl.innerHTML = '<i class="fa-solid fa-clock fa-3x text-warning"></i>';
-                    buttonsEl.innerHTML = '<a href="donor-profile-verification.html" class="btn-red-cross-outline"><i class="fa-solid fa-eye me-2"></i>View Status</a>';
-                } else if (verificationStatus === 'rejected') {
-                    titleEl.textContent = 'Verification Rejected';
-                    titleEl.className = 'text-danger';
-                    messageEl.textContent = 'Your verification was rejected. Please resubmit your documents.';
-                    iconEl.innerHTML = '<i class="fa-solid fa-times-circle fa-3x text-danger"></i>';
-                    buttonsEl.innerHTML = '<a href="donor-profile-verification.html" class="btn-red-cross"><i class="fa-solid fa-upload me-2"></i>Resubmit Documents</a>';
-                } else {
-                    titleEl.textContent = 'Profile Not Verified';
-                    titleEl.className = 'text-info';
-                    messageEl.textContent = 'Please verify your profile by uploading your ID and address proof documents.';
-                    iconEl.innerHTML = '<i class="fa-solid fa-exclamation-circle fa-3x text-info"></i>';
-                    buttonsEl.innerHTML = '<a href="donor-profile-verification.html" class="btn-red-cross"><i class="fa-solid fa-upload me-2"></i>Upload Verification Documents</a>';
-                }
-            } catch (error) {
-                console.error('Error loading verification status:', error);
-            }
-        }
-
-        async function checkEligibilityApplicationStatus(userData) {
-            try {
-                // Check if user has already applied for eligibility
-                const schedules = await window.bloodConnectDB.getDonationSchedules(userData.uid);
-                const hasPendingEligibility = schedules.some(schedule => 
-                    schedule.status === 'pending_screening' || 
-                    schedule.status === 'screening_scheduled' ||
-                    schedule.status === 'screening_passed'
-                );
-
-                // Show eligibility section only if verified and not already applied
-                const verificationStatus = userData.verificationStatus;
-                if (verificationStatus === 'approved' && !hasPendingEligibility && userData.isEligible !== true) {
-                    document.getElementById('eligibilityApplicationSection').style.display = 'block';
-                } else {
-                    document.getElementById('eligibilityApplicationSection').style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Error checking eligibility application status:', error);
-            }
-        }
-
-        async function applyForEligibility() {
-            if (!confirm('Apply for eligibility check? A hospital will review your application and schedule a screening appointment.')) {
-                return;
-            }
-
-            try {
-                const userData = authManager.getCurrentUserData();
-                if (!userData) {
-                    alert('User data not found. Please log in again.');
-                    return;
-                }
-
-                // Create eligibility application notification for hospitals
-                const hospitals = await window.bloodConnectDB.getHospitals();
-                const hospitalIds = Object.keys(hospitals).filter(id => hospitals[id].role === 'hospital');
-
-                // Create notification for all hospitals
-                for (const hospitalId of hospitalIds) {
-                    await window.bloodConnectDB.createNotification({
-                        userId: hospitalId,
-                        type: 'eligibility',
-                        title: 'New Eligibility Application',
-                        message: `${userData.firstName || 'A donor'} has applied for eligibility check.`,
-                        priority: 'medium',
-                        actionUrl: 'hospital-dashboard.html',
-                        relatedUserId: userData.uid,
-                        status: 'pending',
-                        createdAt: new Date().toISOString()
-                    });
-                }
-
-                // Create a donation schedule with pending_screening status
-                await window.bloodConnectDB.createDonationSchedule({
-                    donorId: userData.uid,
-                    donorName: `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
-                    bloodType: userData.bloodType || 'Unknown',
-                    status: 'pending_screening',
-                    applicationDate: new Date().toISOString(),
-                    createdAt: new Date().toISOString()
-                });
-
-                // Update user data
-                await window.bloodConnectDB.updateUser(userData.uid, {
-                    eligibilityApplicationDate: new Date().toISOString(),
-                    eligibilityStatus: 'pending'
-                });
-
-                // Notify admin
-                const users = await window.bloodConnectDB.getUsers();
-                const adminUsers = Object.entries(users)
-                    .filter(([id, user]) => user.role === 'admin')
-                    .map(([id, user]) => id);
-
-                for (const adminId of adminUsers) {
-                    await window.bloodConnectDB.createNotification({
-                        userId: adminId,
-                        type: 'eligibility',
-                        title: 'New Eligibility Application',
-                        message: `${userData.firstName || 'A donor'} has applied for eligibility check.`,
-                        priority: 'medium',
-                        actionUrl: 'admin-approval-notifications.html',
-                        relatedUserId: userData.uid,
-                        createdAt: new Date().toISOString()
-                    });
-                }
-
-                alert('Eligibility application submitted successfully! Hospitals will review your application and schedule a screening appointment.');
-                document.getElementById('eligibilityApplicationSection').style.display = 'none';
-                loadDonationSchedules(userData);
-            } catch (error) {
-                console.error('Error applying for eligibility:', error);
-                alert('Error submitting eligibility application. Please try again.');
-            }
-        }
+        });
     </script>
 </body>
 </html>

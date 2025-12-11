@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="red-cross-styles.css">
     <!-- Unified Authentication Manager -->
     <script type="module" src="auth-manager.js"></script>
-    <script type="module" src="firebase-realtime.js"></script>
+    <script type="module" src="bloodConnectDB.js"></script>
 </head>
 <body>
     <!-- Red Cross Header -->
@@ -28,7 +28,7 @@
                     <a href="hospital-requests.html">Blood Requests</a>
                     <a href="hospital-inventory.html">Inventory</a>
                     <a href="hospital-patients.html">Patients</a>
-                    <a href="logout.html" class="btn-red-cross-outline">Logout</a>
+                    <button id="logoutBtn" class="btn-red-cross-outline" style="border:none; background:transparent; cursor:pointer;">Logout</button>
                 </div>
             </div>
         </div>
@@ -375,35 +375,28 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        let currentUser = null;
+    <script type="module">
+        import authManager from './auth-manager.js';
+        import bloodConnectDB from './bloodConnectDB.js';
+
         let currentUserData = null;
         let currentHospitalId = null;
 
-        // Wait for page to load
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Hospital Dashboard: Page loaded, checking authentication...');
-            
-            // Use the unified authentication system
-            authManager.addAuthListener((user, userData) => {
-                if (user && userData) {
-                    console.log('Hospital Dashboard: User authenticated:', userData.role);
-                    
-                    // Check if user is a hospital
-                    if (userData.role === 'hospital') {
-                        currentUser = user;
-                        currentUserData = userData;
-                        currentHospitalId = user.uid;
-                        loadHospitalDashboard(userData);
-                    } else {
-                        console.log('Hospital Dashboard: User is not a hospital, redirecting...');
-                        authManager.redirectByRole();
-                    }
-                } else {
-                    console.log('Hospital Dashboard: No user authenticated, redirecting to login');
-                    window.location.href = 'login.html';
-                }
-            });
+        // Verify user is hospital before loading dashboard
+        authManager.addAuthListener(async (user, userData) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            if (!userData || userData.role !== 'hospital') {
+                console.warn('User is not a hospital. Redirecting...');
+                await authManager.redirectByRole();
+                return;
+            }
+            // User is authenticated and is a hospital - load data
+            currentUserData = userData;
+            currentHospitalId = user.uid;
+            loadHospitalDashboard(userData);
         });
 
         function loadHospitalDashboard(userData) {
@@ -906,6 +899,14 @@
                 alert('Error creating event. Please try again.');
             }
         }
+
+        // Handle logout button
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'logoutBtn') {
+                e.preventDefault();
+                authManager.logoutAndRedirect();
+            }
+        });
     </script>
 </body>
 </html>

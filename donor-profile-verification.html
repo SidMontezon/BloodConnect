@@ -173,12 +173,12 @@
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Firebase -->
-    <script type="module" src="auth-manager.js"></script>
-    <script type="module" src="firebase-realtime.js"></script>
+    <!-- Firebase and Auth -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-storage.js";
+        import authManager from './auth-manager.js';
+        import bloodConnectDB from './bloodConnectDB.js';
         
         const firebaseConfig = {
             apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
@@ -281,27 +281,33 @@
         let userData = null;
 
         // Check authentication and verification status
-        document.addEventListener('DOMContentLoaded', function() {
-            authManager.addAuthListener((user, data) => {
-                if (!user || !data) {
-                    window.location.href = 'login.html';
-                    return;
-                }
+        authManager.addAuthListener(async (user, data) => {
+            if (!user || !data) {
+                window.location.href = 'login.html';
+                return;
+            }
 
-                if (data.role !== 'donor') {
-                    authManager.redirectByRole();
-                    return;
-                }
+            if (data.role !== 'donor') {
+                await authManager.redirectByRole();
+                return;
+            }
 
-                currentUserId = user.uid;
-                userData = data;
-                checkVerificationStatus();
-            });
+            currentUserId = user.uid;
+            userData = data;
+            checkVerificationStatus();
+        });
+
+        // Handle logout button
+        document.addEventListener('click', (e) => {
+            if (e.target?.id === 'logoutBtn' || e.target?.closest('a[href="logout.html"]')) {
+                e.preventDefault();
+                authManager.logoutAndRedirect();
+            }
         });
 
         async function checkVerificationStatus() {
             try {
-                const user = await window.bloodConnectDB.getUser(currentUserId);
+                const user = await bloodConnectDB.getUser(currentUserId);
                 
                 if (user && user.verificationStatus) {
                     showVerificationStatus(user.verificationStatus);
@@ -508,7 +514,7 @@
 
                 console.log('Updating user record...');
                 // Update user record
-                const updateResult = await window.bloodConnectDB.updateUser(currentUserId, {
+                const updateResult = await bloodConnectDB.updateUser(currentUserId, {
                     verificationStatus: 'pending',
                     idDocumentUrl: idUrl,
                     addressDocumentUrl: addressUrl,
@@ -521,7 +527,7 @@
 
                 console.log('Creating verification record...');
                 // Create verification record
-                const verificationResult = await window.bloodConnectDB.createVerification(verificationData);
+                const verificationResult = await bloodConnectDB.createVerification(verificationData);
                 
                 if (!verificationResult.success) {
                     throw new Error('Failed to create verification record: ' + verificationResult.message);
@@ -531,7 +537,7 @@
                 submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Sending notifications...';
                 
                 try {
-                    const users = await window.bloodConnectDB.getUsers();
+                    const users = await bloodConnectDB.getUsers();
                     const adminUsers = Object.entries(users)
                         .filter(([id, user]) => user.role === 'admin')
                         .map(([id, user]) => id);
@@ -539,7 +545,7 @@
                     // Notify all admin users
                     for (const adminId of adminUsers) {
                         try {
-                            await window.bloodConnectDB.createNotification({
+                            await bloodConnectDB.createNotification({
                                 userId: adminId,
                                 type: 'verification',
                                 title: 'New Donor Verification Request',

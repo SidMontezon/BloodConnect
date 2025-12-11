@@ -7,6 +7,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="red-cross-styles.css">
+    <script type="module" src="auth-manager.js"></script>
+    <script type="module" src="bloodConnectDB.js"></script>
 </head>
 <body>
     <header class="red-cross-header">
@@ -20,8 +22,8 @@
                     </div>
                 </a>
                 <div class="red-cross-nav">
-                    <a href="dashboard.html">Dashboard</a>
-                    <a href="logout.html" class="btn-red-cross-outline">Logout</a>
+                    <a href="admin.html">Dashboard</a>
+                    <button id="logoutBtn" class="btn-red-cross-outline" style="border:none; background:transparent; cursor:pointer;">Logout</button>
                 </div>
             </div>
         </div>
@@ -132,42 +134,54 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="auth-manager.js"></script>
-    <script type="module" src="firebase-realtime.js"></script>
-    <script>
-        // Check authentication and load blood stock overview
-        document.addEventListener('DOMContentLoaded', function() {
-            authManager.addAuthListener((user, userData) => {
-                if (!user || !userData || userData.role !== 'admin') {
-                    window.location.href = 'login.html';
-                    return;
-                }
-                loadBloodStockOverview();
-            });
+    <script type="module">
+        import authManager from './auth-manager.js';
+        import bloodConnectDB from './bloodConnectDB.js';
+
+        // Verify user is admin before loading dashboard
+        authManager.addAuthListener(async (user, userData) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            if (!userData || userData.role !== 'admin') {
+                console.warn('User is not an admin. Redirecting...');
+                window.location.href = 'login.html';
+                return;
+            }
+            // User is authenticated and is admin - load data
+            loadAdminDashboard(user, userData);
         });
+
+        async function loadAdminDashboard(user, userData) {
+            try {
+                await loadBloodStockOverview();
+            } catch (error) {
+                console.error('Error loading admin dashboard:', error);
+            }
+        }
 
         async function loadBloodStockOverview() {
             try {
-                // Get all hospitals
-                const hospitals = await window.bloodConnectDB.getHospitals();
-                // Get all hospital inventory
-                const inventory = await window.bloodConnectDB.getBloodInventory();
+                const inventory = await bloodConnectDB.getBloodInventory();
                 
-                // Calculate total by blood type across all hospitals
                 const totals = {
                     'A+': 0, 'A-': 0, 'B+': 0, 'B-': 0,
                     'O+': 0, 'O-': 0, 'AB+': 0, 'AB-': 0
                 };
                 
-                Object.values(inventory).forEach(item => {
-                    if (item.bloodType && totals.hasOwnProperty(item.bloodType)) {
-                        totals[item.bloodType] += (item.quantity || 0);
-                    }
-                });
+                if (inventory) {
+                    Object.values(inventory).forEach(item => {
+                        if (item.bloodType && totals.hasOwnProperty(item.bloodType)) {
+                            totals[item.bloodType] += (item.quantity || 0);
+                        }
+                    });
+                }
                 
                 const overviewContainer = document.getElementById('bloodStockOverview');
-                overviewContainer.innerHTML = '';
+                if (!overviewContainer) return;
                 
+                overviewContainer.innerHTML = '';
                 Object.entries(totals).forEach(([bloodType, quantity]) => {
                     const col = document.createElement('div');
                     col.className = 'col-md-3 col-sm-6';
@@ -182,10 +196,20 @@
                 });
             } catch (error) {
                 console.error('Error loading blood stock overview:', error);
-                document.getElementById('bloodStockOverview').innerHTML = 
-                    '<div class="col-12 text-center text-danger">Error loading blood stock data</div>';
+                const container = document.getElementById('bloodStockOverview');
+                if (container) {
+                    container.innerHTML = '<div class="col-12 text-center text-danger">Error loading blood stock data</div>';
+                }
             }
         }
+
+        // Handle logout button
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'logoutBtn') {
+                e.preventDefault();
+                authManager.logoutAndRedirect();
+            }
+        });
     </script>
 </body>
 </html>

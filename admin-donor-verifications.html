@@ -89,29 +89,84 @@
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Firebase -->
-    <script type="module" src="auth-manager.js"></script>
-    <script type="module" src="firebase-realtime.js"></script>
+    <script type="module">
+        import authManager from './auth-manager.js';
+        import bloodConnectDB from './bloodConnectDB.js';
 
-    <script>
         let currentAdminId = null;
 
-        document.addEventListener('DOMContentLoaded', function() {
-            authManager.addAuthListener((user, userData) => {
-                if (!user || !userData) {
-                    window.location.href = 'login.html';
-                    return;
-                }
+        authManager.addAuthListener(async (user, userData) => {
+            if (!user || !userData) {
+                window.location.href = 'login.html';
+                return;
+            }
 
-                if (userData.role !== 'admin') {
-                    authManager.redirectByRole();
-                    return;
-                }
+            if (userData.role !== 'admin') {
+                await authManager.redirectByRole();
+                return;
+            }
 
-                currentAdminId = user.uid;
-                loadVerifications();
-            });
+            currentAdminId = user.uid;
+            loadVerifications();
         });
+
+        async function loadVerifications() {
+            try {
+                const verifications = await bloodConnectDB.getVerifications();
+                const users = await bloodConnectDB.getUsers();
+                
+                const verificationsList = document.getElementById('verificationsList');
+                
+                // Filter pending verifications
+                const pendingVerifications = Object.entries(verifications || {})
+                    .filter(([id, verification]) => verification && verification.verificationStatus === 'pending')
+                    .map(([id, verification]) => ({ id, ...verification }));
+
+                if (pendingVerifications.length === 0) {
+                    verificationsList.innerHTML = `
+                        <div class="text-center text-medical py-5">
+                            <i class="fa-solid fa-check-circle fa-3x text-success mb-3"></i>
+                            <p>No pending verifications at this time.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                for (const verification of pendingVerifications) {
+                    const user = users[verification.userId];
+                    const userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Unknown User';
+                    const userEmail = user ? user.email : 'N/A';
+                    
+                    html += `
+                        <div class="red-cross-card mb-3">
+                            <div class="red-cross-card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5><i class="fa-solid fa-user me-2"></i>${userName}</h5>
+                                        <p class="text-muted mb-3"><i class="fa-solid fa-envelope me-2"></i>${userEmail}</p>
+                                        <p class="mb-2"><strong>Submitted:</strong> ${verification.submittedAt ? new Date(verification.submittedAt).toLocaleString() : 'N/A'}</p>
+                                        ${verification.additionalNotes ? `<p class="mb-2"><strong>Notes:</strong> ${verification.additionalNotes}</p>` : ''}
+                                    </div>
+                                    <div class="col-md-6 text-end">
+                                        <span class="badge bg-warning">Pending Review</span>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-12">
+                                        <p class="text-muted">Documents are pending for review. Click the buttons below to approve or reject.</p>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="d-flex gap-2 justify-content-end">
+                                            <button class="btn btn-success" onclick="window.approveVerification('${verification.id}', '${verification.userId}')">\n                                                <i class=\"fa-solid fa-check me-1\"></i>Approve\n                                            </button>\n                                            <button class=\"btn btn-danger\" onclick=\"window.rejectVerification('${verification.id}', '${verification.userId}')\">\n                                                <i class=\"fa-solid fa-times me-1\"></i>Reject\n                                            </button>\n                                        </div>\n                                    </div>\n                                </div>\n                            </div>\n                        </div>\n                    `;\n                }\n\n                verificationsList.innerHTML = html;\n            } catch (error) {\n                console.error('Error loading verifications:', error);\n                document.getElementById('verificationsList').innerHTML = `\n                    <div class=\"alert alert-danger\">\n                        <i class=\"fa-solid fa-exclamation-triangle me-2\"></i>\n                        Error loading verifications. Please try again.\n                    </div>\n                `;\n            }\n        }\n\n        window.approveVerification = async function(verificationId, userId) {\n            if (!confirm('Are you sure you want to approve this verification?')) {\n                return;\n            }\n\n            try {\n                // Update verification status\n                await bloodConnectDB.updateVerificationStatus(verificationId, 'approved', currentAdminId);\n                \n                // Update user verification status\n                await bloodConnectDB.updateUser(userId, {\n                    verificationStatus: 'approved',\n                    verifiedAt: new Date().toISOString(),\n                    verifiedBy: currentAdminId\n                });\n\n                // Create notification for donor\n                await bloodConnectDB.createNotification({\n                    userId: userId,\n                    type: 'verification',\n                    title: 'Verification Approved',\n                    message: 'Your profile verification has been approved! You can now access the donor dashboard.',\n                    priority: 'high',\n                    actionUrl: 'donor-dashboard.html',\n                    createdAt: new Date().toISOString()\n                });\n\n                alert('Verification approved successfully!');\n                loadVerifications();\n            } catch (error) {\n                console.error('Error approving verification:', error);\n                alert('Error approving verification. Please try again.');\n            }\n        };\n\n        window.rejectVerification = async function(verificationId, userId) {\n            const rejectionReason = prompt('Please provide a reason for rejection:');\n            if (!rejectionReason || rejectionReason.trim() === '') {\n                alert('Rejection reason is required.');\n                return;\n            }\n\n            try {\n                // Update verification status\n                await bloodConnectDB.updateVerificationStatus(verificationId, 'rejected', currentAdminId, rejectionReason);\n                \n                // Update user verification status\n                await bloodConnectDB.updateUser(userId, {\n                    verificationStatus: 'rejected',\n                    verificationRejectedAt: new Date().toISOString(),\n                    verificationRejectedBy: currentAdminId,\n                    verificationRejectionReason: rejectionReason\n                });\n\n                // Create notification for donor\n                await bloodConnectDB.createNotification({\n                    userId: userId,\n                    type: 'verification',\n                    title: 'Verification Rejected',\n                    message: `Your verification was rejected. Reason: ${rejectionReason}. Please resubmit your documents.`,\n                    priority: 'high',\n                    actionUrl: 'donor-profile-verification.html',\n                    createdAt: new Date().toISOString()\n                });\n\n                alert('Verification rejected.');\n                loadVerifications();\n            } catch (error) {\n                console.error('Error rejecting verification:', error);\n                alert('Error rejecting verification. Please try again.');\n            }\n        };\n\n        // Handle logout button\n        document.addEventListener('click', (e) => {\n            if (e.target && e.target.id === 'logoutBtn') {\n                e.preventDefault();\n                authManager.logoutAndRedirect();\n            }\n        });\n    </script>
 
         async function loadVerifications() {
             try {
@@ -279,7 +334,7 @@
                 console.error('Error rejecting verification:', error);
                 alert('Error rejecting verification. Please try again.');
             }
-        }
+        };
     </script>
 </body>
 </html>

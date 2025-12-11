@@ -1,237 +1,73 @@
 // Unified Authentication Manager for BloodConnect
-// This ensures consistent authentication across all pages
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+// Central auth helper used by dashboard/admin pages. Attaches window.authManager.
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
-// Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
-    authDomain: "bloodconnect-b5142.firebaseapp.com",
-    databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
-    projectId: "bloodconnect-b5142",
-    storageBucket: "bloodconnect-b5142.firebasestorage.app",
-    messagingSenderId: "631993835929",
-    appId: "1:631993835929:web:75554aca166e9058473308"
+  apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
+  authDomain: "bloodconnect-b5142.firebaseapp.com",
+  databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
+  projectId: "bloodconnect-b5142",
+  storageBucket: "bloodconnect-b5142.firebasestorage.app",
+  messagingSenderId: "631993835929",
+  appId: "1:631993835929:web:75554aca166e9058473308"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const database = getDatabase(app);
+// initialize app only once
+if (!getApps().length) {
+  initializeApp(firebaseConfig);
+}
+const auth = getAuth();
+const db = getDatabase();
 
-// Global authentication state
-let currentUser = null;
-let currentUserData = null;
-let authListeners = [];
-
-// Authentication Manager Class
-class AuthManager {
-    constructor() {
-        this.isInitialized = false;
-        this.init();
-    }
-
-    async init() {
-        if (this.isInitialized) return;
-        
-        console.log('AuthManager: Initializing...');
-        
-        // Set up auth state listener
-        onAuthStateChanged(auth, async (user) => {
-            console.log('AuthManager: Auth state changed:', user ? user.uid : 'No user');
-            
-            if (user) {
-                currentUser = user;
-                try {
-                    // Try to get user data from Realtime Database first (has verification status)
-                    const dbRef = ref(database, `users/${user.uid}`);
-                    const dbSnapshot = await get(dbRef);
-                    
-                    if (dbSnapshot.exists()) {
-                        currentUserData = dbSnapshot.val();
-                        currentUserData.uid = user.uid;
-                        console.log('AuthManager: User data loaded from Realtime DB:', currentUserData);
-                    } else {
-                        // Fallback to Firestore
-                        const userDoc = await getDoc(doc(db, "users", user.uid));
-                        if (userDoc.exists()) {
-                            currentUserData = userDoc.data();
-                            currentUserData.uid = user.uid;
-                            console.log('AuthManager: User data loaded from Firestore:', currentUserData);
-                        } else {
-                            console.log('AuthManager: User document not found');
-                            currentUserData = null;
-                        }
-                    }
-                } catch (error) {
-                    console.error('AuthManager: Error loading user data:', error);
-                    currentUserData = null;
-                }
-            } else {
-                currentUser = null;
-                currentUserData = null;
-            }
-            
-            // Notify all listeners
-            this.notifyListeners(user, currentUserData);
-        });
-        
-        this.isInitialized = true;
-        console.log('AuthManager: Initialized successfully');
-    }
-
-    // Add authentication listener
-    addAuthListener(callback) {
-        authListeners.push(callback);
-        
-        // If user is already authenticated, call callback immediately
-        if (currentUser && currentUserData) {
-            callback(currentUser, currentUserData);
-        }
-    }
-
-    // Remove authentication listener
-    removeAuthListener(callback) {
-        const index = authListeners.indexOf(callback);
-        if (index > -1) {
-            authListeners.splice(index, 1);
-        }
-    }
-
-    // Notify all listeners
-    notifyListeners(user, userData) {
-        authListeners.forEach(callback => {
-            try {
-                callback(user, userData);
-            } catch (error) {
-                console.error('AuthManager: Error in listener:', error);
-            }
-        });
-    }
-
-    // Get current user
-    getCurrentUser() {
-        return currentUser;
-    }
-
-    // Get current user data
-    getCurrentUserData() {
-        return currentUserData;
-    }
-
-    // Check if user is authenticated
-    isAuthenticated() {
-        return currentUser !== null;
-    }
-
-    // Check if user has specific role
-    hasRole(role) {
-        return currentUserData && currentUserData.role === role;
-    }
-
-    // Redirect based on role
-    redirectByRole() {
-        if (!currentUserData) {
-            console.log('AuthManager: No user data, redirecting to login');
-            window.location.href = 'login.html';
-            return;
-        }
-
-        const role = currentUserData.role;
-        console.log('AuthManager: Redirecting based on role:', role);
-
-        switch (role) {
-            case 'admin':
-                window.location.href = 'admin.html';
-                break;
-            case 'donor':
-                window.location.href = 'donor-dashboard.html';
-                break;
-            case 'hospital':
-                window.location.href = 'hospital-dashboard.html';
-                break;
-            case 'patient':
-                window.location.href = 'patient-dashboard.html';
-                break;
-            default:
-                window.location.href = 'dashboard.html';
-                break;
-        }
-    }
-
-    // Sign out
-    async signOut() {
-        try {
-            await signOut(auth);
-            console.log('AuthManager: User signed out');
-        } catch (error) {
-            console.error('AuthManager: Error signing out:', error);
-        }
-    }
-
-    // Wait for authentication to be ready
-    async waitForAuth() {
-        return new Promise((resolve) => {
-            if (this.isInitialized && currentUser !== undefined) {
-                resolve({ user: currentUser, userData: currentUserData });
-            } else {
-                const listener = (user, userData) => {
-                    this.removeAuthListener(listener);
-                    resolve({ user, userData });
-                };
-                this.addAuthListener(listener);
-            }
-        });
-    }
+async function fetchUserData(uid) {
+  if (!uid) return null;
+  try {
+    const snap = await get(ref(db, `users/${uid}`));
+    return snap.exists() ? snap.val() : null;
+  } catch (e) {
+    console.error('fetchUserData error', e);
+    return null;
+  }
 }
 
-// Create global instance
-const authManager = new AuthManager();
+const authManager = {
+  addAuthListener: (cb) => {
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        cb(null, null);
+        return;
+      }
+      const userData = await fetchUserData(user.uid);
+      cb(user, userData);
+    });
+  },
 
-// Export for use in other files
-window.AuthManager = AuthManager;
-window.authManager = authManager;
+  getCurrentUserData: async () => {
+    const user = auth.currentUser;
+    if (!user) return null;
+    return await fetchUserData(user.uid);
+  },
 
-// Utility functions
-window.authUtils = {
-    // Check authentication and redirect if needed
-    requireAuth: (redirectUrl = 'login.html') => {
-        return new Promise((resolve, reject) => {
-            authManager.addAuthListener((user, userData) => {
-                if (user && userData) {
-                    resolve({ user, userData });
-                } else {
-                    console.log('AuthUtils: User not authenticated, redirecting to:', redirectUrl);
-                    window.location.href = redirectUrl;
-                    reject(new Error('User not authenticated'));
-                }
-            });
-        });
-    },
-
-    // Get user role
-    getUserRole: () => {
-        return authManager.getCurrentUserData()?.role;
-    },
-
-    // Check if user has specific role
-    requireRole: (requiredRole) => {
-        return new Promise((resolve, reject) => {
-            authManager.addAuthListener((user, userData) => {
-                if (user && userData && userData.role === requiredRole) {
-                    resolve({ user, userData });
-                } else {
-                    console.log(`AuthUtils: User does not have required role: ${requiredRole}`);
-                    window.location.href = 'login.html';
-                    reject(new Error(`User does not have required role: ${requiredRole}`));
-                }
-            });
-        });
+  redirectByRole: async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
     }
+    const userData = await fetchUserData(user.uid);
+    const role = (userData && userData.role) || 'donor';
+    if (role === 'admin') window.location.href = 'admin.html';
+    else if (role === 'hospital') window.location.href = 'hospital-dashboard.html';
+    else window.location.href = 'donor-dashboard.html';
+  },
+
+  logoutAndRedirect: async () => {
+    try { await signOut(auth); } catch (e) { /* noop */ }
+    window.location.replace('login.html');
+  }
 };
 
-console.log('AuthManager: Loaded successfully');
+window.authManager = authManager;
+export default authManager;

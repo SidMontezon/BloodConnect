@@ -37,46 +37,36 @@
             </table>
         </div>
         <div class="alert" id="message" style="display:none;"></div>
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
-            authDomain: "bloodconnect-b5142.firebaseapp.com",
-            databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
-            projectId: "bloodconnect-b5142",
-            storageBucket: "bloodconnect-b5142.appspot.com",
-            messagingSenderId: "631993835929",
-            appId: "1:631993835929:web:75554aca166e9058473308"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js"></script>
+    <script type="module">
+        import authManager from './auth-manager.js';
+        import bloodConnectDB from './bloodConnectDB.js';
 
         function flash(message, type='info') {
             const el = document.getElementById('message');
-            el.className = `alert alert-${type}`;
-            el.innerText = message; el.style.display = 'block';
-            setTimeout(() => el.style.display = 'none', 2500);
-        }
-
-        function changeStatus(id, status) {
-            return db.ref('hospitalRequests/' + id + '/status').set(status);
+            if (el) {
+                el.className = `alert alert-${type}`;
+                el.innerText = message; 
+                el.style.display = 'block';
+                setTimeout(() => el.style.display = 'none', 2500);
+            }
         }
 
         function render(rows) {
             const tbody = document.getElementById('requestsBody');
+            if (!tbody) return;
+            
             tbody.innerHTML = '';
             Object.entries(rows || {}).forEach(([id, r]) => {
+                if (!r) return;
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${r.hospitalName || ''}</td>
-                    <td>${r.bloodGroup || ''}</td>
+                    <td>${r.hospitalName || r.requesterName || 'Unknown'}</td>
+                    <td>${r.bloodGroup || r.bloodType || 'N/A'}</td>
                     <td>${r.quantity || 0}</td>
                     <td><span class="badge bg-${r.status==='approved'?'success':r.status==='rejected'?'danger':'secondary'}">${r.status || 'pending'}</span></td>
                     <td>
@@ -87,18 +77,42 @@
             });
 
             tbody.querySelectorAll('button').forEach(btn => {
-                btn.addEventListener('click', (e) => {
+                btn.addEventListener('click', async (e) => {
                     const id = e.target.getAttribute('data-id');
                     const action = e.target.getAttribute('data-action');
                     const status = action === 'approve' ? 'approved' : 'rejected';
-                    changeStatus(id, status).then(() => flash(`Request ${status}`, status==='approved'?'success':'danger'));
+                    try {
+                        await bloodConnectDB.updateRequest(id, { status });
+                        flash(`Request ${status}`, status==='approved'?'success':'danger');
+                    } catch (error) {
+                        flash('Error updating request', 'danger');
+                    }
                 });
             });
         }
 
-        auth.onAuthStateChanged((user) => {
-            if (!user) { window.location.href = 'login.html'; return; }
-            db.ref('hospitalRequests').on('value', (snap) => render(snap.val()));
+        // Verify user is admin before loading page
+        authManager.addAuthListener(async (user, userData) => {
+            if (!user) { 
+                window.location.href = 'login.html'; 
+                return; 
+            }
+            if (!userData || userData.role !== 'admin') {
+                console.warn('User is not an admin. Redirecting...');
+                await authManager.redirectByRole();
+                return;
+            }
+            // Load requests data
+            const requests = await bloodConnectDB.getBloodRequests ? await bloodConnectDB.getBloodRequests() : {};
+            render(requests || {});
+        });
+
+        // Handle logout button
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'logoutBtn') {
+                e.preventDefault();
+                authManager.logoutAndRedirect();
+            }
         });
     </script>
 </body>

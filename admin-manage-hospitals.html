@@ -85,29 +85,32 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="auth-manager.js"></script>
-    <script type="module" src="firebase-realtime.js"></script>
-    <script>
-        let allHospitals = [];
-        let allInventory = {};
+    <script type="module">
+        import authManager from './auth-manager.js';
+        import bloodConnectDB from './bloodConnectDB.js';
 
-        document.addEventListener('DOMContentLoaded', function() {
-            authManager.addAuthListener((user, userData) => {
-                if (!user || !userData || userData.role !== 'admin') {
-                    window.location.href = 'login.html';
-                    return;
-                }
-                loadHospitals();
-            });
+        let allHospitals = [];
+
+        // Verify user is admin before loading dashboard
+        authManager.addAuthListener(async (user, userData) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            if (!userData || userData.role !== 'admin') {
+                console.warn('User is not an admin. Redirecting...');
+                await authManager.redirectByRole();
+                return;
+            }
+            // User is authenticated and is admin - load data
+            loadHospitals();
         });
 
+        // Function to load hospitals and their blood inventory
         async function loadHospitals() {
             try {
-                const users = await window.bloodConnectDB.getUsers();
-                const inventory = await window.bloodConnectDB.getBloodInventory();
-                allInventory = inventory;
-
-                // Filter hospitals
+                const users = await bloodConnectDB.getUsers();
+                
                 allHospitals = Object.entries(users)
                     .filter(([id, user]) => user.role === 'hospital')
                     .map(([id, user]) => ({ id, ...user }));
@@ -120,6 +123,7 @@
             }
         }
 
+        // Function to display hospitals and their blood inventory
         function displayHospitals(hospitals) {
             const container = document.getElementById('hospitalsList');
             
@@ -130,15 +134,6 @@
 
             container.innerHTML = '';
             hospitals.forEach(hospital => {
-                // Calculate hospital's inventory
-                const hospitalInventory = Object.values(allInventory).filter(item => 
-                    item.location === hospital.hospitalName || 
-                    item.hospitalId === hospital.id
-                );
-
-                const totalUnits = hospitalInventory.reduce((sum, item) => sum + (item.quantity || 0), 0);
-                const bloodTypes = [...new Set(hospitalInventory.map(item => item.bloodType))];
-
                 const card = document.createElement('div');
                 card.className = 'red-cross-card mb-3';
                 card.innerHTML = `
@@ -156,24 +151,18 @@
                             </div>
                             <div class="col-md-3">
                                 <div class="text-center">
-                                    <div class="red-cross-metric-value" style="font-size: 1.5rem;">${totalUnits.toFixed(1)}</div>
-                                    <div class="red-cross-metric-label">Total Units</div>
+                                    <div class="red-cross-metric-label">Hospital Account</div>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div>
-                                    <small class="text-muted d-block mb-1">Blood Types Available:</small>
-                                    <div>
-                                        ${bloodTypes.length > 0 ? 
-                                            bloodTypes.map(type => `<span class="badge bg-primary me-1">${type}</span>`).join('') :
-                                            '<span class="text-muted">None</span>'
-                                        }
-                                    </div>
+                                    <small class="text-muted d-block mb-1">Status:</small>
+                                    <span class="badge bg-success">Active</span>
                                 </div>
                             </div>
                             <div class="col-md-2 text-end">
                                 <button class="btn-red-cross btn-sm" onclick="viewHospitalDetails('${hospital.id}')">
-                                    <i class="fa-solid fa-eye me-1"></i>View Details
+                                    <i class="fa-solid fa-eye me-1"></i>View
                                 </button>
                             </div>
                         </div>
@@ -183,23 +172,11 @@
             });
         }
 
+        // Function to view hospital details
         async function viewHospitalDetails(hospitalId) {
             try {
                 const hospital = allHospitals.find(h => h.id === hospitalId);
                 if (!hospital) return;
-
-                const hospitalInventory = Object.values(allInventory).filter(item => 
-                    item.location === hospital.hospitalName || 
-                    item.hospitalId === hospital.id
-                );
-
-                const inventoryByType = {};
-                hospitalInventory.forEach(item => {
-                    if (!inventoryByType[item.bloodType]) {
-                        inventoryByType[item.bloodType] = 0;
-                    }
-                    inventoryByType[item.bloodType] += (item.quantity || 0);
-                });
 
                 const content = document.getElementById('hospitalDetailsContent');
                 content.innerHTML = `
@@ -211,54 +188,31 @@
                                 <tr><td><strong>Email:</strong></td><td>${hospital.email || 'N/A'}</td></tr>
                                 <tr><td><strong>Phone:</strong></td><td>${hospital.phone || 'N/A'}</td></tr>
                                 <tr><td><strong>Address:</strong></td><td>${hospital.address || 'N/A'}</td></tr>
-                                <tr><td><strong>License:</strong></td><td>${hospital.licenseNumber || 'N/A'}</td></tr>
                             </table>
                         </div>
                         <div class="col-md-6">
-                            <h6>Blood Inventory</h6>
+                            <h6>Account Details</h6>
                             <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Blood Type</th>
-                                        <th>Quantity (units)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${Object.entries(inventoryByType).length > 0 ? 
-                                        Object.entries(inventoryByType).map(([type, qty]) => `
-                                            <tr>
-                                                <td><span class="badge bg-primary">${type}</span></td>
-                                                <td><strong>${qty.toFixed(1)}</strong></td>
-                                            </tr>
-                                        `).join('') :
-                                        '<tr><td colspan="2" class="text-center text-muted">No inventory</td></tr>'
-                                    }
-                                </tbody>
+                                <tr><td><strong>Status:</strong></td><td><span class="badge bg-success">Active</span></td></tr>
+                                <tr><td><strong>Account Created:</strong></td><td>${hospital.createdAt ? new Date(hospital.createdAt).toLocaleDateString() : 'N/A'}</td></tr>
                             </table>
                         </div>
                     </div>
                 `;
-
-                const modal = new bootstrap.Modal(document.getElementById('hospitalDetailsModal'));
-                modal.show();
+                
+                new bootstrap.Modal(document.getElementById('hospitalDetailsModal')).show();
             } catch (error) {
-                console.error('Error loading hospital details:', error);
-                alert('Error loading hospital details');
+                console.error('Error viewing hospital details:', error);
             }
         }
 
-        // Search functionality
-        document.getElementById('searchHospitals').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const filtered = allHospitals.filter(hospital => {
-                const name = (hospital.hospitalName || hospital.firstName || '').toLowerCase();
-                const email = (hospital.email || '').toLowerCase();
-                const address = (hospital.address || '').toLowerCase();
-                return name.includes(searchTerm) || email.includes(searchTerm) || address.includes(searchTerm);
-            });
-            displayHospitals(filtered);
+        // Handle logout button
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'logoutBtn') {
+                e.preventDefault();
+                authManager.logoutAndRedirect();
+            }
         });
     </script>
 </body>
 </html>
-
