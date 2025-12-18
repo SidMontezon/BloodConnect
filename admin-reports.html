@@ -18,7 +18,7 @@
         <div class="container">
             <a class="navbar-brand" href="admin.html">Admin</a>
             <div class="collapse navbar-collapse"></div>
-            <button id="logoutBtn" class="nav-link text-white" style="border:none; background:transparent; cursor:pointer; font-size:1rem;">Logout</button>
+            <a class="nav-link text-white" href="logout.html">Logout</a>
         </div>
     </nav>
 
@@ -141,6 +141,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js"></script>
     <script type="module">
         import authManager from './auth-manager.js';
         import bloodConnectDB from './bloodConnectDB.js';
@@ -276,12 +279,19 @@
             }
         }
 
-        // Load page when user is authenticated
+        // Verify user is admin before loading page
         authManager.addAuthListener(async (user, userData) => {
-            if (user) {
-                // Load report data
-                loadReports();
+            if (!user) { 
+                window.location.href = 'login.html'; 
+                return; 
             }
+            if (!userData || userData.role !== 'admin') {
+                console.warn('User is not an admin. Redirecting...');
+                await authManager.redirectByRole();
+                return;
+            }
+            // Load report data
+            loadReports();
         });
 
         async function loadReports() {

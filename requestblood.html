@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Blood Request Form - BloodConnect</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="red-cross-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+<!-- Red Cross Header -->
+<header class="red-cross-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="donor-dashboard.html" class="red-cross-logo">
+                <div class="red-cross-icon">✚</div>
+                <div>
+                    <h1 class="red-cross-brand">BloodConnect</h1>
+                    <p class="red-cross-tagline">Medical Blood Management</p>
+                </div>
+            </a>
+            <div class="red-cross-nav">
+                <a href="donor-dashboard.html">Dashboard</a>
+                <a href="donate.html">Donate</a>
+                <a href="requestblood.html" class="active">Request Blood</a>
+                <a href="logout.html" class="btn-red-cross-outline">Logout</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Blood Request Form Section -->
+<section class="red-cross-request-form">
+    <div class="container">
+        <div class="red-cross-page-header">
+            <div class="text-center">
+                <h1 class="red-cross-page-title">Blood Request Form</h1>
+                <p class="red-cross-page-subtitle">Request blood for medical emergencies and treatments</p>
+            </div>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="red-cross-card">
+                    <div class="red-cross-card-header">
+                        <i class="fa-solid fa-hand-holding-droplet text-red-cross"></i>
+                        Blood Request Information
+                    </div>
+                    <div class="red-cross-card-body">
+                        <form id="requestForm">
+                            <!-- Requestor Information -->
+                            <div class="red-cross-section-title">
+                                <h4><i class="fa-solid fa-user text-red-cross me-2"></i>Requestor Information</h4>
+                            </div>
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="requestorName" class="red-cross-form-label">Full Name</label>
+                                        <input type="text" class="red-cross-form-control" id="requestorName" placeholder="Enter your full name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="requestorAge" class="red-cross-form-label">Age</label>
+                                        <input type="number" class="red-cross-form-control" id="requestorAge" placeholder="Enter your age" min="1" max="120" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="requestorContact" class="red-cross-form-label">Contact Number</label>
+                                        <input type="tel" class="red-cross-form-control" id="requestorContact" placeholder="Enter your contact number" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="bloodTypeRequired" class="red-cross-form-label">Blood Type Required</label>
+                                        <select class="red-cross-form-control" id="bloodTypeRequired" required>
+                                            <option value="">Select blood type</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Hospital Information -->
+                            <div class="red-cross-section-title">
+                                <h4><i class="fa-solid fa-hospital text-red-cross me-2"></i>Hospital Information</h4>
+                            </div>
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="hospitalName" class="red-cross-form-label">Hospital Name</label>
+                                        <input type="text" class="red-cross-form-control" id="hospitalName" placeholder="Enter the hospital name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="hospitalLocation" class="red-cross-form-label">Hospital Location</label>
+                                        <input type="text" class="red-cross-form-control" id="hospitalLocation" placeholder="Enter the hospital location" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Request Details -->
+                            <div class="red-cross-section-title">
+                                <h4><i class="fa-solid fa-calendar-check text-red-cross me-2"></i>Request Details</h4>
+                            </div>
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="requestDate" class="red-cross-form-label">Required Date</label>
+                                        <input type="date" class="red-cross-form-control" id="requestDate" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="urgency" class="red-cross-form-label">Urgency Level</label>
+                                        <select class="red-cross-form-control" id="urgency" required>
+                                            <option value="">Select urgency level</option>
+                                            <option value="emergency">Emergency</option>
+                                            <option value="urgent">Urgent</option>
+                                            <option value="normal">Normal</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="red-cross-form-group">
+                                        <label for="medicalReason" class="red-cross-form-label">Medical Reason</label>
+                                        <textarea class="red-cross-form-control" id="medicalReason" rows="3" placeholder="Briefly describe the medical reason for blood requirement"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-center">
+                                <button type="submit" class="btn-red-cross btn-lg">
+                                    <i class="fa-solid fa-hand-holding-medical me-2"></i>
+                                    Submit Blood Request
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
+            authDomain: "bloodconnect2-d094a.firebaseapp.com",
+            projectId: "bloodconnect2-d094a",
+            storageBucket: "bloodconnect2-d094a.firebasestorage.app",
+            messagingSenderId: "124251937624",
+            appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        document.getElementById("requestForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const requestorName = document.getElementById("requestorName").value;
+            const requestorAge = document.getElementById("requestorAge").value;
+            const requestorContact = document.getElementById("requestorContact").value;
+            const bloodTypeRequired = document.getElementById("bloodTypeRequired").value;
+            const hospitalName = document.getElementById("hospitalName").value;
+            const hospitalLocation = document.getElementById("hospitalLocation").value;
+            const requestDate = document.getElementById("requestDate").value;
+
+            // Save request data to Firestore
+            db.collection("requests").add({
+                requestorName: requestorName,
+                requestorAge: requestorAge,
+                requestorContact: requestorContact,
+                bloodTypeRequired: bloodTypeRequired,
+                hospitalName: hospitalName,
+                hospitalLocation: hospitalLocation,
+                requestDate: requestDate
+            })
+            .then(() => {
+                alert("Your blood request has been submitted. We will contact you soon.");
+                window.location.href = "donatordashboard.html";  // Redirect to dashboard
+            })
+            .catch((error) => {
+                console.error("Error submitting request:", error);
+                alert("An error occurred. Please try again.");
+            });
+        });
+    </script>
+</body>
+</html>

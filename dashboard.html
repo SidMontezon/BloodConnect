@@ -24,7 +24,7 @@
                 </a>
                 <div class="red-cross-nav">
                     <a href="admin.html" class="active">Admin Panel</a>
-                    <button id="logoutBtn" class="btn-red-cross-outline" style="border:none; background:transparent; cursor:pointer;">Logout</button>
+                    <a href="logout.html" class="btn-red-cross-outline">Logout</a>
                 </div>
             </div>
         </div>
@@ -93,10 +93,7 @@
             appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
         };
 
-        // Initialize Firebase (only once to avoid duplicates)
-        if (!firebase.apps || !firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
 

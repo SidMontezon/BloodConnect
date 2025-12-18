@@ -1,16 +1,8 @@
-// Simple Realtime DB helper. Attaches window.bloodConnectDB.
-/*
-  This file delegates to the richer Realtime DB implementation in
-  `firebase-realtime.js`. That module initializes Firebase and creates
-  a `window.bloodConnectDB` instance with a full set of helpers.
+// bloodConnectDB.js
 
-  If for some reason `firebase-realtime.js` isn't present or hasn't
-  initialized, provide a small fallback surface so existing pages
-  won't completely break (they'll receive empty responses).
-*/
+import './firebase-realtime.js'; // Ensure firebase-realtime.js runs and initializes window.bloodConnectDB
 
-import './firebase-realtime.js';
-
+// Fallback functions if window.bloodConnectDB is not yet initialized
 const fallback = {
   _once: async () => ({}),
   getUsers: async () => ({}),
@@ -37,7 +29,48 @@ const fallback = {
   getDonationSchedules: async () => []
 };
 
-const bloodConnectDB = window.bloodConnectDB || fallback;
+// Real implementations using global window.bloodConnectDB instance
+const bloodConnectDB = window.bloodConnectDB || {};
+
+// ✅ ONLY FIX HERE: remove the broken `.database` check
+async function getNotifications() {
+  try {
+    if (window.bloodConnectDB.getNotifications) {
+      return await window.bloodConnectDB.getNotifications();
+    }
+    return {};
+  } catch (err) {
+    console.error('Failed to fetch notifications:', err);
+    return {};
+  }
+}
+
+async function getUsers() {
+  try {
+    if (window.bloodConnectDB.getUsers) {
+      const users = await window.bloodConnectDB.getUsers();
+      return users || {};
+    }
+    return {};
+  } catch (err) {
+    console.error('Failed to fetch users:', err);
+    return {};
+  }
+}
+
+// Provide fallbacks if methods missing on window.bloodConnectDB
+bloodConnectDB.getNotifications =
+  bloodConnectDB.getNotifications || getNotifications;
+
+bloodConnectDB.getUsers =
+  bloodConnectDB.getUsers || getUsers;
+
+// Merge fallback methods if missing
+for (const fn in fallback) {
+  if (!bloodConnectDB[fn]) {
+    bloodConnectDB[fn] = fallback[fn];
+  }
+}
 
 window.bloodConnectDB = bloodConnectDB;
 export default bloodConnectDB;

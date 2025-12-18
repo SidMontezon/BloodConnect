@@ -1,0 +1,140 @@
+{
+  "bloodInventory": {
+    "A_h14VlhwDDNch7Do1olCGMZE0e6q1": {
+      "bloodType": "A+",
+      "quantity": 50,
+      "hospitalId": "h14VlhwDDNch7Do1olCGMZE0e6q1",
+      "location": "John Lloyd Gualter Hospital",
+      "status": "available",
+      "createdAt": "2025-12-11T14:26:33.633Z",
+      "updatedAt": "2025-12-11T14:26:33.640Z"
+    },
+    "A_HcBC51j5V0c1vdXRkLEd2DFzgDb2": {
+      "bloodType": "A-",
+      "quantity": 40,
+      "hospitalId": "HcBC51j5V0c1vdXRkLEd2DFzgDb2",
+      "location": "Zeus Pudding Hospital",
+      "status": "available",
+      "createdAt": "2025-12-11T14:26:33.640Z",
+      "updatedAt": "2025-12-11T14:26:33.640Z"
+    },
+    "AB_HcBC51j5V0c1vdXRkLEd2DFzgDb2": {
+      "bloodType": "AB+",
+      "quantity": 10,
+      "hospitalId": "HcBC51j5V0c1vdXRkLEd2DFzgDb2",
+      "location": "Zeus Pudding Hospital",
+      "status": "available",
+      "createdAt": "2025-12-11T14:26:33.640Z",
+      "updatedAt": "2025-12-11T14:26:33.640Z"
+    },
+    "B_h14VlhwDDNch7Do1olCGMZE0e6q1": {
+      "bloodType": "B+",
+      "quantity": 20,
+      "hospitalId": "h14VlhwDDNch7Do1olCGMZE0e6q1",
+      "location": "John Lloyd Gualter Hospital",
+      "status": "available",
+      "createdAt": "2025-12-11T14:26:33.640Z",
+      "updatedAt": "2025-12-11T14:26:33.640Z"
+    },
+    "O_h14VlhwDDNch7Do1olCGMZE0e6q1": {
+      "bloodType": "O+:",
+      "quantity": 30,
+      "hospitalId": "h14VlhwDDNch7Do1olCGMZE0e6q1",
+      "location": "John Lloyd Gualter Hospital",
+      "status": "available",
+      "createdAt": "2025-12-11T14:26:33.640Z",
+      "updatedAt": "2025-12-11T14:26:33.640Z"
+    },
+    "O_HcBC51j5V0c1vdXRkLEd2DFzgDb2": {
+      "bloodType": "O-",
+      "quantity": 25,
+      "hospitalId": "HcBC51j5V0c1vdXRkLEd2DFzgDb2",
+      "location": "Zeus Pudding Hospital",
+      "status": "available",
+      "createdAt": "2025-12-11T14:26:33.640Z",
+      "updatedAt": "2025-12-11T14:26:33.640Z"
+    }
+  },
+  "hospitals": {
+    "HcBC51j5V0c1vdXRkLEd2DFzgDb2": {
+      "bloodInventory": {
+        "A-": {
+          "quantity": 40
+        },
+        "AB+": {
+          "quantity": 10
+        },
+        "O-": {
+          "quantity": 25
+        }
+      },
+      "location": "Zeus Pudding Hospital",
+      "hospitalName": "Zeus"
+    },
+    "h14VlhwDDNch7Do1olCGMZE0e6q1": {
+      "bloodInventory": {
+        "A+": {
+          "quantity": 50
+        },
+        "B+": {
+          "quantity": 20
+        },
+        "O+": {
+          "quantity": 30
+        }
+      },
+      "location": "John Lloyd Gualter Hospital",
+      "hospitalName": "John Lloyd"
+    }
+  },
+  "notifications": {
+    "0LgOGGmS2uUGj5xX70zPbErxRA43": {
+      "createdAt": "2025-11-27T16:25:00Z",
+      "isRead": false,
+      "message": "Your blood donation has been accepted!"
+    }
+  },
+  "systemSettings": {
+    "maintenanceMode": false,
+    "updatedAt": "2025-11-27T16:20:00Z"
+  },
+  "users": {
+    "0LgOGGmS2uUGj5xX70zPbErxRA43": {
+      "createdAt": "2025-10-23T23:43:08.000Z",
+      "email": "johnlloydgualter@gmail.com",
+      "firstName": "John Lloyd",
+      "isOnline": true,
+      "lastLogin": "2025-11-27T15:40:43.752Z",
+      "lastName": "Gualter",
+      "role": "hospital",
+      "updatedAt": "2025-11-27T15:40:43.752Z"
+    },
+    "HcBC51j5V0c1vdXRkLEd2DFzgDb2": {
+      "createdAt": "2025-11-26T21:52:59.000Z",
+      "email": "zpuds@gmail.com",
+      "firstName": "Zeus",
+      "lastName": "Pudding",
+      "role": "hospital"
+    },
+    "h14VlhwDDNch7Do1olCGMZE0e6q1": {
+      "createdAt": "2025-11-21T15:22:08.000Z",
+      "email": "johnlloydgualter10@gmail.com",
+      "firstName": "John Lloyd",
+      "lastName": "Gualter",
+      "role": "hospital"
+    },
+    "o43EFgPIUtTA6uaBBqnrMDMzOFl1": {
+      "createdAt": "2025-10-23T12:00:00.000Z",
+      "email": "jayjaysoriano@gmail.com",
+      "firstName": "JayJay",
+      "lastName": "Soriano",
+      "role": "admin"
+    },
+    "vJeWsMCKH4MhPw8uXW1VrZ89sKE3": {
+      "isOnline": true,
+      "lastLogin": "2025-12-11T13:07:12.685Z",
+      "lastSeen": "2025-12-11T13:07:16.495Z",
+      "updatedAt": "2025-12-11T13:07:12.685Z"
+    }
+  }
+}

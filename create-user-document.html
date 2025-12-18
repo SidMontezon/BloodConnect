@@ -75,6 +75,14 @@
                 </div>
             </div>
             
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="twoFactorEnabled">
+                    <label class="form-check-label" for="twoFactorEnabled">
+                        Enable 2FA
+                    </label>
+                </div>
+            </div>
             
             <button type="submit" class="btn btn-danger w-100">
                 <i class="fa-solid fa-plus"></i> Create User Document
@@ -109,10 +117,8 @@
         appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
     };
     
-    // Initialize Firebase (only once to avoid duplicates)
-    if (!firebase.apps || !firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
@@ -125,6 +131,7 @@
         const role = document.getElementById("userRole").value;
         const phone = document.getElementById("userPhone").value;
         const emailVerified = document.getElementById("emailVerified").checked;
+        const twoFactorEnabled = document.getElementById("twoFactorEnabled").checked;
 
         // First, try to find the user in Firebase Auth
         auth.fetchSignInMethodsForEmail(email)
@@ -143,6 +150,7 @@
                     email: email,
                     role: role,
                     emailVerified: emailVerified,
+                    twoFactorEnabled: twoFactorEnabled,
                     phoneNumber: phone ? '+63' + phone : '',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     needsUIDUpdate: true // Flag to indicate this needs the real UID
@@ -183,6 +191,7 @@
 
 </body>
 </html>
+
 
 
 

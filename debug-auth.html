@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloodConnect - Auth Debug</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="red-cross-styles.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <h2 class="text-center mb-4">
+            <i class="fa-solid fa-bug text-danger"></i>
+            Authentication Debug Tool
+        </h2>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fa-solid fa-sign-in-alt"></i> Test Login</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="debugLoginForm">
+                            <div class="mb-3">
+                                <label for="debugEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="debugEmail" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="debugPassword" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="debugPassword" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fa-solid fa-play"></i> Test Login
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fa-solid fa-info-circle"></i> Debug Info</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="debugInfo">
+                            <p><strong>Auth State:</strong> <span id="authState">Checking...</span></p>
+                            <p><strong>User ID:</strong> <span id="userId">None</span></p>
+                            <p><strong>User Role:</strong> <span id="userRole">None</span></p>
+                            <p><strong>Firebase Config:</strong> <span id="firebaseConfig">Loading...</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fa-solid fa-terminal"></i> Console Logs</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="consoleLogs" style="background-color: #f8f9fa; padding: 1rem; border-radius: 4px; font-family: monospace; max-height: 300px; overflow-y: auto;">
+                            <p>Debug logs will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fa-solid fa-tools"></i> Quick Fixes</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button class="btn btn-warning w-100" onclick="checkFirestoreRules()">
+                                    <i class="fa-solid fa-shield-alt"></i> Check Firestore Rules
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-info w-100" onclick="checkRealtimeRules()">
+                                    <i class="fa-solid fa-database"></i> Check Realtime Rules
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-success w-100" onclick="testDatabaseAccess()">
+                                    <i class="fa-solid fa-flask"></i> Test Database Access
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Firebase Scripts -->
+    <script type="module" src="firebase-integration.js"></script>
+    <script type="module" src="firebase-realtime.js"></script>
+
+    <script>
+        let debugLogs = [];
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            debugLogs.push({ message: logEntry, type });
+            
+            const consoleDiv = document.getElementById('consoleLogs');
+            consoleDiv.innerHTML = debugLogs.map(log => 
+                `<p style="color: ${log.type === 'error' ? 'red' : log.type === 'success' ? 'green' : 'black'}">${log.message}</p>`
+            ).join('');
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        // Test login form
+        document.getElementById('debugLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('debugEmail').value;
+            const password = document.getElementById('debugPassword').value;
+            
+            addLog(`Attempting login with email: ${email}`, 'info');
+            
+            try {
+                // Import Firebase auth functions
+                const { getAuth, signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js');
+                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js');
+                
+                const firebaseConfig = {
+                    apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
+                    authDomain: "bloodconnect-b5142.firebaseapp.com",
+                    databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
+                    projectId: "bloodconnect-b5142",
+                    storageBucket: "bloodconnect-b5142.firebasestorage.app",
+                    messagingSenderId: "631993835929",
+                    appId: "1:631993835929:web:75554aca166e9058473308"
+                };
+                
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                addLog(`Login successful! User ID: ${user.uid}`, 'success');
+                updateAuthInfo(user);
+                
+            } catch (error) {
+                addLog(`Login failed: ${error.message}`, 'error');
+                addLog(`Error code: ${error.code}`, 'error');
+            }
+        });
+        
+        function updateAuthInfo(user) {
+            document.getElementById('authState').textContent = 'Authenticated';
+            document.getElementById('userId').textContent = user.uid;
+            document.getElementById('userRole').textContent = 'Loading...';
+            
+            // Try to get user role from Firestore
+            getUserRole(user.uid);
+        }
+        
+        async function getUserRole(uid) {
+            try {
+                const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js');
+                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js');
+                
+                const firebaseConfig = {
+                    apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
+                    authDomain: "bloodconnect-b5142.firebaseapp.com",
+                    databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
+                    projectId: "bloodconnect-b5142",
+                    storageBucket: "bloodconnect-b5142.firebasestorage.app",
+                    messagingSenderId: "631993835929",
+                    appId: "1:631993835929:web:75554aca166e9058473308"
+                };
+                
+                const app = initializeApp(firebaseConfig);
+                const db = getFirestore(app);
+                
+                const userDoc = await getDoc(doc(db, "users", uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    document.getElementById('userRole').textContent = userData.role || 'No role set';
+                    addLog(`User role retrieved: ${userData.role}`, 'success');
+                } else {
+                    document.getElementById('userRole').textContent = 'No user document found';
+                    addLog('No user document found in Firestore', 'error');
+                }
+            } catch (error) {
+                document.getElementById('userRole').textContent = 'Error loading role';
+                addLog(`Error getting user role: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkFirestoreRules() {
+            addLog('Checking Firestore security rules...', 'info');
+            // This would require server-side implementation
+            addLog('Please check Firebase Console → Firestore Database → Rules', 'info');
+        }
+        
+        async function checkRealtimeRules() {
+            addLog('Checking Realtime Database security rules...', 'info');
+            // This would require server-side implementation
+            addLog('Please check Firebase Console → Realtime Database → Rules', 'info');
+        }
+        
+        async function testDatabaseAccess() {
+            addLog('Testing database access...', 'info');
+            try {
+                if (window.bloodConnectDB) {
+                    const stats = await bloodConnectDB.getSystemStats();
+                    addLog(`Database access successful! Stats: ${JSON.stringify(stats)}`, 'success');
+                } else {
+                    addLog('bloodConnectDB not available', 'error');
+                }
+            } catch (error) {
+                addLog(`Database access failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Initialize debug info
+        document.getElementById('firebaseConfig').textContent = 'Loaded';
+        addLog('Debug tool initialized', 'info');
+    </script>
+</body>
+</html>

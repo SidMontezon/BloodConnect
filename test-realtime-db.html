@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloodConnect - Realtime Database Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="red-cross-styles.css">
+    <style>
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        .test-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 4px;
+        }
+        .test-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .test-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .realtime-data {
+            max-height: 300px;
+            overflow-y: auto;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 1rem;
+        }
+        .data-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid #eee;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        .data-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Red Cross Header -->
+    <header class="red-cross-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="index.html" class="red-cross-logo">
+                    <div class="red-cross-icon">✚</div>
+                    <div>
+                        <h1 class="red-cross-brand">BloodConnect</h1>
+                        <p class="red-cross-tagline">Realtime Database Test</p>
+                    </div>
+                </a>
+                <div class="red-cross-nav">
+                    <a href="index.html">Home</a>
+                    <a href="admin.html">Admin</a>
+                    <a href="dashboard.html">Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="text-center mb-4">
+                    <i class="fa-solid fa-database text-red-cross"></i>
+                    Firebase Realtime Database Test
+                </h2>
+            </div>
+        </div>
+
+        <!-- Database Connection Test -->
+        <div class="test-section">
+            <h4><i class="fa-solid fa-plug text-primary"></i> Database Connection Test</h4>
+            <p>Test the connection to Firebase Realtime Database and verify basic functionality.</p>
+            <button class="btn btn-primary" onclick="testConnection()">
+                <i class="fa-solid fa-play"></i> Test Connection
+            </button>
+            <div id="connectionResult" class="test-result" style="display: none;"></div>
+        </div>
+
+        <!-- Sample Data Management -->
+        <div class="test-section">
+            <h4><i class="fa-solid fa-database text-success"></i> Sample Data Management</h4>
+            <p>Add or clear sample data in the Firebase Realtime Database.</p>
+            <div class="btn-group" role="group">
+                <button class="btn btn-success" onclick="addSampleData()">
+                    <i class="fa-solid fa-plus"></i> Add Sample Data
+                </button>
+                <button class="btn btn-warning" onclick="clearAllData()">
+                    <i class="fa-solid fa-trash"></i> Clear All Data
+                </button>
+            </div>
+            <div id="sampleDataResult" class="test-result" style="display: none;"></div>
+        </div>
+
+        <!-- Real-time Data Monitoring -->
+        <div class="test-section">
+            <h4><i class="fa-solid fa-broadcast-tower text-info"></i> Real-time Data Monitoring</h4>
+            <p>Monitor real-time updates from the database. Data will update automatically when changes occur.</p>
+            <div class="row">
+                <div class="col-md-4">
+                    <button class="btn btn-info w-100" onclick="startMonitoring('bloodInventory')">
+                        <i class="fa-solid fa-eye"></i> Monitor Inventory
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-info w-100" onclick="startMonitoring('bloodRequests')">
+                        <i class="fa-solid fa-eye"></i> Monitor Requests
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-info w-100" onclick="startMonitoring('donations')">
+                        <i class="fa-solid fa-eye"></i> Monitor Donations
+                    </button>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-secondary" onclick="stopAllMonitoring()">
+                    <i class="fa-solid fa-stop"></i> Stop All Monitoring
+                </button>
+            </div>
+            <div id="realtimeData" class="realtime-data mt-3" style="display: none;">
+                <h6>Real-time Data:</h6>
+                <div id="realtimeContent"></div>
+            </div>
+        </div>
+
+        <!-- CRUD Operations Test -->
+        <div class="test-section">
+            <h4><i class="fa-solid fa-cogs text-warning"></i> CRUD Operations Test</h4>
+            <p>Test Create, Read, Update, and Delete operations on the database.</p>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Add New Blood Inventory</h6>
+                    <form id="addInventoryForm">
+                        <div class="mb-2">
+                            <input type="text" class="form-control" id="bloodType" placeholder="Blood Type (e.g., O+)" required>
+                        </div>
+                        <div class="mb-2">
+                            <input type="number" class="form-control" id="quantity" placeholder="Quantity" required>
+                        </div>
+                        <div class="mb-2">
+                            <input type="text" class="form-control" id="location" placeholder="Location" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fa-solid fa-plus"></i> Add Inventory
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="col-md-6">
+                    <h6>Add New Blood Request</h6>
+                    <form id="addRequestForm">
+                        <div class="mb-2">
+                            <input type="text" class="form-control" id="reqBloodType" placeholder="Blood Type" required>
+                        </div>
+                        <div class="mb-2">
+                            <input type="number" class="form-control" id="reqQuantity" placeholder="Quantity" required>
+                        </div>
+                        <div class="mb-2">
+                            <select class="form-control" id="urgency" required>
+                                <option value="">Select Urgency</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fa-solid fa-plus"></i> Add Request
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="crudResult" class="test-result mt-3" style="display: none;"></div>
+        </div>
+
+        <!-- Statistics Dashboard -->
+        <div class="test-section">
+            <h4><i class="fa-solid fa-chart-bar text-purple"></i> System Statistics</h4>
+            <p>View real-time statistics and analytics from the database.</p>
+            <button class="btn btn-purple" onclick="loadStatistics()">
+                <i class="fa-solid fa-chart-line"></i> Load Statistics
+            </button>
+            <div id="statisticsResult" class="test-result mt-3" style="display: none;"></div>
+        </div>
+
+        <!-- Search and Filter Test -->
+        <div class="test-section">
+            <h4><i class="fa-solid fa-search text-dark"></i> Search and Filter Test</h4>
+            <p>Test search and filtering capabilities of the database.</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Search by Blood Type</h6>
+                    <div class="input-group">
+                        <select class="form-control" id="searchBloodType">
+                            <option value="">Select Blood Type</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                        </select>
+                        <button class="btn btn-outline-primary" onclick="searchByBloodType()">
+                            <i class="fa-solid fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6>Search by Request Status</h6>
+                    <div class="input-group">
+                        <select class="form-control" id="searchStatus">
+                            <option value="">Select Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="fulfilled">Fulfilled</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        <button class="btn btn-outline-primary" onclick="searchByStatus()">
+                            <i class="fa-solid fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="searchResult" class="test-result mt-3" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Firebase Realtime Database Scripts -->
+    <script type="module" src="firebase-realtime.js"></script>
+    <script type="module" src="database-schema.js"></script>
+    <script type="module" src="add-sample-data.js"></script>
+
+    <script>
+        // Global variables for monitoring
+        let activeListeners = {};
+        
+        // Test database connection
+        async function testConnection() {
+            const resultDiv = document.getElementById('connectionResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result';
+            resultDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Testing connection...';
+            
+            try {
+                // Test basic database operations
+                const testData = { test: 'connection', timestamp: new Date().toISOString() };
+                await bloodConnectDB.createUser('test-user', testData);
+                
+                const userData = await bloodConnectDB.getUser('test-user');
+                
+                if (userData && userData.test === 'connection') {
+                    resultDiv.className = 'test-result test-success';
+                    resultDiv.innerHTML = '<i class="fa-solid fa-check-circle"></i> Database connection successful!';
+                } else {
+                    throw new Error('Data verification failed');
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result test-error';
+                resultDiv.innerHTML = `<i class="fa-solid fa-exclamation-circle"></i> Connection failed: ${error.message}`;
+            }
+        }
+
+        // Add sample data
+        async function addSampleData() {
+            const resultDiv = document.getElementById('sampleDataResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result';
+            resultDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding sample data...';
+            
+            try {
+                const result = await window.addSampleData();
+                if (result.success) {
+                    resultDiv.className = 'test-result test-success';
+                    resultDiv.innerHTML = '<i class="fa-solid fa-check-circle"></i> Sample data added successfully!';
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result test-error';
+                resultDiv.innerHTML = `<i class="fa-solid fa-exclamation-circle"></i> Error: ${error.message}`;
+            }
+        }
+
+        // Clear all data
+        async function clearAllData() {
+            if (!confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
+                return;
+            }
+            
+            const resultDiv = document.getElementById('sampleDataResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result';
+            resultDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Clearing data...';
+            
+            try {
+                const result = await window.clearAllData();
+                if (result.success) {
+                    resultDiv.className = 'test-result test-success';
+                    resultDiv.innerHTML = '<i class="fa-solid fa-check-circle"></i> All data cleared successfully!';
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result test-error';
+                resultDiv.innerHTML = `<i class="fa-solid fa-exclamation-circle"></i> Error: ${error.message}`;
+            }
+        }
+
+        // Start real-time monitoring
+        function startMonitoring(dataType) {
+            const dataDiv = document.getElementById('realtimeData');
+            const contentDiv = document.getElementById('realtimeContent');
+            
+            dataDiv.style.display = 'block';
+            contentDiv.innerHTML = `<h6>Monitoring ${dataType}...</h6>`;
+            
+            // Stop existing listener if any
+            if (activeListeners[dataType]) {
+                activeListeners[dataType]();
+            }
+            
+            // Start new listener
+            const unsubscribe = bloodConnectDB.listenToBloodInventory((data) => {
+                if (dataType === 'bloodInventory') {
+                    displayRealtimeData(data, 'Blood Inventory');
+                }
+            });
+            
+            if (dataType === 'bloodRequests') {
+                const unsubscribe = bloodConnectDB.listenToBloodRequests((data) => {
+                    displayRealtimeData(data, 'Blood Requests');
+                });
+            }
+            
+            if (dataType === 'donations') {
+                const unsubscribe = bloodConnectDB.listenToDonations((data) => {
+                    displayRealtimeData(data, 'Donations');
+                });
+            }
+            
+            activeListeners[dataType] = unsubscribe;
+        }
+
+        // Display real-time data
+        function displayRealtimeData(data, title) {
+            const contentDiv = document.getElementById('realtimeContent');
+            let html = `<h6>${title} (Updated: ${new Date().toLocaleTimeString()})</h6>`;
+            
+            if (Object.keys(data).length === 0) {
+                html += '<p class="text-muted">No data available</p>';
+            } else {
+                Object.entries(data).forEach(([id, item]) => {
+                    html += `<div class="data-item"><strong>${id}:</strong> ${JSON.stringify(item, null, 2)}</div>`;
+                });
+            }
+            
+            contentDiv.innerHTML = html;
+        }
+
+        // Stop all monitoring
+        function stopAllMonitoring() {
+            Object.values(activeListeners).forEach(unsubscribe => {
+                if (unsubscribe) unsubscribe();
+            });
+            activeListeners = {};
+            
+            const dataDiv = document.getElementById('realtimeData');
+            dataDiv.style.display = 'none';
+        }
+
+        // Load statistics
+        async function loadStatistics() {
+            const resultDiv = document.getElementById('statisticsResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result';
+            resultDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading statistics...';
+            
+            try {
+                const stats = await bloodConnectDB.getSystemStats();
+                resultDiv.className = 'test-result test-success';
+                resultDiv.innerHTML = `
+                    <h6><i class="fa-solid fa-chart-bar"></i> System Statistics</h6>
+                    <ul>
+                        <li>Total Inventory Items: ${stats.totalInventoryItems || 0}</li>
+                        <li>Total Requests: ${stats.totalRequests || 0}</li>
+                        <li>Total Donations: ${stats.totalDonations || 0}</li>
+                        <li>Pending Requests: ${stats.pendingRequests || 0}</li>
+                        <li>Completed Requests: ${stats.completedRequests || 0}</li>
+                    </ul>
+                `;
+            } catch (error) {
+                resultDiv.className = 'test-result test-error';
+                resultDiv.innerHTML = `<i class="fa-solid fa-exclamation-circle"></i> Error: ${error.message}`;
+            }
+        }
+
+        // Search by blood type
+        async function searchByBloodType() {
+            const bloodType = document.getElementById('searchBloodType').value;
+            if (!bloodType) {
+                alert('Please select a blood type');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('searchResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result';
+            resultDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Searching...';
+            
+            try {
+                const results = await bloodConnectDB.searchBloodByType(bloodType);
+                resultDiv.className = 'test-result test-success';
+                resultDiv.innerHTML = `
+                    <h6>Search Results for Blood Type: ${bloodType}</h6>
+                    <pre>${JSON.stringify(results, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.className = 'test-result test-error';
+                resultDiv.innerHTML = `<i class="fa-solid fa-exclamation-circle"></i> Error: ${error.message}`;
+            }
+        }
+
+        // Search by status
+        async function searchByStatus() {
+            const status = document.getElementById('searchStatus').value;
+            if (!status) {
+                alert('Please select a status');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('searchResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result';
+            resultDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Searching...';
+            
+            try {
+                const results = await bloodConnectDB.searchRequestsByStatus(status);
+                resultDiv.className = 'test-result test-success';
+                resultDiv.innerHTML = `
+                    <h6>Search Results for Status: ${status}</h6>
+                    <pre>${JSON.stringify(results, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.className = 'test-result test-error';
+                resultDiv.innerHTML = `<i class="fa-solid fa-exclamation-circle"></i> Error: ${error.message}`;
+            }
+        }
+
+        // Form handlers
+        document.getElementById('addInventoryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const inventoryData = {
+                bloodType: document.getElementById('bloodType').value,
+                quantity: parseInt(document.getElementById('quantity').value),
+                location: document.getElementById('location').value,
+                expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                collectionDate: new Date().toISOString().split('T')[0],
+                status: 'available',
+                temperature: '4°C',
+                notes: 'Test inventory item'
+            };
+            
+            const resultDiv = document.getElementById('crudResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result';
+            resultDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding inventory...';
+            
+            try {
+                const result = await bloodConnectDB.addBloodInventory(inventoryData);
+                if (result.success) {
+                    resultDiv.className = 'test-result test-success';
+                    resultDiv.innerHTML = `<i class="fa-solid fa-check-circle"></i> ${result.message}`;
+                    document.getElementById('addInventoryForm').reset();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result test-error';
+                resultDiv.innerHTML = `<i class="fa-solid fa-exclamation-circle"></i> Error: ${error.message}`;
+            }
+        });
+
+        document.getElementById('addRequestForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const requestData = {
+                requesterId: 'test-requester',
+                requesterType: 'hospital',
+                bloodType: document.getElementById('reqBloodType').value,
+                quantity: parseInt(document.getElementById('reqQuantity').value),
+                urgency: document.getElementById('urgency').value,
+                reason: 'Test request',
+                patientName: 'Test Patient',
+                hospitalName: 'Test Hospital',
+                contactPerson: 'Test Contact',
+                contactPhone: '+1234567890',
+                requestedDate: new Date().toISOString().split('T')[0],
+                requiredDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                notes: 'Test blood request'
+            };
+            
+            const resultDiv = document.getElementById('crudResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'test-result';
+            resultDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding request...';
+            
+            try {
+                const result = await bloodConnectDB.createBloodRequest(requestData);
+                if (result.success) {
+                    resultDiv.className = 'test-result test-success';
+                    resultDiv.innerHTML = `<i class="fa-solid fa-check-circle"></i> ${result.message}`;
+                    document.getElementById('addRequestForm').reset();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                resultDiv.className = 'test-result test-error';
+                resultDiv.innerHTML = `<i class="fa-solid fa-exclamation-circle"></i> Error: ${error.message}`;
+            }
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            stopAllMonitoring();
+        });
+    </script>
+</body>
+</html>

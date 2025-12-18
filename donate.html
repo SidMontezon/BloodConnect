@@ -7,9 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="red-cross-styles.css">
-    <!-- Unified Authentication Manager -->
-    <script type="module" src="auth-manager.js"></script>
-    <script type="module" src="bloodConnectDB.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
@@ -26,10 +23,9 @@
             </a>
             <div class="red-cross-nav">
                 <a href="donor-dashboard.html">Dashboard</a>
-                <a href="donate.html" class="active">Schedule Donation</a>
-                <a href="donor-profile.html">Profile</a>
-                <a href="donor-history.html">History</a>
-                <button id="logoutBtn" class="btn-red-cross-outline" style="border:none; background:transparent; cursor:pointer;">Logout</button>
+                <a href="donate.html" class="active">Donate</a>
+                <a href="requestblood.html">Request Blood</a>
+                <a href="logout.html" class="btn-red-cross-outline">Logout</a>
             </div>
         </div>
     </div>
@@ -104,9 +100,11 @@
                             <div class="row g-3 mb-4">
                                 <div class="col-md-12">
                                     <div class="red-cross-form-group">
-                                        <label for="hospitalName" class="red-cross-form-label">Preferred Hospital (enter manually)</label>
-                                        <input type="text" class="red-cross-form-control" id="hospitalName" placeholder="Enter hospital name">
-                                        <small class="text-muted">Type the hospital name manually (leave blank if none)</small>
+                                        <label for="hospitalName" class="red-cross-form-label">Select Hospital</label>
+                                        <select class="red-cross-form-control" id="hospitalName" required>
+                                            <option value="">Loading hospitals...</option>
+                                        </select>
+                                        <small class="text-muted">Select a hospital from the list or enter manually if not listed</small>
                                     </div>
                                 </div>
                             </div>
@@ -171,24 +169,21 @@
 
         authManager.addAuthListener((user, data) => {
                 if (!user || !data) {
-                    console.warn('No authenticated user — continuing in non-restrictive mode');
-                    currentUser = null;
-                    userData = null;
-                    // Populate hospitals for anonymous users
-                    loadHospitals();
+                    window.location.href = 'login.html';
                     return;
                 }
 
-                // Authenticated user — pre-fill form where possible
-                console.log('Donate page: User authenticated:', data.email, 'Role:', data.role || 'donor');
+                if (data.role !== 'donor') {
+                    authManager.redirectByRole();
+                    return;
+                }
 
                 currentUser = user;
                 userData = data;
                 loadUserData();
                 loadHospitals();
-            });
 
-            function loadUserData() {
+        function loadUserData() {
             // Pre-fill form with user data
             if (userData) {
                 const fullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim();
@@ -213,20 +208,25 @@
         async function loadHospitals() {
             try {
                 hospitals = await bloodConnectDB.getHospitals();
-
-                // If hospitals collection is empty, fall back to user records with role 'hospital'
-                if (!hospitals || Object.keys(hospitals).length === 0) {
-                    const users = await bloodConnectDB.getUsers();
-                    Object.entries(users || {}).forEach(([id, user]) => {
-                        if (user && user.role === 'hospital') {
-                            hospitals[id] = {
-                                id,
-                                name: user.hospitalName || `${user.firstName || ''} ${user.lastName || ''}`.trim(),
-                                location: user.city || user.address || ''
-                            };
+                const hospitalSelect = document.getElementById('hospitalName');
+                
+                // Clear existing options except the first one
+                hospitalSelect.innerHTML = '<option value="">Select a hospital</option>';
+                
+                // Add hospitals to select
+                Object.entries(hospitals).forEach(([id, hospital]) => {
+                    const option = document.createElement('option');
+                    option.value = id;
+                    option.textContent = `${hospital.name} - ${hospital.location || ''}`;
+                    hospitalSelect.appendChild(option);
+                });
+                    // Handle logout
+                    document.addEventListener('click', (e) => {
+                        if (e.target && (e.target.textContent === 'Logout' || e.target.href.includes('logout'))) {
+                            e.preventDefault();
+                            authManager.logoutAndRedirect();
                         }
                     });
-                }
             } catch (error) {
                 console.error('Error loading hospitals:', error);
             }
@@ -244,21 +244,8 @@
             const donorAge = document.getElementById("donorAge").value;
             const donorContact = document.getElementById("donorContact").value;
             const bloodType = document.getElementById("bloodType").value;
-                // Manual hospital input
-                const typedHospital = (document.getElementById("hospitalName").value || '').trim();
-                let hospitalId = null;
-                let hospitalName = typedHospital || null;
-                if (typedHospital) {
-                    // Try to find a matching known hospital (case-insensitive match on name)
-                    const match = Object.entries(hospitals || {}).find(([id, h]) => {
-                        const n = (h && (h.name || h.hospitalName || '')).toLowerCase();
-                        return n === typedHospital.toLowerCase();
-                    });
-                    if (match) {
-                        hospitalId = match[0];
-                        hospitalName = match[1].name || hospitalName;
-                    }
-                }
+                const hospitalId = document.getElementById("hospitalName").value;
+                const hospitalName = hospitalId && hospitals[hospitalId] ? hospitals[hospitalId].name : document.getElementById("hospitalName").options[document.getElementById("hospitalName").selectedIndex].text;
             const donationDate = document.getElementById("donationDate").value;
                 const donationTime = document.getElementById("donationTime").value;
 
@@ -274,30 +261,28 @@
                 }
 
                 // Create donation schedule
-                const donorId = currentUser ? currentUser.uid : `anon_${Date.now()}`;
-                const donorEmail = (userData && userData.email) ? userData.email : '';
                 const donationData = {
-                    donorId: donorId,
-                    donorName: donorName,
+                    donorId: currentUser.uid,
+                        donorName: donorName,
                     donorAge: parseInt(donorAge),
-                    donorContact: donorContact,
-                    donorEmail: donorEmail,
-                    bloodType: bloodType,
+                donorContact: donorContact,
+                    donorEmail: userData.email,
+                bloodType: bloodType,
                     hospitalId: hospitalId || null,
-                    hospitalName: hospitalName,
+                hospitalName: hospitalName,
                     donationDate: donationDate,
                     donationTime: donationTime,
                     status: 'pending_screening'
                 };
 
-                const scheduleResult = await bloodConnectDB.scheduleDonation(donationData);
+                const scheduleResult = await window.bloodConnectDB.scheduleDonation(donationData);
 
                 if (!scheduleResult.success) {
                     throw new Error(scheduleResult.message);
                 }
 
                 // Get all hospital users to notify
-                const users = await bloodConnectDB.getUsers();
+                const users = await window.bloodConnectDB.getUsers();
                 const hospitalUsers = Object.entries(users)
                     .filter(([id, user]) => user.role === 'hospital')
                     .map(([id, user]) => ({ userId: id, hospitalData: user }));
@@ -311,14 +296,14 @@
                     );
                     
                     if (matchingHospitalUser) {
-                        await bloodConnectDB.createNotification({
+                        await window.bloodConnectDB.createNotification({
                             userId: matchingHospitalUser.userId,
                             type: 'donation_scheduled',
                             title: 'New Donation Scheduled',
                             message: `${donorName} has scheduled a blood donation on ${new Date(donationDate).toLocaleDateString()} at ${donationTime || 'TBD'}. Screening required.`,
                             priority: 'high',
                             actionUrl: 'hospital-dashboard.html',
-                            relatedUserId: donorId,
+                            relatedUserId: currentUser.uid,
                             relatedScheduleId: scheduleResult.id,
                             createdAt: new Date().toISOString()
                         });
@@ -329,14 +314,14 @@
                 // Notify all other hospital users (for awareness)
                 for (const hospitalUser of hospitalUsers) {
                     if (!notifiedHospital || hospitalUser.userId !== hospitalId) {
-                        await bloodConnectDB.createNotification({
+                        await window.bloodConnectDB.createNotification({
                             userId: hospitalUser.userId,
                             type: 'donation_scheduled',
                             title: 'New Donation Scheduled',
                             message: `${donorName} has scheduled a blood donation at ${hospitalName}.`,
                             priority: 'medium',
                             actionUrl: 'hospital-dashboard.html',
-                            relatedUserId: donorId,
+                            relatedUserId: currentUser.uid,
                             createdAt: new Date().toISOString()
                         });
                     }
@@ -348,21 +333,21 @@
                     .map(([id, user]) => id);
 
                 for (const adminId of adminUsers) {
-                    await bloodConnectDB.createNotification({
+                    await window.bloodConnectDB.createNotification({
                         userId: adminId,
                         type: 'donation_scheduled',
                         title: 'New Donation Scheduled',
                         message: `${donorName} has scheduled a blood donation at ${hospitalName}.`,
                         priority: 'medium',
                         actionUrl: 'admin.html',
-                        relatedUserId: donorId,
+                        relatedUserId: currentUser.uid,
                         createdAt: new Date().toISOString()
                     });
                 }
 
                 // Notify donor
-                await bloodConnectDB.createNotification({
-                    userId: donorId,
+                await window.bloodConnectDB.createNotification({
+                    userId: currentUser.uid,
                     type: 'donation_scheduled',
                     title: 'Donation Scheduled Successfully',
                     message: `Your donation has been scheduled for ${new Date(donationDate).toLocaleDateString()}. You will be contacted for screening.`,
@@ -372,20 +357,12 @@
                 });
 
                 alert('Thank you for donating! Your donation has been scheduled. The hospital will contact you for screening.');
-                // Non-restrictive: do not force navigation; users may proceed to their dashboard manually.
+                window.location.href = 'donor-dashboard.html';
             } catch (error) {
                 console.error('Error submitting donation:', error);
                 alert('An error occurred. Please try again. ' + error.message);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fa-solid fa-hand-holding-medical me-2"></i>Submit Donation Request';
-            }
-        });
-
-        // Handle logout button
-        document.addEventListener('click', (e) => {
-            if (e.target && e.target.id === 'logoutBtn') {
-                e.preventDefault();
-                authManager.logoutAndRedirect();
             }
         });
     </script>

@@ -21,7 +21,7 @@
                 </a>
                 <div class="red-cross-nav">
                     <a href="admin.html">Admin Panel</a>
-                    <button id="logoutBtn" class="btn-red-cross-outline" style="border:none; background:transparent; cursor:pointer;">Logout</button>
+                    <a href="logout.html" class="btn-red-cross-outline">Logout</a>
                 </div>
             </div>
         </div>
@@ -93,10 +93,17 @@
 
         // Verify user is admin before loading dashboard
         authManager.addAuthListener(async (user, userData) => {
-            if (user) {
-                // User is authenticated - load data
-                loadHospitals();
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
             }
+            if (!userData || userData.role !== 'admin') {
+                console.warn('User is not an admin. Redirecting...');
+                await authManager.redirectByRole();
+                return;
+            }
+            // User is authenticated and is admin - load data
+            loadHospitals();
         });
 
         // Function to load hospitals and their blood inventory
@@ -153,11 +160,11 @@
                                     <span class="badge bg-success">Active</span>
                                 </div>
                             </div>
-                                        <div class="col-md-2 text-end">
-                                            <button class="btn-red-cross btn-sm view-hospital-btn" data-id="${hospital.id}">
-                                                <i class="fa-solid fa-eye me-1"></i>View
-                                            </button>
-                                        </div>
+                            <div class="col-md-2 text-end">
+                                <button class="btn-red-cross btn-sm" onclick="viewHospitalDetails('${hospital.id}')">
+                                    <i class="fa-solid fa-eye me-1"></i>View
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -199,18 +206,6 @@
             }
         }
 
-        // Attach event delegation for view buttons
-        const hospitalsList = document.getElementById('hospitalsList');
-        if (hospitalsList) {
-            hospitalsList.addEventListener('click', (e) => {
-                const btn = e.target.closest('.view-hospital-btn');
-                if (btn) {
-                    const id = btn.dataset.id;
-                    viewHospitalDetails(id);
-                }
-            });
-        }
-
         // Handle logout button
         document.addEventListener('click', (e) => {
             if (e.target && e.target.id === 'logoutBtn') {
@@ -218,9 +213,6 @@
                 authManager.logoutAndRedirect();
             }
         });
-
-        // Keep backward-compatible global reference
-        window.viewHospitalDetails = viewHospitalDetails;
     </script>
 </body>
 </html>

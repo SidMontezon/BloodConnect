@@ -316,21 +316,20 @@
     <script type="module">
         import authManager from './auth-manager.js';
         import bloodConnectDB from './bloodConnectDB.js';
-        import appFunctions from './app-functions.js';
 
-        // Enforce donor access for this page (client-side, sessionless)
-        if (!authManager.protectPage('donor')) {
-            // protectPage will redirect if not authorized
-        }
-
-        // Load dashboard when page loads
+        // Verify user is donor before loading dashboard
         authManager.addAuthListener(async (user, userData) => {
-            if (user) {
-                // User is authenticated - load data
-                loadDonorDashboard(user, userData);
-            } else {
-                // Non-restrictive mode: do not auto-redirect to login
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
             }
+            if (!userData || userData.role !== 'donor') {
+                console.warn('User is not a donor. Redirecting...');
+                await authManager.redirectByRole();
+                return;
+            }
+            // User is authenticated and is a donor - load data
+            loadDonorDashboard(user, userData);
         });
 
         function loadDonorDashboard(user, userData) {
@@ -523,35 +522,13 @@
             }
         }
 
-        // Global function for eligibility application
-        window.applyForEligibility = async function() {
-            try {
-                const user = await authManager.getCurrentUserData();
-                if (!user) {
-                    alert('You must be logged in');
-                    return;
-                }
 
-                const result = await appFunctions.applyForEligibilityCheck(user.uid);
-                if (result.success) {
-                    alert('Eligibility check application submitted! A hospital will review and contact you.');
-                    const section = document.getElementById('eligibilityApplicationSection');
-                    if (section) section.style.display = 'none';
-                } else {
-                    alert('Error: ' + result.message);
-                }
-            } catch (error) {
-                console.error('Error applying for eligibility:', error);
-                alert('Error applying for eligibility check');
-            }
-        };
 
         // Handle logout button
-        document.addEventListener('click', async (e) => {
+        document.addEventListener('click', (e) => {
             if (e.target && e.target.id === 'logoutBtn') {
                 e.preventDefault();
-                await authManager.logoutAndRedirect();
-                window.location.href = 'login.html';
+                authManager.logoutAndRedirect();
             }
         });
     </script>

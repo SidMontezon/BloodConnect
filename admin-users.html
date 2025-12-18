@@ -123,7 +123,12 @@
                                 Email Verified
                             </label>
                         </div>
-
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="twoFactorEnabled">
+                            <label class="form-check-label" for="twoFactorEnabled">
+                                Enable 2FA
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -164,12 +169,19 @@
 
     let allUsers = [];
 
-    // Load page when user is authenticated
+    // Verify user is admin before loading page
     authManager.addAuthListener(async (user, userData) => {
-        if (user) {
-            // User is authenticated - load data
-            loadUsers();
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
         }
+        if (!userData || userData.role !== 'admin') {
+            console.warn('User is not an admin. Redirecting...');
+            await authManager.redirectByRole();
+            return;
+        }
+        // User is authenticated and is admin - load data
+        loadUsers();
     });
 
     // Add user form submission

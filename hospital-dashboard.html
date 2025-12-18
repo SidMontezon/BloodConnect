@@ -153,7 +153,7 @@
                             </div>
                             <h4 class="red-cross-action-title">Schedule Event</h4>
                             <p class="red-cross-action-description">Create a blood donation event</p>
-                            <button class="btn-red-cross" id="openEventModalBtn">Schedule Event</button>
+                            <button class="btn-red-cross" onclick="openEventModal()">Schedule Event</button>
                         </div>
                     </div>
                 </div>
@@ -332,7 +332,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn-red-cross" id="submitEventBtn">Schedule Event</button>
+                    <button type="button" class="btn-red-cross" onclick="submitEvent()">Schedule Event</button>
                 </div>
             </div>
         </div>
@@ -368,7 +368,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn-red-cross" id="submitScreeningBtn">Schedule Screening</button>
+                    <button type="button" class="btn-red-cross" onclick="submitScreening()">Schedule Screening</button>
                 </div>
             </div>
         </div>
@@ -378,29 +378,25 @@
     <script type="module">
         import authManager from './auth-manager.js';
         import bloodConnectDB from './bloodConnectDB.js';
-        import appFunctions from './app-functions.js';
-
-        // Enforce hospital access for this page (client-side, sessionless)
-        if (!authManager.protectPage('hospital')) {
-            // protectPage will redirect if not authorized
-        }
 
         let currentUserData = null;
         let currentHospitalId = null;
 
-        // Load dashboard when page loads
+        // Verify user is hospital before loading dashboard
         authManager.addAuthListener(async (user, userData) => {
-            if (user) {
-                // Verify user is hospital (non-blocking)
-                if (userData.role !== 'hospital') {
-                    console.warn('Access check: hospital role required (non-blocking)');
-                }
-                currentUserData = userData;
-                currentHospitalId = user.uid;
-                loadHospitalDashboard(userData);
-            } else {
-                // Non-restrictive mode: do not auto-redirect to login
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
             }
+            if (!userData || userData.role !== 'hospital') {
+                console.warn('User is not a hospital. Redirecting...');
+                await authManager.redirectByRole();
+                return;
+            }
+            // User is authenticated and is a hospital - load data
+            currentUserData = userData;
+            currentHospitalId = user.uid;
+            loadHospitalDashboard(userData);
         });
 
         function loadHospitalDashboard(userData) {
@@ -419,11 +415,11 @@
 
         async function loadHospitalStats() {
             try {
-                const inventory = await bloodConnectDB.getBloodInventory();
+                const inventory = await window.bloodConnectDB.getBloodInventory();
                 const totalUnits = Object.values(inventory).reduce((sum, item) => sum + (item.quantity || 0), 0);
                 document.getElementById('totalBloodUnits').textContent = totalUnits;
 
-                const requests = await bloodConnectDB.getBloodRequests();
+                const requests = await window.bloodConnectDB.getBloodRequests();
                 const pendingCount = Object.values(requests).filter(req => req.status === 'pending').length;
                 document.getElementById('pendingRequests').textContent = pendingCount;
 
@@ -436,7 +432,7 @@
 
         async function loadRecentRequests() {
             try {
-                const requests = await bloodConnectDB.getBloodRequests();
+                const requests = await window.bloodConnectDB.getBloodRequests();
                 const tableBody = document.getElementById('recentRequestsTable');
                 
                 const hospitalRequests = Object.entries(requests)
@@ -458,7 +454,7 @@
                         <td>${request.quantity} units</td>
                         <td><span class="badge badge-${getRequestStatusClass(request.status)}">${request.status}</span></td>
                         <td>${new Date(request.requestedDate || request.createdAt).toLocaleDateString()}</td>
-                        <td><button class="btn-red-cross-outline btn-sm view-request-btn" data-request-id="${key}">View</button></td>
+                        <td><button class="btn-red-cross-outline btn-sm" onclick="viewRequestDetails('${key}')">View</button></td>
                     `;
                     tableBody.appendChild(row);
                 });
@@ -469,7 +465,7 @@
 
         async function loadBloodTypeDistribution() {
             try {
-                const inventory = await bloodConnectDB.getBloodInventory();
+                const inventory = await window.bloodConnectDB.getBloodInventory();
                 const chartContainer = document.getElementById('bloodTypeChart');
                 
                 const bloodTypeCounts = {};
@@ -513,10 +509,9 @@
 
         async function loadDonationScreenings() {
             try {
-                const schedulesArray = await bloodConnectDB.getDonationSchedules();
-                const users = await bloodConnectDB.getUsers() || {};
+                const schedules = await window.bloodConnectDB.getDonationSchedules();
+                const users = await window.bloodConnectDB.getUsers();
                 const tableBody = document.getElementById('screeningsTable');
-                const schedules = Array.isArray(schedulesArray) ? schedulesArray : Object.values(schedulesArray || {});
                 
                 // Filter schedules for this hospital or pending screening
                 const hospitalSchedules = schedules.filter(schedule => 
@@ -545,10 +540,10 @@
                         <td><span class="badge badge-${getScreeningStatusClass(schedule.status)}">${formatScreeningStatus(schedule.status)}</span></td>
                         <td>
                             ${schedule.status === 'pending_screening' ? 
-                                `<button class="btn btn-sm btn-primary open-screening-modal-btn" data-schedule-id="${schedule.id}" data-donor-name="${donorName}">Schedule Screening</button>` :
+                                `<button class="btn btn-sm btn-primary" onclick="openScreeningModal('${schedule.id}', '${donorName}')">Schedule Screening</button>` :
                                 schedule.status === 'screening_scheduled' ?
-                                `<button class="btn btn-sm btn-success mark-eligible-btn" data-schedule-id="${schedule.id}" data-donor-id="${schedule.donorId}">Mark Eligible</button>
-                                 <button class="btn btn-sm btn-danger mark-ineligible-btn" data-schedule-id="${schedule.id}" data-donor-id="${schedule.donorId}">Mark Ineligible</button>` :
+                                `<button class="btn btn-sm btn-success" onclick="markEligible('${schedule.id}', '${schedule.donorId}')">Mark Eligible</button>
+                                 <button class="btn btn-sm btn-danger" onclick="markIneligible('${schedule.id}', '${schedule.donorId}')">Mark Ineligible</button>` :
                                 '<span class="text-muted">-</span>'
                             }
                         </td>
@@ -564,7 +559,7 @@
 
         async function loadHospitalEvents() {
             try {
-                const events = await bloodConnectDB.getHospitalEvents(currentHospitalId);
+                const events = await window.bloodConnectDB.getHospitalEvents(currentHospitalId);
                 const eventsList = document.getElementById('hospitalEventsList');
                 
                 const now = new Date();
@@ -668,13 +663,13 @@
             }
 
             try {
-                const schedule = await bloodConnectDB.getDonationSchedule(scheduleId);
+                const schedule = await window.bloodConnectDB.getDonationSchedule(scheduleId);
                 if (!schedule) {
                     throw new Error('Schedule not found');
                 }
 
                 // Update schedule with screening date/time
-                await bloodConnectDB.updateDonationSchedule(scheduleId, {
+                await window.bloodConnectDB.updateDonationSchedule(scheduleId, {
                     status: 'screening_scheduled',
                     screeningDate: screeningDate,
                     screeningTime: screeningTime,
@@ -684,7 +679,7 @@
                 });
 
                 // Notify donor
-                await bloodConnectDB.createNotification({
+                await window.bloodConnectDB.createNotification({
                     userId: schedule.donorId,
                     type: 'screening',
                     title: 'Screening Scheduled',
@@ -710,13 +705,13 @@
             }
 
             try {
-                const schedule = await bloodConnectDB.getDonationSchedule(scheduleId);
+                const schedule = await window.bloodConnectDB.getDonationSchedule(scheduleId);
                 if (!schedule) {
                     throw new Error('Schedule not found');
                 }
 
                 // Update schedule status
-                await bloodConnectDB.updateDonationSchedule(scheduleId, {
+                await window.bloodConnectDB.updateDonationSchedule(scheduleId, {
                     status: 'screening_passed',
                     eligibilityStatus: 'eligible',
                     eligibilityDeterminedBy: currentHospitalId,
@@ -724,13 +719,13 @@
                 });
 
                 // Update user eligibility
-                await bloodConnectDB.updateUser(donorId, {
+                await window.bloodConnectDB.updateUser(donorId, {
                     isEligible: true,
                     eligibilityLastUpdated: new Date().toISOString()
                 });
 
                 // Notify donor
-                await bloodConnectDB.createNotification({
+                await window.bloodConnectDB.createNotification({
                     userId: donorId,
                     type: 'eligibility',
                     title: 'Eligible to Donate',
@@ -742,7 +737,7 @@
                 });
 
                 // Notify admin
-                const users = await bloodConnectDB.getUsers();
+                const users = await window.bloodConnectDB.getUsers();
                 const adminUsers = Object.entries(users)
                     .filter(([id, user]) => user.role === 'admin')
                     .map(([id, user]) => id);
@@ -753,7 +748,7 @@
                     : schedule.donorName || 'Unknown';
 
                 for (const adminId of adminUsers) {
-                    await bloodConnectDB.createNotification({
+                    await window.bloodConnectDB.createNotification({
                         userId: adminId,
                         type: 'eligibility',
                         title: 'Donor Eligible for Donation',
@@ -782,13 +777,13 @@
             }
 
             try {
-                const schedule = await bloodConnectDB.getDonationSchedule(scheduleId);
+                const schedule = await window.bloodConnectDB.getDonationSchedule(scheduleId);
                 if (!schedule) {
                     throw new Error('Schedule not found');
                 }
 
                 // Update schedule status
-                await bloodConnectDB.updateDonationSchedule(scheduleId, {
+                await window.bloodConnectDB.updateDonationSchedule(scheduleId, {
                     status: 'screening_failed',
                     eligibilityStatus: 'ineligible',
                     ineligibilityReason: reason,
@@ -797,13 +792,13 @@
                 });
 
                 // Update user eligibility
-                await bloodConnectDB.updateUser(donorId, {
+                await window.bloodConnectDB.updateUser(donorId, {
                     isEligible: false,
                     eligibilityLastUpdated: new Date().toISOString()
                 });
 
                 // Notify donor
-                await bloodConnectDB.createNotification({
+                await window.bloodConnectDB.createNotification({
                     userId: donorId,
                     type: 'eligibility',
                     title: 'Screening Results',
@@ -853,19 +848,19 @@
                     status: 'upcoming'
                 };
 
-                const result = await bloodConnectDB.createHospitalEvent(eventData);
+                const result = await window.bloodConnectDB.createHospitalEvent(eventData);
                 if (!result.success) {
                     throw new Error(result.message);
                 }
 
                 // Notify all donors
-                const users = await bloodConnectDB.getUsers();
+                const users = await window.bloodConnectDB.getUsers();
                 const donorUsers = Object.entries(users)
                     .filter(([id, user]) => user.role === 'donor')
                     .map(([id, user]) => id);
 
                 for (const donorId of donorUsers) {
-                    await bloodConnectDB.createNotification({
+                    await window.bloodConnectDB.createNotification({
                         userId: donorId,
                         type: 'event',
                         title: 'Upcoming Blood Donation Event',
@@ -883,7 +878,7 @@
                     .map(([id, user]) => id);
 
                 for (const adminId of adminUsers) {
-                    await bloodConnectDB.createNotification({
+                    await window.bloodConnectDB.createNotification({
                         userId: adminId,
                         type: 'event',
                         title: 'New Blood Donation Event Scheduled',
@@ -905,56 +900,11 @@
             }
         }
 
-        // Event delegation for button clicks
+        // Handle logout button
         document.addEventListener('click', (e) => {
-            // Open Event Modal button
-            if (e.target && e.target.id === 'openEventModalBtn') {
-                openEventModal();
-            }
-            
-            // Submit Event Modal button
-            if (e.target && e.target.id === 'submitEventBtn') {
-                submitEvent();
-            }
-            
-            // Submit Screening Modal button
-            if (e.target && e.target.id === 'submitScreeningBtn') {
-                submitScreening();
-            }
-            
-            // View Request Details buttons
-            if (e.target && e.target.classList.contains('view-request-btn')) {
-                const requestId = e.target.getAttribute('data-request-id');
-                viewRequestDetails(requestId);
-            }
-            
-            // Open Screening Modal buttons
-            if (e.target && e.target.classList.contains('open-screening-modal-btn')) {
-                const scheduleId = e.target.getAttribute('data-schedule-id');
-                const donorName = e.target.getAttribute('data-donor-name');
-                openScreeningModal(scheduleId, donorName);
-            }
-            
-            // Mark Eligible buttons
-            if (e.target && e.target.classList.contains('mark-eligible-btn')) {
-                const scheduleId = e.target.getAttribute('data-schedule-id');
-                const donorId = e.target.getAttribute('data-donor-id');
-                markEligible(scheduleId, donorId);
-            }
-            
-            // Mark Ineligible buttons
-            if (e.target && e.target.classList.contains('mark-ineligible-btn')) {
-                const scheduleId = e.target.getAttribute('data-schedule-id');
-                const donorId = e.target.getAttribute('data-donor-id');
-                markIneligible(scheduleId, donorId);
-            }
-            
-            // Logout button
             if (e.target && e.target.id === 'logoutBtn') {
                 e.preventDefault();
-                authManager.logoutAndRedirect().then(() => {
-                    window.location.href = 'login.html';
-                });
+                authManager.logoutAndRedirect();
             }
         });
     </script>

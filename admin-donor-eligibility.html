@@ -16,7 +16,7 @@
         <div class="container">
             <a class="navbar-brand" href="admin.html">Admin</a>
             <div class="collapse navbar-collapse"></div>
-            <button id="logoutBtn" class="nav-link text-white" style="border:none; background:transparent; cursor:pointer; font-size:1rem;">Logout</button>
+            <a class="nav-link text-white" href="logout.html">Logout</a>
         </div>
     </nav>
 
@@ -55,10 +55,7 @@
             appId: "1:631993835929:web:75554aca166e9058473308"
         };
 
-        // initialize app only once to avoid duplicate-init errors when scripts reload
-        if (!firebase.apps || !firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
 
@@ -101,11 +98,7 @@
         }
 
         auth.onAuthStateChanged((user) => {
-            if (!user) {
-                // don't redirect — just show a message and stop further DB reads
-                flash('Not authenticated. Please log in to manage eligibility.', 'warning');
-                return;
-            }
+            if (!user) { window.location.href = 'login.html'; return; }
             db.ref('donors').on('value', (snap) => render(snap.val()));
         });
     </script>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Blood Requests - BloodConnect</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="red-cross-styles.css">
+</head>
+<body>
+<!-- Red Cross Header -->
+<header class="red-cross-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="dashboard.html" class="red-cross-logo">
+                <div class="red-cross-icon">✚</div>
+                <div>
+                    <h1 class="red-cross-brand">BloodConnect</h1>
+                    <p class="red-cross-tagline">Medical Blood Management</p>
+                </div>
+            </a>
+            <div class="red-cross-nav">
+                <a href="dashboard.html">Dashboard</a>
+                <a href="donor.html">Donors</a>
+                <a href="blooddonation.html">Blood Donations</a>
+                <a href="request.html" class="active">Requests</a>
+                <a href="handover.html">Handed Over</a>
+                <a href="partners.html">Partners</a>
+                <a href="logout.html" class="btn-red-cross-outline">Logout</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Blood Requests Section -->
+<section class="red-cross-requests">
+    <div class="container">
+        <div class="red-cross-page-header">
+            <div class="text-center">
+                <h1 class="red-cross-page-title">Blood Requests</h1>
+                <p class="red-cross-page-subtitle">Monitor and manage blood requests from hospitals and patients</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-12">
+                <div class="red-cross-card">
+                    <div class="red-cross-card-header">
+                        <i class="fa-solid fa-list text-red-cross"></i>
+                        Blood Request Management
+                    </div>
+                    <div class="red-cross-card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-red-cross">
+                                <thead>
+                                    <tr>
+                                        <th>Requestor Name</th>
+                                        <th>Blood Type</th>
+                                        <th>Units Needed (ml)</th>
+                                        <th>Request Date</th>
+                                        <th>Hospital Location</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="requestsTable">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-medical">Loading requests...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBElBKqa9ThPR1bEXlCu-wGdi0vE943O4",
+            authDomain: "bloodconnect2-d094a.firebaseapp.com",
+            databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com/",
+            projectId: "bloodconnect2-d094a",
+            storageBucket: "bloodconnect2-d094a.firebasestorage.app",
+            messagingSenderId: "124251937624",
+            appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        function getStatusBadge(status) {
+            switch (status?.toLowerCase()) {
+                case 'approved':
+                    return '<span class="badge bg-success">Approved</span>';
+                case 'rejected':
+                    return '<span class="badge bg-danger">Rejected</span>';
+                default:
+                    return '<span class="badge bg-warning text-dark">Pending</span>';
+            }
+        }
+
+        function loadBloodRequests() {
+            const tableBody = document.getElementById("requestsTable");
+            database.ref("bloodRequests").once("value", (snapshot) => {
+                tableBody.innerHTML = "";
+                snapshot.forEach(childSnapshot => {
+                    const request = childSnapshot.val();
+                    const statusBadge = getStatusBadge(request.status);
+                    const row = `<tr>
+                        <td>${request.requestorName}</td>
+                        <td>${request.bloodType}</td>
+                        <td>${request.units} ml</td>
+                        <td>${request.date}</td>
+                        <td>${request.hospitalLocation || "N/A"}</td>
+                        <td>${statusBadge}</td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            });
+        }
+
+        window.onload = loadBloodRequests;
+    </script>
+</body>
+</html>
