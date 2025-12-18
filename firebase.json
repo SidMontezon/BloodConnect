@@ -15,7 +15,6 @@
       "**/PHPMailer/**",
       "**/add-sample-data.bat",
       "**/FIREBASE-*.md",
-      "**/firebase-setup-guide.md",
       "**/README.md"
     ],
     "rewrites": [

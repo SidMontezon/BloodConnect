@@ -1,4 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getDatabase, ref, set, get, push, onValue, off, remove, update, query, orderByChild, equalTo, onChildAdded, onChildChanged, onChildRemoved } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
 // Firebase configuration (same as your existing config)
@@ -12,8 +12,13 @@ const firebaseConfig = {
   appId: "1:631993835929:web:75554aca166e9058473308"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase (guard against double initialization)
+let app;
+if (getApps && getApps().length) {
+  try { app = getApp(); } catch (e) { app = getApps()[0]; }
+} else {
+  app = initializeApp(firebaseConfig);
+}
 const database = getDatabase(app);
 
 // Database reference helper
@@ -102,16 +107,21 @@ class BloodConnectRealtimeDB {
         if (!hospitalsObj) continue;
         for (const [hid, info] of Object.entries(hospitalsObj)) {
           const qty = info && (info.quantity || info.qty || info) || 0;
-          // create a stable id
-          const id = `${bloodTypeKey.replace(/[^A-Za-z0-9]/g,'')}_${hid}`;
+          // Create an id that encodes the real DB path for nested shapes so
+          // callers (pages) can update the correct location. Prefix with
+          // '__path__bloodInventory/' so update helpers can detect it.
+          const id = `__path__bloodInventory/${bloodTypeKey}/hospitals/${hid}`;
           flat[id] = {
+            id,
             bloodType: bloodTypeKey,
             quantity: Number(qty) || 0,
             hospitalId: hid,
             location: (hospitals[hid] && (hospitals[hid].location || hospitals[hid].hospitalName)) || null,
             status: 'available',
             createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
+            // expose the real DB path for callers that need it
+            _dbPath: `bloodInventory/${bloodTypeKey}/hospitals/${hid}`
           };
         }
       }
@@ -125,10 +135,22 @@ class BloodConnectRealtimeDB {
 
   async updateBloodInventory(inventoryId, inventoryData) {
     try {
-      await update(getDbRef(`bloodInventory/${inventoryId}`), {
-        ...inventoryData,
-        updatedAt: new Date().toISOString()
-      });
+      // Support two formats for `inventoryId`:
+      // 1) legacy/simple: a key under `bloodInventory/{id}`
+      // 2) path-encoded id returned by getBloodInventory for nested shapes,
+      //    which starts with '__path__bloodInventory/...'
+      if (typeof inventoryId === 'string' && inventoryId.startsWith('__path__bloodInventory/')) {
+        const dbPath = inventoryId.replace(/^__path__/, '');
+        await update(getDbRef(dbPath), {
+          ...inventoryData,
+          updatedAt: new Date().toISOString()
+        });
+      } else {
+        await update(getDbRef(`bloodInventory/${inventoryId}`), {
+          ...inventoryData,
+          updatedAt: new Date().toISOString()
+        });
+      }
       return { success: true, message: 'Blood inventory updated successfully' };
     } catch (error) {
       return { success: false, message: error.message };

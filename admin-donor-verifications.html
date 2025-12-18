@@ -33,93 +33,15 @@
     </style>
 </head>
 <body>
-    <!-- Red Cross Header -->
-    <header class="red-cross-header">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center">
-                <a href="admin.html" class="red-cross-logo">
-                    <div class="red-cross-icon">✚</div>
-                    <div>
-                        <h1 class="red-cross-brand">BloodConnect</h1>
-                        <p class="red-cross-tagline">Medical Blood Management</p>
-                    </div>
-                </a>
-                <div class="red-cross-nav">
-                    <a href="admin.html">Admin Panel</a>
-                    <a href="logout.html" class="btn-red-cross-outline">Logout</a>
-                </div>
-            </div>
-        </div>
-    </header>
+  <div style="max-width:800px;margin:120px auto;padding:28px;background:#fff;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.06);text-align:center;font-family:Arial, sans-serif;">
+    <h1>Admin Verification Feature Removed</h1>
+    <p>The donor verification management pages have been removed from this installation.</p>
+    <p>If you need to manage donor eligibility or requests, use the admin dashboard.</p>
+    <a href="admin.html" style="display:inline-block;margin-top:18px;padding:10px 14px;background:#0d6efd;color:#fff;border-radius:6px;text-decoration:none;">Open Admin Dashboard</a>
+  </div>
 
-    <section class="red-cross-hero">
-        <div class="container">
-            <div class="red-cross-page-header">
-                <div class="text-center">
-                    <h1 class="red-cross-page-title">Donor Verification Review</h1>
-                    <p class="red-cross-page-subtitle">Review and approve donor verification documents</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="red-cross-dashboard-stats">
-        <div class="container">
-            <div class="row mb-4">
-                <div class="col-md-12">
-                    <div class="red-cross-card">
-                        <div class="red-cross-card-header">
-                            <i class="fa-solid fa-clipboard-check text-red-cross"></i>
-                            Pending Verifications
-                        </div>
-                        <div class="red-cross-card-body">
-                            <div id="verificationsList">
-                                <div class="text-center text-medical">
-                                    <i class="fa-solid fa-spinner fa-spin fa-2x mb-3"></i>
-                                    <p>Loading verifications...</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script type="module">
-        import authManager from './auth-manager.js';
-        import bloodConnectDB from './bloodConnectDB.js';
-
-        let currentAdminId = null;
-
-        authManager.addAuthListener(async (user, userData) => {
-            if (!user || !userData) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            if (userData.role !== 'admin') {
-                await authManager.redirectByRole();
-                return;
-            }
-
-            currentAdminId = user.uid;
-            loadVerifications();
-        });
-
-        async function loadVerifications() {
-            try {
-                const verifications = await bloodConnectDB.getVerifications();
-                const users = await bloodConnectDB.getUsers();
-                
-                const verificationsList = document.getElementById('verificationsList');
-                
-                // Filter pending verifications
-                const pendingVerifications = Object.entries(verifications || {})
-                    .filter(([id, verification]) => verification && verification.verificationStatus === 'pending')
+</body>
+</html>
                     .map(([id, verification]) => ({ id, ...verification }));
 
                 if (pendingVerifications.length === 0) {
@@ -170,8 +92,8 @@
 
         async function loadVerifications() {
             try {
-                const verifications = await window.bloodConnectDB.getVerifications();
-                const users = await window.bloodConnectDB.getUsers();
+                const verifications = await bloodConnectDB.getVerifications();
+                const users = await bloodConnectDB.getUsers();
                 
                 const verificationsList = document.getElementById('verificationsList');
                 
@@ -270,17 +192,17 @@
 
             try {
                 // Update verification status
-                await window.bloodConnectDB.updateVerificationStatus(verificationId, 'approved', currentAdminId);
+                await bloodConnectDB.updateVerificationStatus(verificationId, 'approved', currentAdminId);
                 
                 // Update user verification status
-                await window.bloodConnectDB.updateUser(userId, {
+                await bloodConnectDB.updateUser(userId, {
                     verificationStatus: 'approved',
                     verifiedAt: new Date().toISOString(),
                     verifiedBy: currentAdminId
                 });
 
                 // Create notification for donor
-                await window.bloodConnectDB.createNotification({
+                await bloodConnectDB.createNotification({
                     userId: userId,
                     type: 'verification',
                     title: 'Verification Approved',
@@ -307,10 +229,10 @@
 
             try {
                 // Update verification status
-                await window.bloodConnectDB.updateVerificationStatus(verificationId, 'rejected', currentAdminId, rejectionReason);
+                await bloodConnectDB.updateVerificationStatus(verificationId, 'rejected', currentAdminId, rejectionReason);
                 
                 // Update user verification status
-                await window.bloodConnectDB.updateUser(userId, {
+                await bloodConnectDB.updateUser(userId, {
                     verificationStatus: 'rejected',
                     verificationRejectedAt: new Date().toISOString(),
                     verificationRejectedBy: currentAdminId,
@@ -318,7 +240,7 @@
                 });
 
                 // Create notification for donor
-                await window.bloodConnectDB.createNotification({
+                await bloodConnectDB.createNotification({
                     userId: userId,
                     type: 'verification',
                     title: 'Verification Rejected',

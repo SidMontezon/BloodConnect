@@ -99,8 +99,7 @@
         auth.createUserWithEmailAndPassword(email, password)
             .then((userCredential) => {
                 console.log("User registered:", userCredential.user);
-                alert("User registered successfully!");
-                window.location.href = "login.html";
+                alert("User registered successfully! Visit login.html to sign in.");
             })
             .catch((error) => {
                 console.error("Error:", error.message);

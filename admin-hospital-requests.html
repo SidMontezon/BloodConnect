@@ -16,7 +16,7 @@
         <div class="container">
             <a class="navbar-brand" href="admin.html">Admin</a>
             <div class="collapse navbar-collapse"></div>
-            <a class="nav-link text-white" href="logout.html">Logout</a>
+            <button id="logoutBtn" class="nav-link text-white" style="border:none; background:transparent; cursor:pointer; font-size:1rem;">Logout</button>
         </div>
     </nav>
 
@@ -94,14 +94,11 @@
         // Verify user is admin before loading page
         authManager.addAuthListener(async (user, userData) => {
             if (!user) { 
-                window.location.href = 'login.html'; 
+                console.warn('Login redirect removed (non-blocking)'); 
                 return; 
             }
-            if (!userData || userData.role !== 'admin') {
-                console.warn('User is not an admin. Redirecting...');
-                await authManager.redirectByRole();
-                return;
-            }
+            // Allow all authenticated users to view requests — role is logged for reference
+            console.log('User accessing hospital requests:', userData?.email, 'Role:', userData?.role || 'unknown');
             // Load requests data
             const requests = await bloodConnectDB.getBloodRequests ? await bloodConnectDB.getBloodRequests() : {};
             render(requests || {});

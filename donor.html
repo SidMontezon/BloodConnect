@@ -6,48 +6,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="red-cross-styles.css">
+    <!-- Unified Authentication Manager -->
+    <script type="module" src="auth-manager.js"></script>
+    <script type="module" src="bloodConnectDB.js"></script>
 </head>
 <body>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+<!-- Red Cross Header -->
+<header class="red-cross-header">
     <div class="container">
-        <a class="navbar-brand" href="dashboard.html">
-            <i class="fa-solid fa-droplet"></i> BloodConnect
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="dashboard.html">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="donor.html">Donors</a></li>
-                <li class="nav-item"><a class="nav-link" href="blooddonation.html">Blood Donations</a></li>
-                <li class="nav-item"><a class="nav-link" href="request.html">Requests</a></li>
-                <li class="nav-item"><a class="nav-link" href="handover.html">Handed Over</a></li>
-                <li class="nav-item"><a class="nav-link active" href="partners.html">Partners</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-light text-dark" href="logout.html">Logout</a></li>
-            </ul>
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="dashboard.html" class="red-cross-logo">
+                <div class="red-cross-icon">✚</div>
+                <div>
+                    <h1 class="red-cross-brand">BloodConnect</h1>
+                    <p class="red-cross-tagline">Medical Blood Management</p>
+                </div>
+            </a>
+            <div class="red-cross-nav">
+                <a href="dashboard.html">Home</a>
+                <a href="donor.html" class="active">Donors</a>
+                <a href="blooddonation.html">Blood Donations</a>
+                <a href="request.html">Requests</a>
+                <a href="handover.html">Handed Over</a>
+                <a href="partners.html">Partners</a>
+                <button id="logoutBtn" class="btn-red-cross-outline" style="border:none; background:transparent; cursor:pointer;">Logout</button>
+            </div>
         </div>
     </div>
-</nav>
+</header>
 
 <div class="container mt-5">
-    <h2 class="text-center">Registered Donors</h2>
-    <table class="table table-bordered mt-4">
-        <thead class="table-danger">
-            <tr>
-                <th>Name</th>
-                <th>Blood Type</th>
-                <th>Contact</th>
-                <th>Last Donation Date</th>
-            </tr>
-        </thead>
-        <tbody id="donorTableBody">
-            <!-- Donor data will be inserted here -->
-        </tbody>
-    </table>
+    <h2 class="text-center red-cross-page-title">Registered Donors</h2>
+    <div class="red-cross-card mt-4">
+        <div class="red-cross-card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-red-cross">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Blood Type</th>
+                            <th>Contact</th>
+                            <th>Last Donation Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="donorTableBody">
+                        <!-- Donor data will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Red Cross Footer -->
+<footer class="red-cross-footer">
+    <div class="container">
+        <div class="red-cross-footer-bottom">
+            <p>&copy; 2025 BloodConnect. All Rights Reserved.</p>
+        </div>
+    </div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script type="module">
@@ -56,7 +77,7 @@
 
     authManager.addAuthListener(async (user, userData) => {
         if (!user) {
-            window.location.href = 'login.html';
+            console.warn('Login redirect removed (non-blocking)');
             return;
         }
         // Load all donors regardless of role
@@ -65,40 +86,49 @@
 
     async function loadDonors() {
         try {
-            const donors = await bloodConnectDB.getDonors();
+            const users = await bloodConnectDB.getUsers();
+            const donors = Object.entries(users || {})
+                .filter(([id, user]) => user.role === 'donor')
+                .map(([id, user]) => ({ id, ...user }));
+            
             const donorTableBody = document.getElementById('donorTableBody');
             
-            if (!donors || Object.keys(donors).length === 0) {
-                donorTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No donors found</td></tr>';
+            if (donors.length === 0) {
+                donorTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-medical">No donors found</td></tr>';
                 return;
             }
 
             donorTableBody.innerHTML = '';
-            Object.entries(donors).forEach(([id, donor]) => {
-                if (!donor) return;
+            donors.forEach((donor) => {
                 const row = document.createElement('tr');
+                const fullName = `${donor.firstName || ''} ${donor.lastName || ''}`.trim() || 'Unknown';
+                const status = donor.isEligible ? '<span class="badge bg-success">Eligible</span>' : '<span class="badge bg-warning">Not Eligible</span>';
+                
                 row.innerHTML = `
-                    <td>${donor.firstName || donor.name || 'Unknown'}</td>
-                    <td><span class="badge bg-danger">${donor.bloodType || 'N/A'}</span></td>
+                    <td>${fullName}</td>
+                    <td><span class="badge-red-cross">${donor.bloodType || 'N/A'}</span></td>
                     <td>${donor.phone || 'N/A'}</td>
-                    <td>${donor.lastDonationDate ? new Date(donor.lastDonationDate).toLocaleDateString() : 'N/A'}</td>
+                    <td>${donor.lastDonationDate ? new Date(donor.lastDonationDate).toLocaleDateString() : 'No donations yet'}</td>
+                    <td>${status}</td>
                 `;
                 donorTableBody.appendChild(row);
             });
         } catch (error) {
             console.error('Error loading donors:', error);
-            document.getElementById('donorTableBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading donors</td></tr>';
+            document.getElementById('donorTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading donors</td></tr>';
         }
     }
 
-    // Handle logout
+    // Handle logout button
     document.addEventListener('click', (e) => {
-        if (e.target && (e.target.textContent === 'Logout' || e.target.href.includes('logout'))) {
+        if (e.target && e.target.id === 'logoutBtn') {
             e.preventDefault();
             authManager.logoutAndRedirect();
         }
     });
 </script>
+</body>
+</html>
 
 </body>
 </html>

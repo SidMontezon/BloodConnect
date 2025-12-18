@@ -1,34 +1,24 @@
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-    <title>BloodConnect</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { font-family: 'Lato', sans-serif; }
-        .hero { background: #dc3545; color: white; padding: 100px 20px; text-align: center; }
-        .info-section { padding: 60px 20px; }
-        .card-icon { font-size: 50px; color: #dc3545; }
-        .navbar-brand i { color: white; margin-right: 10px; }
-        
-    </style>
-    </head>
-    <body>
-
-    <?php include 'navbar.php'; ?>
-
-    <!-- Hero Section -->
-    <header class="hero">
+<?php
+// navbar.php - reusable navigation snippet for BloodConnect
+?>
+<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="index.html"><i class="fa-solid fa-droplet"></i> BloodConnect</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#bcNavbar" aria-controls="bcNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="bcNavbar">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+                <li class="nav-item"><a class="nav-link" href="donate.html">Donate</a></li>
+                <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
+                <li class="nav-item"><a class="nav-link" href="register.html">Register</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
         <h1>Save Lives - Donate Blood</h1>
-        <p class="lead">Your donation can make a difference!</p>
-        <a href="donate.html" class="btn btn-light btn-lg">Get Involved</a>
-    </header>
-
-    <!-- ... rest of your index.php content ... -->
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
-    </html>
-    

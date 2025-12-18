@@ -1,22 +1,9 @@
-// Firebase Integration Script for BloodConnect
-// This script integrates Firebase Realtime Database with existing authentication
+// Firebase Integration Script - Non-Restrictive Multi-Role Login
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+import { getDatabase, ref, get, update, set } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+import authManager from './auth-manager.js';
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc
-} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
-import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
-
-// Firebase configuration
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
   authDomain: "bloodconnect-b5142.firebaseapp.com",
@@ -28,12 +15,15 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const database = getDatabase(app);
+let app;
+if (getApps().length) {
+  app = getApp();
+} else {
+  app = initializeApp(firebaseConfig);
+}
+const db = getDatabase(app);
 
-// Show message function
+// Utility: show messages
 function showMessage(message, divId) {
   const messageDiv = document.getElementById(divId);
   if (!messageDiv) return;
@@ -48,7 +38,38 @@ function showMessage(message, divId) {
   }, 5000);
 }
 
-// Enhanced signup with Realtime Database integration
+// ========================= LOGIN =========================
+const signInForm = document.getElementById('signInForm');
+if (signInForm) {
+  signInForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    try {
+      // Use centralized auth manager to perform login and set current user
+      try {
+        const user = await authManager.login(email, password);
+        showMessage('Login successful!', 'signInMessage');
+
+        // Redirect to recommended dashboard for better flow (no server session used)
+        const role = user.role || 'donor';
+        const recommended = role === 'admin' ? 'admin.html' : (role === 'hospital' ? 'hospital-dashboard.html' : 'donor-dashboard.html');
+        // Small delay so user sees message then navigates
+        setTimeout(() => { window.location.href = recommended; }, 700);
+      } catch (err) {
+        showMessage(err.message || 'Incorrect Email or Password', 'signInMessage');
+      }
+
+    } catch (error) {
+      console.error('Login error:', error);
+      showMessage('Login error: ' + error.message, 'signInMessage');
+    }
+  });
+}
+
+// ========================= SIGNUP =========================
 const signupForm = document.getElementById('signupForm');
 if (signupForm) {
   signupForm.addEventListener('submit', async (event) => {
@@ -65,279 +86,58 @@ if (signupForm) {
       return;
     }
 
-    try {
-      // Create user in Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      try {
+      const usersRef = ref(db, 'users');
+      const snapshot = await get(usersRef);
+      const allUsers = snapshot.exists() ? snapshot.val() : {};
 
-      // Store user data in Firestore (existing functionality)
-      await setDoc(doc(db, "users", user.uid), {
+      // Check for duplicate email
+      for (const uid in allUsers) {
+        if (allUsers[uid].email === email) {
+          showMessage('Email already registered.', 'signUpMessage');
+          return;
+        }
+      }
+
+      const uid = `uid_${Date.now()}`;
+      const userData = {
+        uid,
         firstName: fName,
         lastName: lName,
-        email: email,
-        role: role,
-        createdAt: new Date()
-      });
-
-      // Store user data in Realtime Database (new functionality)
-      await set(ref(database, `users/${user.uid}`), {
-        firstName: fName,
-        lastName: lName,
-        email: email,
-        role: role,
-        phone: "",
-        address: "",
-        city: "",
-        state: "",
-        zipCode: "",
-        dateOfBirth: "",
-        bloodType: role === 'donor' ? "" : "",
-        isEligible: role === 'donor' ? true : null,
-        lastDonationDate: role === 'donor' ? "" : "",
+        email,
+        password,
+        role,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      });
+      };
 
-      // Create initial notifications for new user
-      const notificationRef = ref(database, `notifications/${user.uid}_welcome`);
-      await set(notificationRef, {
-        userId: user.uid,
+      await set(ref(db, `users/${uid}`), userData);
+
+      // Optional: create welcome notification
+      await set(ref(db, `notifications/${uid}_welcome`), {
+        userId: uid,
         type: "system",
         title: "Welcome to BloodConnect!",
-        message: `Welcome to BloodConnect! Your ${role} account has been created successfully.`,
+        message: `Your ${role} account has been created successfully.`,
         isRead: false,
-        priority: "medium",
-        actionUrl: "/dashboard",
         createdAt: new Date().toISOString()
       });
 
       showMessage('Account created successfully!', 'signUpMessage');
-      
-      // Redirect based on role
-      setTimeout(() => {
-        if (role === 'donor') {
-          // Redirect donors to verification page
-          window.location.href = 'donor-profile-verification.html';
-        } else {
-          // Other roles go to login
-          window.location.href = 'login.html';
-        }
-      }, 2000);
+
+      // Auto-login the user using authManager for a smooth flow, then redirect
+      try {
+        const user = await authManager.login(email, password);
+        const recommended = user.role === 'admin' ? 'admin.html' : (user.role === 'hospital' ? 'hospital-dashboard.html' : 'donor-dashboard.html');
+        setTimeout(() => { window.location.href = recommended; }, 700);
+      } catch (err) {
+        // If auto-login fails, instruct user to sign in manually
+        showMessage('Account created. Please sign in to continue.', 'signUpMessage');
+      }
 
     } catch (error) {
+      console.error(error);
       showMessage(error.message, 'signUpMessage');
     }
   });
 }
-
-// Enhanced login with Realtime Database integration
-const signInForm = document.getElementById('signInForm');
-if (signInForm) {
-  signInForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // Get user data from Firestore
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        const role = userData.role;
-
-        // Update last login in Realtime Database
-        await update(ref(database, `users/${user.uid}`), {
-          lastLogin: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        });
-
-        // Prefer global AuthManager redirect if available (single source of truth)
-        if (window.authManager && typeof window.authManager.redirectByRole === 'function') {
-          console.log('Login: delegating redirect to AuthManager for role:', role);
-          window.authManager.redirectByRole();
-        } else {
-          // Fallback: redirect based on role from Firestore
-          console.log('Login: using local redirect logic for role:', role);
-          if (role === 'admin') {
-            window.location.href = 'admin.html';
-          } else if (role === 'donor') {
-            window.location.href = 'donor-dashboard.html';
-          } else if (role === 'hospital') {
-            window.location.href = 'hospital-dashboard.html';
-          } else if (role === 'patient') {
-            window.location.href = 'patient-dashboard.html';
-          } else {
-            window.location.href = 'dashboard.html';
-          }
-        }
-      } else {
-        showMessage('User data not found. Please contact support.', 'signInMessage');
-      }
-    } catch (error) {
-      if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-        showMessage('Incorrect Email or Password', 'signInMessage');
-      } else {
-        showMessage(error.message, 'signInMessage');
-      }
-    }
-  });
-}
-
-// Auth state change listener
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    // User is signed in
-    console.log('User signed in:', user.uid);
-    
-    // Update user's online status in Realtime Database
-    await update(ref(database, `users/${user.uid}`), {
-      isOnline: true,
-      lastSeen: new Date().toISOString()
-    });
-
-    // Set up real-time notifications listener
-    setupNotificationsListener(user.uid);
-    
-  } else {
-    // User is signed out
-    console.log('User signed out');
-  }
-});
-
-// Setup real-time notifications listener
-function setupNotificationsListener(userId) {
-  const notificationsRef = ref(database, `notifications`);
-  
-  // Listen for new notifications for this user
-  const unsubscribe = onValue(notificationsRef, (snapshot) => {
-    const notifications = snapshot.val();
-    if (notifications) {
-      const userNotifications = Object.values(notifications).filter(notif => 
-        notif.userId === userId && !notif.isRead
-      );
-      
-      if (userNotifications.length > 0) {
-        showNotificationBadge(userNotifications.length);
-      }
-    }
-  });
-
-  // Store unsubscribe function for cleanup
-  window.notificationsUnsubscribe = unsubscribe;
-}
-
-// Show notification badge
-function showNotificationBadge(count) {
-  // Create or update notification badge
-  let badge = document.getElementById('notification-badge');
-  if (!badge) {
-    badge = document.createElement('span');
-    badge.id = 'notification-badge';
-    badge.className = 'badge bg-danger position-absolute top-0 start-100 translate-middle';
-    badge.style.cssText = 'font-size: 0.75rem; z-index: 1000;';
-    
-    // Find notification icon or create one
-    let notificationIcon = document.querySelector('.notification-icon');
-    if (!notificationIcon) {
-      notificationIcon = document.createElement('i');
-      notificationIcon.className = 'fa-solid fa-bell notification-icon';
-      notificationIcon.style.cssText = 'position: relative; font-size: 1.2rem;';
-      
-      // Add to navigation
-      const nav = document.querySelector('.red-cross-nav');
-      if (nav) {
-        const notificationLink = document.createElement('a');
-        notificationLink.href = '#';
-        notificationLink.className = 'position-relative';
-        notificationLink.appendChild(notificationIcon);
-        notificationLink.appendChild(badge);
-        nav.appendChild(notificationLink);
-      }
-    } else {
-      notificationIcon.parentNode.appendChild(badge);
-    }
-  }
-  
-  badge.textContent = count;
-  badge.style.display = count > 0 ? 'inline-block' : 'none';
-}
-
-// Utility functions for Realtime Database operations
-window.BloodConnectUtils = {
-  // Get current user data from Realtime Database
-  async getCurrentUserData() {
-    const user = auth.currentUser;
-    if (!user) return null;
-    
-    try {
-      const snapshot = await get(ref(database, `users/${user.uid}`));
-      return snapshot.exists() ? snapshot.val() : null;
-    } catch (error) {
-      console.error('Error getting user data:', error);
-      return null;
-    }
-  },
-
-  // Update user profile
-  async updateUserProfile(profileData) {
-    const user = auth.currentUser;
-    if (!user) return { success: false, message: 'User not authenticated' };
-    
-    try {
-      await update(ref(database, `users/${user.uid}`), {
-        ...profileData,
-        updatedAt: new Date().toISOString()
-      });
-      return { success: true, message: 'Profile updated successfully' };
-    } catch (error) {
-      return { success: false, message: error.message };
-    }
-  },
-
-  // Mark notification as read
-  async markNotificationAsRead(notificationId) {
-    try {
-      await update(ref(database, `notifications/${notificationId}`), {
-        isRead: true,
-        readAt: new Date().toISOString()
-      });
-      return { success: true };
-    } catch (error) {
-      return { success: false, message: error.message };
-    }
-  },
-
-  // Get user notifications
-  async getUserNotifications() {
-    const user = auth.currentUser;
-    if (!user) return [];
-    
-    try {
-      const snapshot = await get(ref(database, `notifications`));
-      const notifications = snapshot.val();
-      if (!notifications) return [];
-      
-      return Object.entries(notifications)
-        .filter(([id, notif]) => notif.userId === user.uid)
-        .map(([id, notif]) => ({ id, ...notif }))
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    } catch (error) {
-      console.error('Error getting notifications:', error);
-      return [];
-    }
-  }
-};
-
-// Cleanup function for page unload
-window.addEventListener('beforeunload', () => {
-  if (window.notificationsUnsubscribe) {
-    window.notificationsUnsubscribe();
-  }
-});
-
-console.log('Firebase Integration with Realtime Database loaded successfully!');

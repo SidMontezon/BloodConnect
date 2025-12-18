@@ -1,4 +1,3 @@
-<?php include_once "contact-form.php"; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,7 +24,7 @@
     <!-- Contact Us Section -->
     <section id="contact" class="section">
         <h2>Contact Us</h2>
-        <form action="contactus.php" method="post" id="contactForm">
+        <form action="send-email.php" method="post" id="contactForm">
             <div>
                 <label for="name">Name:</label>
                 <input type="text" id="name" name="name" required>
@@ -42,14 +41,7 @@
                 <button type="submit">Send Message</button>
             </div>
         </form>
-        <div id="responseMessage">
-            <?php
-            if ($_SERVER["REQUEST_METHOD"] == "POST") {
-                // Handle contact form submission
-                include('contact-form.php');
-            }
-            ?>
-        </div>
+        <div id="responseMessage"></div>
     </section>
 
     <footer>

@@ -33,7 +33,10 @@
             appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
         };
 
-        firebase.initializeApp(firebaseConfig);
+        // Initialize Firebase (only once to avoid duplicates)
+        if (!firebase.apps || !firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const auth = firebase.auth();
 
         document.addEventListener("DOMContentLoaded", () => {

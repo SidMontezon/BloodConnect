@@ -33,7 +33,7 @@
         <div class="red-cross-page-header">
             <div class="text-center">
                 <h1 class="red-cross-page-title">Administrator Panel</h1>
-                <p class="red-cross-page-subtitle">Manage blood inventory, donor registrations, hospital requests, and generate reports</p>
+                <p class="red-cross-page-subtitle">Manage blood inventory, hospital requests, and generate reports</p>
             </div>
         </div>
         
@@ -99,28 +99,13 @@
                 <p class="red-cross-admin-card-description">Review and approve blood requests from hospitals</p>
             </a>
             
-            <a href="admin-donor-registrations.html" class="red-cross-admin-card red-cross-fade-in">
-                <div class="red-cross-admin-card-icon">
-                    <i class="fa-solid fa-user-plus"></i>
-                </div>
-                <h3 class="red-cross-admin-card-title">Donor Registrations</h3>
-                <p class="red-cross-admin-card-description">Approve or reject new donor applications</p>
-            </a>
-            
+
             <a href="admin-donor-eligibility.html" class="red-cross-admin-card red-cross-fade-in">
                 <div class="red-cross-admin-card-icon">
                     <i class="fa-solid fa-user-check"></i>
                 </div>
                 <h3 class="red-cross-admin-card-title">Donor Eligibility</h3>
                 <p class="red-cross-admin-card-description">Manage donor eligibility status and requirements</p>
-            </a>
-            
-            <a href="admin-donor-verifications.html" class="red-cross-admin-card red-cross-fade-in">
-                <div class="red-cross-admin-card-icon">
-                    <i class="fa-solid fa-id-card"></i>
-                </div>
-                <h3 class="red-cross-admin-card-title">Donor Verifications</h3>
-                <p class="red-cross-admin-card-description">Review and approve donor verification documents</p>
             </a>
             
             <a href="admin-reports.html" class="red-cross-admin-card red-cross-fade-in">
@@ -137,20 +122,25 @@
     <script type="module">
         import authManager from './auth-manager.js';
         import bloodConnectDB from './bloodConnectDB.js';
+        import appFunctions from './app-functions.js';
 
-        // Verify user is admin before loading dashboard
+        // Enforce admin access for this page (client-side, sessionless)
+        if (!authManager.protectPage('admin')) {
+            // protectPage will redirect if not authorized
+        }
+
+        // Load dashboard when page loads
         authManager.addAuthListener(async (user, userData) => {
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
+            if (user) {
+                // Verify user is admin (non-blocking)
+                if (userData.role !== 'admin') {
+                    console.warn('Access check: admin role required (non-blocking)');
+                }
+                // Load data regardless (multi-role friendly)
+                loadAdminDashboard(user, userData);
+            } else {
+                // Non-restrictive mode: do not auto-redirect to login
             }
-            if (!userData || userData.role !== 'admin') {
-                console.warn('User is not an admin. Redirecting...');
-                window.location.href = 'login.html';
-                return;
-            }
-            // User is authenticated and is admin - load data
-            loadAdminDashboard(user, userData);
         });
 
         async function loadAdminDashboard(user, userData) {
@@ -204,10 +194,11 @@
         }
 
         // Handle logout button
-        document.addEventListener('click', (e) => {
+        document.addEventListener('click', async (e) => {
             if (e.target && e.target.id === 'logoutBtn') {
                 e.preventDefault();
-                authManager.logoutAndRedirect();
+                await authManager.logoutAndRedirect();
+                window.location.href = 'login.html';
             }
         });
     </script>

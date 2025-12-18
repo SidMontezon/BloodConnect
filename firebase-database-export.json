@@ -1,0 +1,157 @@
+{
+  "users": {
+    "GMLp10klyUhLJ9mszMQl2N1rPrH2": {
+      "userId": "GMLp10klyUhLJ9mszMQl2N1rPrH2",
+      "firstName": "Jayjay",
+      "lastName": "Soriano",
+      "email": "jayjaysoriano@gmail.com",
+      "password": "123123",
+      "role": "donor",
+      "phone": "+63-9212345678",
+      "dateOfBirth": "1990-05-15",
+      "gender": "Male",
+      "bloodType": "O+",
+      "weight": 75,
+      "height": 180,
+      "address": "San Agustin Street, Imus",
+      "city": "Imus",
+      "state": "Cavite",
+      "registrationDate": "2025-01-10T10:30:00Z",
+      "lastLoginDate": "2025-12-12T08:15:00Z",
+      "isEligible": true,
+      "eligibilityExpiry": "2026-01-10",
+      "totalDonations": 0,
+      "status": "active",
+      "createdAt": "2025-01-10T10:30:00Z",
+      "updatedAt": "2025-12-12T08:15:00Z"
+    },
+
+    "vJeWsMCKH4MhPw8uXW1VrZ89sKE3": {
+      "userId": "vJeWsMCKH4MhPw8uXW1VrZ89sKE3",
+      "firstName": "Sidney",
+      "lastName": "Montezon",
+      "email": "sid.montezon18@gmail.com",
+      "password": "123123",
+      "role": "admin",
+      "phone": "+63-9212345681",
+      "department": "System Administration",
+      "employeeId": "EMP001",
+      "registrationDate": "2025-01-01T08:00:00Z",
+      "lastLoginDate": "2025-12-12T07:30:00Z",
+      "permissions": ["manage_users", "manage_hospitals", "approve_requests", "generate_reports"],
+      "status": "active",
+      "createdAt": "2025-01-01T08:00:00Z",
+      "updatedAt": "2025-12-12T07:30:00Z"
+    },
+
+    "FJASoATKOBNwDuaXwIJPSnS9ugN2": {
+      "userId": "FJASoATKOBNwDuaXwIJPSnS9ugN2",
+      "firstName": "V",
+      "lastName": "Puding",
+      "email": "vpuding@gmail.com",
+      "password": "123123",
+      "role": "donor",
+      "phone": "+63-9212345687",
+      "dateOfBirth": "1992-03-20",
+      "gender": "Female",
+      "bloodType": "A+",
+      "weight": 65,
+      "height": 165,
+      "address": "Main Street",
+      "city": "Manila",
+      "state": "NCR",
+      "registrationDate": "2025-12-10T11:00:00Z",
+      "lastLoginDate": "2025-12-12T09:00:00Z",
+      "isEligible": true,
+      "eligibilityExpiry": "2026-12-10",
+      "totalDonations": 0,
+      "status": "active",
+      "createdAt": "2025-12-10T11:00:00Z",
+      "updatedAt": "2025-12-12T09:00:00Z"
+    },
+
+    "wTV7YMpftWei17W27mOxCxTyYtT2": {
+      "userId": "wTV7YMpftWei17W27mOxCxTyYtT2",
+      "hospitalName": "Metro Health Center",
+      "email": "jayjaysoriano733@gmail.com",
+      "password": "123123",
+      "role": "hospital",
+      "phone": "+63-9212345685",
+      "licenseNumber": "LIC002",
+      "registrationNumber": "REG002",
+      "address": "Central Hospital District, Lucena",
+      "city": "Lucena",
+      "state": "Quezon",
+      "registrationDate": "2025-01-15T13:30:00Z",
+      "lastLoginDate": "2025-12-12T07:45:00Z",
+      "contactPerson": "Dr. Jose Miguel Cruz",
+      "contactPhone": "+63-9212345686",
+      "bloodBankManager": "Nurse Lorna Dizon",
+      "capacity": 600,
+      "status": "active",
+      "createdAt": "2025-01-15T13:30:00Z",
+      "updatedAt": "2025-12-12T07:45:00Z"
+    },
+
+    "o43EFgPIUtTA6uaBBqnrMDMzOFl1": {
+      "userId": "o43EFgPIUtTA6uaBBqnrMDMzOFl1",
+      "hospitalName": "General Medical Hospital",
+      "email": "jayjaysoriano723@gmail.com",
+      "password": "123123",
+      "role": "hospital",
+      "phone": "+63-9212345688",
+      "licenseNumber": "LIC003",
+      "registrationNumber": "REG003",
+      "address": "Hospital Lane, Cavite City",
+      "city": "Cavite City",
+      "state": "Cavite",
+      "registrationDate": "2025-12-10T14:00:00Z",
+      "lastLoginDate": "2025-12-12T08:00:00Z",
+      "contactPerson": "Dr. Maria Santos",
+      "contactPhone": "+63-9212345689",
+      "bloodBankManager": "Nurse Robert Cruz",
+      "capacity": 400,
+      "status": "active",
+      "createdAt": "2025-12-10T14:00:00Z",
+      "updatedAt": "2025-12-12T08:00:00Z"
+    }
+  },
+
+  "bloodInventory": {
+    "wTV7YMpftWei17W27mOxCxTyYtT2": {
+      "bloodType": "O+",
+      "hospitalId": "wTV7YMpftWei17W27mOxCxTyYtT2",
+      "O+": 150,
+      "O-": 40,
+      "A+": 120,
+      "A-": 35,
+      "B+": 70,
+      "B-": 15,
+      "AB+": 50,
+      "AB-": 12,
+      "lastUpdated": "2025-12-12T09:00:00Z"
+    },
+    "o43EFgPIUtTA6uaBBqnrMDMzOFl1": {
+      "bloodType": "O+",
+      "hospitalId": "o43EFgPIUtTA6uaBBqnrMDMzOFl1",
+      "O+": 100,
+      "O-": 25,
+      "A+": 90,
+      "A-": 20,
+      "B+": 75,
+      "B-": 18,
+      "AB+": 45,
+      "AB-": 8,
+      "lastUpdated": "2025-12-12T08:00:00Z"
+    }
+  },
+
+  "bloodRequests": {
+  },
+
+  "donations": {
+  },
+
+  "donationSchedules": {
+  }
+}

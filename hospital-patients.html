@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage Patients - Hospital Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="red-cross-styles.css">
+    <!-- Unified Authentication Manager -->
+    <script type="module" src="auth-manager.js"></script>
+    <script type="module" src="bloodConnectDB.js"></script>
+</head>
+<body>
+    <!-- Red Cross Header -->
+    <header class="red-cross-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="hospital-dashboard.html" class="red-cross-logo">
+                    <div class="red-cross-icon">✚</div>
+                    <div>
+                        <h1 class="red-cross-brand">BloodConnect</h1>
+                        <p class="red-cross-tagline">Medical Blood Management</p>
+                    </div>
+                </a>
+                <div class="red-cross-nav">
+                    <a href="hospital-dashboard.html">Dashboard</a>
+                    <a href="hospital-requests.html">Blood Requests</a>
+                    <a href="hospital-inventory.html">Inventory</a>
+                    <a href="hospital-patients.html" class="active">Patients</a>
+                    <button id="logoutBtn" class="btn-red-cross-outline" style="border:none; background:transparent; cursor:pointer;">Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Hero -->
+    <section class="red-cross-hero">
+        <div class="container">
+            <div class="red-cross-page-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="red-cross-page-title">Patient Management</h1>
+                        <p class="red-cross-page-subtitle">Track and manage patient blood requirements</p>
+                    </div>
+                    <button class="btn-red-cross" onclick="openAddPatientModal()">
+                        <i class="fa-solid fa-plus me-2"></i>Add Patient
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics -->
+    <section class="py-4 bg-light">
+        <div class="container">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="red-cross-card text-center">
+                        <div class="red-cross-card-body">
+                            <div class="red-cross-stat-icon">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <h3 class="red-cross-stat-number" id="totalPatients">0</h3>
+                            <p class="red-cross-stat-label">Total Patients</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="red-cross-card text-center">
+                        <div class="red-cross-card-body">
+                            <div class="red-cross-stat-icon">
+                                <i class="fa-solid fa-heart-pulse"></i>
+                            </div>
+                            <h3 class="red-cross-stat-number" id="activePatients">0</h3>
+                            <p class="red-cross-stat-label">Active Cases</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="red-cross-card text-center">
+                        <div class="red-cross-card-body">
+                            <div class="red-cross-stat-icon">
+                                <i class="fa-solid fa-tint"></i>
+                            </div>
+                            <h3 class="red-cross-stat-number" id="totalUnitsNeeded">0</h3>
+                            <p class="red-cross-stat-label">Units Needed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search and Filter -->
+    <section class="py-4">
+        <div class="container">
+            <div class="red-cross-card">
+                <div class="red-cross-card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="searchInput" 
+                                   placeholder="Search by patient name or ID..." 
+                                   onkeyup="filterPatients()">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-control" id="filterStatus" onchange="filterPatients()">
+                                <option value="">All Statuses</option>
+                                <option value="active">Active</option>
+                                <option value="discharge">Discharged</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-control" id="filterBloodType" onchange="filterPatients()">
+                                <option value="">All Blood Types</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Patients Table -->
+    <section class="py-5">
+        <div class="container">
+            <div class="red-cross-card">
+                <div class="red-cross-card-header">
+                    <i class="fa-solid fa-list text-red-cross"></i>
+                    Patients List
+                </div>
+                <div class="red-cross-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-red-cross">
+                            <thead>
+                                <tr>
+                                    <th>Patient ID</th>
+                                    <th>Name</th>
+                                    <th>Blood Type</th>
+                                    <th>Units Needed</th>
+                                    <th>Status</th>
+                                    <th>Admission Date</th>
+                                    <th>Doctor</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patientsTable">
+                                <tr>
+                                    <td colspan="8" class="text-center text-medical">Loading patients...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Add/Edit Patient Modal -->
+    <div class="modal fade" id="patientModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Patient</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="patientForm">
+                        <input type="hidden" id="patientId">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="patientName" class="form-label">Patient Name</label>
+                                <input type="text" class="form-control" id="patientName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="patientMRN" class="form-label">Medical Record Number</label>
+                                <input type="text" class="form-control" id="patientMRN" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="patientBloodType" class="form-label">Blood Type</label>
+                                <select class="form-control" id="patientBloodType" required>
+                                    <option value="">Select Blood Type</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="patientUnitsNeeded" class="form-label">Units Needed</label>
+                                <input type="number" class="form-control" id="patientUnitsNeeded" min="1" max="50" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="patientAdmissionDate" class="form-label">Admission Date</label>
+                                <input type="date" class="form-control" id="patientAdmissionDate" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="patientStatus" class="form-label">Status</label>
+                                <select class="form-control" id="patientStatus" required>
+                                    <option value="active">Active</option>
+                                    <option value="discharge">Discharge</option>
+                                    <option value="completed">Completed</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="patientDoctor" class="form-label">Doctor Name</label>
+                                <input type="text" class="form-control" id="patientDoctor" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="patientDepartment" class="form-label">Department</label>
+                                <input type="text" class="form-control" id="patientDepartment" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="patientDiagnosis" class="form-label">Diagnosis/Notes</label>
+                            <textarea class="form-control" id="patientDiagnosis" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn-red-cross" onclick="savePatient()">Save Patient</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Details Modal -->
+    <div class="modal fade" id="patientDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Patient Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="patientDetailsContent">
+                        <p class="text-center">Loading...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn-red-cross" onclick="editPatient()">Edit Patient</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Red Cross Footer -->
+    <footer class="red-cross-footer">
+        <div class="container">
+            <div class="red-cross-footer-bottom">
+                <p>&copy; 2025 BloodConnect. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import authManager from './auth-manager.js';
+        import bloodConnectDB from './bloodConnectDB.js';
+
+        let currentUserData = null;
+        let currentHospitalId = null;
+        let allPatients = {};
+        let currentDetailPatientId = null;
+
+        // Load page when authenticated
+        authManager.addAuthListener(async (user, userData) => {
+            if (user) {
+                // Verify user is hospital (non-blocking)
+                if (userData.role !== 'hospital') {
+                    console.warn('Access denied: Hospital role required (non-blocking)');
+                }
+                currentUserData = userData;
+                currentHospitalId = user.uid;
+                initializePage();
+            } else {
+                // Non-restrictive mode: do not auto-redirect to login
+            }
+        });
+
+        async function initializePage() {
+            await loadPatients();
+            updateStatistics();
+        }
+
+        async function loadPatients() {
+            try {
+                // For demo, we'll create a local patient storage
+                const stored = localStorage.getItem('hospital_patients_' + currentHospitalId);
+                allPatients = stored ? JSON.parse(stored) : {};
+                displayPatients(Object.values(allPatients));
+            } catch (error) {
+                console.error('Error loading patients:', error);
+                document.getElementById('patientsTable').innerHTML = 
+                    '<tr><td colspan="8" class="text-center text-danger">Error loading patients</td></tr>';
+            }
+        }
+
+        function displayPatients(patients) {
+            const tableBody = document.getElementById('patientsTable');
+            
+            if (patients.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" class="text-center text-medical">No patients found</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = '';
+            patients.forEach((patient) => {
+                const row = document.createElement('tr');
+                const statusClass = getStatusClass(patient.status);
+                row.innerHTML = `
+                    <td>${patient.mrn}</td>
+                    <td>${patient.name}</td>
+                    <td><span class="badge-red-cross">${patient.bloodType}</span></td>
+                    <td>${patient.unitsNeeded}</td>
+                    <td><span class="badge badge-${statusClass}">${patient.status}</span></td>
+                    <td>${new Date(patient.admissionDate).toLocaleDateString()}</td>
+                    <td>${patient.doctor}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewPatientDetails('${patient.id}')">
+                            <i class="fa-solid fa-eye"></i> View
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        window.filterPatients = function() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('filterStatus').value;
+            const bloodType = document.getElementById('filterBloodType').value;
+
+            let filtered = Object.values(allPatients);
+            if (search) {
+                filtered = filtered.filter(p => 
+                    p.name.toLowerCase().includes(search) || 
+                    p.mrn.toLowerCase().includes(search)
+                );
+            }
+            if (status) filtered = filtered.filter(p => p.status === status);
+            if (bloodType) filtered = filtered.filter(p => p.bloodType === bloodType);
+
+            displayPatients(filtered);
+        };
+
+        function updateStatistics() {
+            const patients = Object.values(allPatients);
+            document.getElementById('totalPatients').textContent = patients.length;
+            document.getElementById('activePatients').textContent = patients.filter(p => p.status === 'active').length;
+            document.getElementById('totalUnitsNeeded').textContent = patients.reduce((sum, p) => sum + (p.unitsNeeded || 0), 0);
+        }
+
+        window.openAddPatientModal = function() {
+            document.getElementById('patientId').value = '';
+            document.getElementById('patientForm').reset();
+            document.getElementById('patientAdmissionDate').value = new Date().toISOString().split('T')[0];
+            const modal = new bootstrap.Modal(document.getElementById('patientModal'));
+            modal.show();
+        };
+
+        window.savePatient = function() {
+            const patientId = document.getElementById('patientId').value;
+            const id = patientId || 'patient_' + Date.now();
+
+            const patientData = {
+                id: id,
+                name: document.getElementById('patientName').value,
+                mrn: document.getElementById('patientMRN').value,
+                bloodType: document.getElementById('patientBloodType').value,
+                unitsNeeded: parseInt(document.getElementById('patientUnitsNeeded').value),
+                admissionDate: document.getElementById('patientAdmissionDate').value,
+                status: document.getElementById('patientStatus').value,
+                doctor: document.getElementById('patientDoctor').value,
+                department: document.getElementById('patientDepartment').value,
+                diagnosis: document.getElementById('patientDiagnosis').value,
+                hospitalId: currentHospitalId,
+                createdAt: allPatients[id]?.createdAt || new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            allPatients[id] = patientData;
+            localStorage.setItem('hospital_patients_' + currentHospitalId, JSON.stringify(allPatients));
+            
+            alert('Patient saved successfully!');
+            bootstrap.Modal.getInstance(document.getElementById('patientModal')).hide();
+            loadPatients();
+        };
+
+        window.viewPatientDetails = function(patientId) {
+            currentDetailPatientId = patientId;
+            const patient = allPatients[patientId];
+            
+            if (!patient) {
+                alert('Patient not found');
+                return;
+            }
+
+            const content = `
+                <dl class="row">
+                    <dt class="col-sm-3">Patient Name</dt>
+                    <dd class="col-sm-9">${patient.name}</dd>
+                    
+                    <dt class="col-sm-3">MRN</dt>
+                    <dd class="col-sm-9">${patient.mrn}</dd>
+                    
+                    <dt class="col-sm-3">Blood Type</dt>
+                    <dd class="col-sm-9"><span class="badge-red-cross">${patient.bloodType}</span></dd>
+                    
+                    <dt class="col-sm-3">Units Needed</dt>
+                    <dd class="col-sm-9">${patient.unitsNeeded}</dd>
+                    
+                    <dt class="col-sm-3">Status</dt>
+                    <dd class="col-sm-9"><span class="badge badge-${getStatusClass(patient.status)}">${patient.status}</span></dd>
+                    
+                    <dt class="col-sm-3">Doctor</dt>
+                    <dd class="col-sm-9">${patient.doctor}</dd>
+                    
+                    <dt class="col-sm-3">Department</dt>
+                    <dd class="col-sm-9">${patient.department}</dd>
+                    
+                    <dt class="col-sm-3">Admission Date</dt>
+                    <dd class="col-sm-9">${new Date(patient.admissionDate).toLocaleDateString()}</dd>
+                    
+                    <dt class="col-sm-3">Diagnosis/Notes</dt>
+                    <dd class="col-sm-9">${patient.diagnosis || 'No notes'}</dd>
+                </dl>
+            `;
+
+            document.getElementById('patientDetailsContent').innerHTML = content;
+            const modal = new bootstrap.Modal(document.getElementById('patientDetailsModal'));
+            modal.show();
+        };
+
+        window.editPatient = function() {
+            const patient = allPatients[currentDetailPatientId];
+            if (!patient) return;
+
+            document.getElementById('patientId').value = patient.id;
+            document.getElementById('patientName').value = patient.name;
+            document.getElementById('patientMRN').value = patient.mrn;
+            document.getElementById('patientBloodType').value = patient.bloodType;
+            document.getElementById('patientUnitsNeeded').value = patient.unitsNeeded;
+            document.getElementById('patientAdmissionDate').value = patient.admissionDate;
+            document.getElementById('patientStatus').value = patient.status;
+            document.getElementById('patientDoctor').value = patient.doctor;
+            document.getElementById('patientDepartment').value = patient.department;
+            document.getElementById('patientDiagnosis').value = patient.diagnosis;
+
+            bootstrap.Modal.getInstance(document.getElementById('patientDetailsModal')).hide();
+            const modal = new bootstrap.Modal(document.getElementById('patientModal'));
+            modal.show();
+        };
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'active': return 'success';
+                case 'discharge': return 'warning';
+                case 'completed': return 'info';
+                default: return 'secondary';
+            }
+        }
+
+        // Handle logout button
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'logoutBtn') {
+                e.preventDefault();
+                authManager.logoutAndRedirect();
+            }
+        });
+    </script>
+</body>
+</html>
