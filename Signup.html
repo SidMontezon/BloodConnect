@@ -1,158 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <title>BloodConnect - Sign Up</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <style>
-        body { background-color: #f8f9fa; }
-        .signup-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .signup-box {
-            background: white; padding: 40px; border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center; width: 100%; max-width: 400px;
-        }
-        .message-display {
-            color: red;
-            margin-top: 10px;
-            display: none;
-            opacity: 0;
-            transition: opacity 1s ease-out;
-        }
-        .back-to-home {
-            position: absolute;
-            top: 70px;
-            left: 20px;
-            font-size: 16px;
-        }
-    </style>
+    <link rel="stylesheet" href="red-cross-styles.css">
 </head>
 <body>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+<!-- Red Cross Header -->
+<header class="red-cross-header">
     <div class="container">
-        <a class="navbar-brand" href="index.html"><i class="fa-solid fa-droplet"></i> BloodConnect</a>
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="index.html" class="red-cross-logo">
+                <div class="red-cross-icon">✚</div>
+                <div>
+                    <h1 class="red-cross-brand">BloodConnect</h1>
+                    <p class="red-cross-tagline">Medical Blood Management</p>
+                </div>
+            </a>
+            <div class="red-cross-nav">
+                <a href="index.html">Home</a>
+                <a href="about.html">About Us</a>
+                <a href="contact.html">Contact Us</a>
+                <a href="faqs.html">FAQs</a>
+                <a href="Signup.html" class="active">Sign Up</a>
+                <a href="login.html" class="btn-red-cross">Login</a>
+            </div>
+        </div>
     </div>
-</nav>
+</header>
 
-<p class="back-to-home"><a href="index.html" class="text-danger">Back to Home Page</a></p>
-
-<div class="signup-container">
-    <div class="signup-box">
-        <h2><i class="fa-solid fa-user-plus"></i> Sign Up</h2>
-        <form id="signupForm">
-            <input type="text" class="form-control mb-3" id="fName" placeholder="First Name" required>
-            <input type="text" class="form-control mb-3" id="lName" placeholder="Last Name" required>
-            <input type="email" class="form-control mb-3" id="rEmail" placeholder="Email" required>
-            <input type="password" class="form-control mb-3" id="rPassword" placeholder="Password" required>
-
-            <button type="submit" class="btn btn-danger w-100" id="submitSignUp">
-                <i class="fa-solid fa-user-plus"></i> Register
-            </button>
-        </form>
-
-        <p class="mt-3">Already have an account? <a href="login.html" class="text-danger">Login</a></p>
-        <div class="message-display" id="signUpMessage"></div>
+<!-- Sign Up Section -->
+<section class="red-cross-signup">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="red-cross-card">
+                    <div class="red-cross-card-header">
+                        <i class="fa-solid fa-user-plus text-red-cross"></i>
+                        Create Your Account
+                    </div>
+                    <div class="red-cross-card-body">
+                        <form id="signupForm">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="fName" class="red-cross-form-label">First Name</label>
+                                        <input type="text" class="red-cross-form-control" id="fName" placeholder="Enter your first name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="lName" class="red-cross-form-label">Last Name</label>
+                                        <input type="text" class="red-cross-form-control" id="lName" placeholder="Enter your last name" required>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="red-cross-form-group">
+                                        <label for="rEmail" class="red-cross-form-label">Email Address</label>
+                                        <input type="email" class="red-cross-form-control" id="rEmail" placeholder="Enter your email address" required>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="red-cross-form-group">
+                                        <label for="rPassword" class="red-cross-form-label">Password</label>
+                                        <input type="password" class="red-cross-form-control" id="rPassword" placeholder="Create a secure password" required>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="red-cross-form-group">
+                                        <label for="userRole" class="red-cross-form-label">Account Type</label>
+                                        <select class="red-cross-form-control" id="userRole" required>
+                                            <option value="">Select your role</option>
+                                            <option value="donor">Blood Donor</option>
+                                            <option value="hospital">Hospital</option>
+                                            <option value="patient">Patient/Recipient</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12 text-center">
+                                    <button type="submit" class="btn-red-cross btn-lg">
+                                        <i class="fa-solid fa-user-plus me-2"></i>
+                                        Create Account
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <!-- ✅ Message div -->
+                        <div class="red-cross-message-display mt-3" id="signUpMessage" style="display:none;"></div>
+                        
+                        <div class="text-center mt-4">
+                            <p class="text-medical">Already have an account? 
+                                <a href="login.html" class="text-red-cross">Sign In</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+</section>
 
-<!-- Bootstrap JS -->
+<!-- Bootstrap JS Bundle (includes Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- EmailJS Script -->
-<script src="https://cdn.emailjs.com/dist/email.min.js"></script>
-<script>
 <<<<<<< HEAD
-            const firebaseConfig = {
-        apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
-        authDomain: "bloodconnect2-d094a.firebaseapp.com",
-        projectId: "bloodconnect2-d094a",
-        storageBucket: "bloodconnect2-d094a.firebasestorage.app",
-        messagingSenderId: "124251937624",
-        appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
-    };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    // Handle sign up form
-    document.getElementById('signupForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-        const name = document.getElementById('name').value;   // Get the name
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const role = document.getElementById('role').value;  // Get the selected role
-
-        auth.createUserWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                const user = userCredential.user;
-
-                // Create user document in Firestore first
-                const userData = {
-                    role: role,   // Store the selected role ("donor" or "hospital")
-                    email: email,
-                    name: name,    // Save the name of the user
-                    emailVerified: false,
-                    twoFactorEnabled: false,
-                    phoneNumber: '',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
-
-                // Save user data to Firestore
-                db.collection("users").doc(user.uid).set(userData)
-                    .then(() => {
-                        console.log("User document created successfully");
-                        
-                        // Store user data for verification page
-                        sessionStorage.setItem('pendingVerification', JSON.stringify({
-                            uid: user.uid,
-                            email: email,
-                            name: name,
-                            role: role
-                        }));
-
-                        // Send email verification
-                        return user.sendEmailVerification();
-                    })
-                    .then(() => {
-                        alert('Account created successfully! Please check your email to verify your account.');
-                        window.location.href = 'verify-email.html';  // Redirect to email verification page
-                    })
-                    .catch((error) => {
-                        console.error("Error during signup:", error);
-                        
-                        let errorMessage = "Account created but there was an error: ";
-                        if (error.code === 'auth/too-many-requests') {
-                            errorMessage = "Account created! However, too many requests were made. Please wait 1-2 hours before requesting a new verification email, or try a different network.";
-                        } else if (error.code === 'auth/network-request-failed') {
-                            errorMessage = "Account created! Network error occurred. Please check your internet connection and try again.";
-                        } else if (error.code === 'permission-denied') {
-                            errorMessage = "Account created! Please contact support to complete your registration.";
-                        } else {
-                            errorMessage += error.message;
-                        }
-                        
-                        alert(errorMessage);
-                    });
-            })
-            .catch((error) => {
-                console.error("Error signing up: ", error.message);
-                alert("Error signing up: " + error.message);
-            });
-    });
+<!-- Firebase Integration with Realtime Database -->
+<script type="module" src="firebase-integration.js"></script>
 =======
-    emailjs.init("YOUR_PUBLIC_KEY"); // Replace this
->>>>>>> 1aba2da41315da1b1270fd5314934f9d632fb1fc
-</script>
-
-<!-- Firebase Logic -->
 <script type="module" src="firebaseauth.js"></script>
+>>>>>>> 37c26ad496c63d87e640a79991369b0929c22a3d
+
 </body>
 </html>
-

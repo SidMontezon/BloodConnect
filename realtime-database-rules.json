@@ -1,0 +1,66 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".validate": "newData.hasChildren(['email','role'])"
+      }
+    },
+
+    "bloodInventory": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('role').val() === 'hospital')",
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || newData.child('hospitalId').val() === auth.uid)",
+      "$invId": {
+        ".validate": "newData.hasChildren(['bloodType','quantity','hospitalId'])"
+      },
+      ".indexOn": ["bloodType","hospitalId"]
+    },
+
+    "bloodRequests": {
+      "$reqId": {
+        ".read": "auth != null && (data.child('requesterId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('role').val() === 'hospital')",
+        ".write": "auth != null && (newData.child('requesterId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('role').val() === 'hospital')",
+        ".validate": "newData.hasChildren(['requesterId','requesterType','bloodType','quantity','status'])"
+      },
+      ".indexOn": ["status","requesterId","requesterType","hospitalId"]
+    },
+
+    "donationSchedules": {
+      "$sid": {
+        ".read": "auth != null && (data.child('donorId').val() === auth.uid || data.child('hospitalId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && (newData.child('donorId').val() === auth.uid || newData.child('hospitalId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".validate": "newData.hasChildren(['donorId','bloodType','status'])"
+      },
+      ".indexOn": ["donorId","hospitalId","status"]
+    },
+
+    "hospitalEvents": {
+      "$eid": {
+        ".read": "auth != null && (data.child('hospitalId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('role').val() === 'donor')",
+        ".write": "auth != null && (newData.child('hospitalId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+      },
+      ".indexOn": ["hospitalId","eventDate"]
+    },
+
+    "notifications": {
+      "$nid": {
+        ".read": "auth != null && (data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('role').val() === 'hospital')",
+        ".validate": "newData.hasChildren(['userId','title','message'])"
+      },
+      ".indexOn": ["userId","createdAt"]
+    },
+
+    "donations": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".indexOn": ["donorId","hospitalId","createdAt"]
+    },
+
+    "verifications": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+    }
+  }
+}

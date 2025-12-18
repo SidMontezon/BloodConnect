@@ -5,12 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Admin - Blood Inventory</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background: #f8f9fa; }
-        .navbar { background: #c0392b; }
-        .navbar-brand, .nav-link { color: white !important; }
-        .form-range { width: 200px; }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
@@ -21,80 +17,128 @@
         </div>
     </nav>
 
-    <div class="container py-4">
-        <h3 class="mb-3">Blood Inventory</h3>
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="display-5 fw-bold text-dark mb-2">Blood Inventory Management</h1>
+                        <p class="text-muted">View and update blood stock levels across all blood groups</p>
+                    </div>
+                    <a href="admin.html" class="btn btn-outline-primary">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Back to Admin Panel
+                    </a>
+                </div>
+            </div>
+        </div>
 
-        <div class="table-responsive">
-            <table class="table table-bordered bg-white">
-                <thead>
-                    <tr>
-                        <th>Blood Group</th>
-                        <th>Quantity (L)</th>
-                        <th>Update</th>
-                    </tr>
-                </thead>
-                <tbody id="inventoryBody"></tbody>
-            </table>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0"><i class="fa-solid fa-warehouse me-2"></i>Blood Stock Levels</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fa-solid fa-info-circle me-2"></i>
+                            <strong>Read-Only View:</strong> This page shows the total blood stock across all hospitals. 
+                            To manage individual hospital inventories, go to <a href="admin-manage-hospitals.html">Manage Hospitals</a>.
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Blood Group</th>
+                                        <th>Current Stock (units)</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventoryBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="alert alert-info" id="message" style="display:none;"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAG6Drx2JJlBX1TGvLMWPHp_D2xBDTPIjI",
-            authDomain: "bloodconnect-b5142.firebaseapp.com",
-            databaseURL: "https://bloodconnect-b5142-default-rtdb.firebaseio.com",
-            projectId: "bloodconnect-b5142",
-            storageBucket: "bloodconnect-b5142.appspot.com",
-            messagingSenderId: "631993835929",
-            appId: "1:631993835929:web:75554aca166e9058473308"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
-
-        const groups = ["Aplus", "Bplus", "Oplus", "ABplus", "Aminus", "Bminus", "Ominus", "ABminus"]; 
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js"></script>
+    <script type="module">
+        import authManager from './auth-manager.js';
+        import bloodConnectDB from './bloodConnectDB.js';
 
         function showMessage(text) {
             const m = document.getElementById('message');
-            m.innerText = text; m.style.display = 'block';
-            setTimeout(() => { m.style.display = 'none'; }, 3000);
+            if (m) {
+                m.innerText = text; 
+                m.style.display = 'block';
+                setTimeout(() => { m.style.display = 'none'; }, 3000);
+            }
         }
 
-        function renderInventory(data) {
+        async function renderInventory(data) {
             const tbody = document.getElementById('inventoryBody');
+            if (!tbody) return;
+            
             tbody.innerHTML = '';
-            groups.forEach(key => {
-                const qty = (data && data[key]) || 0;
+            
+            const totals = {
+                'A+': 0, 'A-': 0, 'B+': 0, 'B-': 0,
+                'O+': 0, 'O-': 0, 'AB+': 0, 'AB-': 0
+            };
+            
+            if (data && typeof data === 'object') {
+                Object.values(data).forEach(item => {
+                    if (item && item.bloodType && totals.hasOwnProperty(item.bloodType)) {
+                        totals[item.bloodType] += (item.quantity || 0);
+                    }
+                });
+            }
+
+            const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+            bloodTypes.forEach(bloodType => {
+                const qty = totals[bloodType] || 0;
+                const status = qty > 0 ? 'Available' : 'Out of Stock';
+                const statusClass = qty > 0 ? 'success' : 'danger';
+                
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${key.replace('plus','+').replace('minus','-')}</td>
-                    <td><input type="number" min="0" step="0.1" class="form-control" id="q_${key}" value="${qty}"></td>
-                    <td><button class="btn btn-primary btn-sm" data-key="${key}">Save</button></td>
+                    <td><span class="badge bg-primary">${bloodType}</span></td>
+                    <td><strong>${qty.toFixed(1)}</strong> units</td>
+                    <td><span class="badge bg-${statusClass}">${status}</span></td>
                 `;
                 tbody.appendChild(tr);
             });
-
-            tbody.querySelectorAll('button').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const key = e.target.getAttribute('data-key');
-                    const val = parseFloat(document.getElementById(`q_${key}`).value) || 0;
-                    db.ref('bloodInventory/' + key).set(val).then(() => showMessage('Saved'));
-                });
-            });
         }
 
-        auth.onAuthStateChanged((user) => {
-            if (!user) { window.location.href = 'login.html'; return; }
-            db.ref('bloodInventory').on('value', (snap) => renderInventory(snap.val()));
+        // Verify user is admin before loading page
+        authManager.addAuthListener(async (user, userData) => {
+            if (!user) { 
+                window.location.href = 'login.html'; 
+                return; 
+            }
+            if (!userData || userData.role !== 'admin') {
+                console.warn('User is not an admin. Redirecting...');
+                await authManager.redirectByRole();
+                return;
+            }
+            // Load inventory data
+            const inventory = await bloodConnectDB.getBloodInventory();
+            renderInventory(inventory || {});
+        });
+
+        // Handle logout button
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'logoutBtn') {
+                e.preventDefault();
+                authManager.logoutAndRedirect();
+            }
         });
     </script>
 </body>
 </html>
-

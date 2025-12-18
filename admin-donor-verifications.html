@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin - Donor Verifications</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="red-cross-styles.css">
+    <style>
+        .verification-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: white;
+        }
+        .document-preview {
+            max-width: 100%;
+            max-height: 400px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+        }
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .status-pending { background-color: #fff3cd; color: #856404; }
+        .status-approved { background-color: #d1e7dd; color: #0f5132; }
+        .status-rejected { background-color: #f8d7da; color: #842029; }
+    </style>
+</head>
+<body>
+    <!-- Red Cross Header -->
+    <header class="red-cross-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="admin.html" class="red-cross-logo">
+                    <div class="red-cross-icon">✚</div>
+                    <div>
+                        <h1 class="red-cross-brand">BloodConnect</h1>
+                        <p class="red-cross-tagline">Medical Blood Management</p>
+                    </div>
+                </a>
+                <div class="red-cross-nav">
+                    <a href="admin.html">Admin Panel</a>
+                    <a href="logout.html" class="btn-red-cross-outline">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="red-cross-hero">
+        <div class="container">
+            <div class="red-cross-page-header">
+                <div class="text-center">
+                    <h1 class="red-cross-page-title">Donor Verification Review</h1>
+                    <p class="red-cross-page-subtitle">Review and approve donor verification documents</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="red-cross-dashboard-stats">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="red-cross-card">
+                        <div class="red-cross-card-header">
+                            <i class="fa-solid fa-clipboard-check text-red-cross"></i>
+                            Pending Verifications
+                        </div>
+                        <div class="red-cross-card-body">
+                            <div id="verificationsList">
+                                <div class="text-center text-medical">
+                                    <i class="fa-solid fa-spinner fa-spin fa-2x mb-3"></i>
+                                    <p>Loading verifications...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script type="module">
+        import authManager from './auth-manager.js';
+        import bloodConnectDB from './bloodConnectDB.js';
+
+        let currentAdminId = null;
+
+        authManager.addAuthListener(async (user, userData) => {
+            if (!user || !userData) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (userData.role !== 'admin') {
+                await authManager.redirectByRole();
+                return;
+            }
+
+            currentAdminId = user.uid;
+            loadVerifications();
+        });
+
+        async function loadVerifications() {
+            try {
+                const verifications = await bloodConnectDB.getVerifications();
+                const users = await bloodConnectDB.getUsers();
+                
+                const verificationsList = document.getElementById('verificationsList');
+                
+                // Filter pending verifications
+                const pendingVerifications = Object.entries(verifications || {})
+                    .filter(([id, verification]) => verification && verification.verificationStatus === 'pending')
+                    .map(([id, verification]) => ({ id, ...verification }));
+
+                if (pendingVerifications.length === 0) {
+                    verificationsList.innerHTML = `
+                        <div class="text-center text-medical py-5">
+                            <i class="fa-solid fa-check-circle fa-3x text-success mb-3"></i>
+                            <p>No pending verifications at this time.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                for (const verification of pendingVerifications) {
+                    const user = users[verification.userId];
+                    const userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Unknown User';
+                    const userEmail = user ? user.email : 'N/A';
+                    
+                    html += `
+                        <div class="red-cross-card mb-3">
+                            <div class="red-cross-card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5><i class="fa-solid fa-user me-2"></i>${userName}</h5>
+                                        <p class="text-muted mb-3"><i class="fa-solid fa-envelope me-2"></i>${userEmail}</p>
+                                        <p class="mb-2"><strong>Submitted:</strong> ${verification.submittedAt ? new Date(verification.submittedAt).toLocaleString() : 'N/A'}</p>
+                                        ${verification.additionalNotes ? `<p class="mb-2"><strong>Notes:</strong> ${verification.additionalNotes}</p>` : ''}
+                                    </div>
+                                    <div class="col-md-6 text-end">
+                                        <span class="badge bg-warning">Pending Review</span>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-12">
+                                        <p class="text-muted">Documents are pending for review. Click the buttons below to approve or reject.</p>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="d-flex gap-2 justify-content-end">
+                                            <button class="btn btn-success" onclick="window.approveVerification('${verification.id}', '${verification.userId}')">\n                                                <i class=\"fa-solid fa-check me-1\"></i>Approve\n                                            </button>\n                                            <button class=\"btn btn-danger\" onclick=\"window.rejectVerification('${verification.id}', '${verification.userId}')\">\n                                                <i class=\"fa-solid fa-times me-1\"></i>Reject\n                                            </button>\n                                        </div>\n                                    </div>\n                                </div>\n                            </div>\n                        </div>\n                    `;\n                }\n\n                verificationsList.innerHTML = html;\n            } catch (error) {\n                console.error('Error loading verifications:', error);\n                document.getElementById('verificationsList').innerHTML = `\n                    <div class=\"alert alert-danger\">\n                        <i class=\"fa-solid fa-exclamation-triangle me-2\"></i>\n                        Error loading verifications. Please try again.\n                    </div>\n                `;\n            }\n        }\n\n        window.approveVerification = async function(verificationId, userId) {\n            if (!confirm('Are you sure you want to approve this verification?')) {\n                return;\n            }\n\n            try {\n                // Update verification status\n                await bloodConnectDB.updateVerificationStatus(verificationId, 'approved', currentAdminId);\n                \n                // Update user verification status\n                await bloodConnectDB.updateUser(userId, {\n                    verificationStatus: 'approved',\n                    verifiedAt: new Date().toISOString(),\n                    verifiedBy: currentAdminId\n                });\n\n                // Create notification for donor\n                await bloodConnectDB.createNotification({\n                    userId: userId,\n                    type: 'verification',\n                    title: 'Verification Approved',\n                    message: 'Your profile verification has been approved! You can now access the donor dashboard.',\n                    priority: 'high',\n                    actionUrl: 'donor-dashboard.html',\n                    createdAt: new Date().toISOString()\n                });\n\n                alert('Verification approved successfully!');\n                loadVerifications();\n            } catch (error) {\n                console.error('Error approving verification:', error);\n                alert('Error approving verification. Please try again.');\n            }\n        };\n\n        window.rejectVerification = async function(verificationId, userId) {\n            const rejectionReason = prompt('Please provide a reason for rejection:');\n            if (!rejectionReason || rejectionReason.trim() === '') {\n                alert('Rejection reason is required.');\n                return;\n            }\n\n            try {\n                // Update verification status\n                await bloodConnectDB.updateVerificationStatus(verificationId, 'rejected', currentAdminId, rejectionReason);\n                \n                // Update user verification status\n                await bloodConnectDB.updateUser(userId, {\n                    verificationStatus: 'rejected',\n                    verificationRejectedAt: new Date().toISOString(),\n                    verificationRejectedBy: currentAdminId,\n                    verificationRejectionReason: rejectionReason\n                });\n\n                // Create notification for donor\n                await bloodConnectDB.createNotification({\n                    userId: userId,\n                    type: 'verification',\n                    title: 'Verification Rejected',\n                    message: `Your verification was rejected. Reason: ${rejectionReason}. Please resubmit your documents.`,\n                    priority: 'high',\n                    actionUrl: 'donor-profile-verification.html',\n                    createdAt: new Date().toISOString()\n                });\n\n                alert('Verification rejected.');\n                loadVerifications();\n            } catch (error) {\n                console.error('Error rejecting verification:', error);\n                alert('Error rejecting verification. Please try again.');\n            }\n        };\n\n        // Handle logout button\n        document.addEventListener('click', (e) => {\n            if (e.target && e.target.id === 'logoutBtn') {\n                e.preventDefault();\n                authManager.logoutAndRedirect();\n            }\n        });\n    </script>
+
+        async function loadVerifications() {
+            try {
+                const verifications = await window.bloodConnectDB.getVerifications();
+                const users = await window.bloodConnectDB.getUsers();
+                
+                const verificationsList = document.getElementById('verificationsList');
+                
+                // Filter pending verifications
+                const pendingVerifications = Object.entries(verifications)
+                    .filter(([id, verification]) => verification.verificationStatus === 'pending')
+                    .map(([id, verification]) => ({ id, ...verification }));
+
+                if (pendingVerifications.length === 0) {
+                    verificationsList.innerHTML = `
+                        <div class="text-center text-medical py-5">
+                            <i class="fa-solid fa-check-circle fa-3x text-success mb-3"></i>
+                            <p>No pending verifications at this time.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                for (const verification of pendingVerifications) {
+                    const user = users[verification.userId];
+                    const userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Unknown User';
+                    const userEmail = user ? user.email : 'N/A';
+                    
+                    html += `
+                        <div class="verification-card">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5><i class="fa-solid fa-user me-2"></i>${userName}</h5>
+                                    <p class="text-muted mb-3"><i class="fa-solid fa-envelope me-2"></i>${userEmail}</p>
+                                    <p class="mb-2"><strong>Submitted:</strong> ${new Date(verification.submittedAt).toLocaleString()}</p>
+                                    ${verification.additionalNotes ? `<p class="mb-2"><strong>Notes:</strong> ${verification.additionalNotes}</p>` : ''}
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <span class="status-badge status-pending">Pending Review</span>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="fa-solid fa-id-card me-2"></i>Government ID</h6>
+                                    <a href="${verification.idDocumentUrl}" target="_blank" class="btn btn-sm btn-outline-primary mb-2">
+                                        <i class="fa-solid fa-eye me-1"></i>View ID Document
+                                    </a>
+                                    <div>
+                                        <img src="${verification.idDocumentUrl}" alt="ID Document" class="document-preview" onerror="this.style.display='none'">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fa-solid fa-home me-2"></i>Proof of Address</h6>
+                                    <a href="${verification.addressDocumentUrl}" target="_blank" class="btn btn-sm btn-outline-primary mb-2">
+                                        <i class="fa-solid fa-eye me-1"></i>View Address Document
+                                    </a>
+                                    <div>
+                                        <img src="${verification.addressDocumentUrl}" alt="Address Document" class="document-preview" onerror="this.style.display='none'">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <button class="btn btn-success" onclick="approveVerification('${verification.id}', '${verification.userId}')">
+                                            <i class="fa-solid fa-check me-1"></i>Approve
+                                        </button>
+                                        <button class="btn btn-danger" onclick="rejectVerification('${verification.id}', '${verification.userId}')">
+                                            <i class="fa-solid fa-times me-1"></i>Reject
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                verificationsList.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading verifications:', error);
+                document.getElementById('verificationsList').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fa-solid fa-exclamation-triangle me-2"></i>
+                        Error loading verifications. Please try again.
+                    </div>
+                `;
+            }
+        }
+
+        async function approveVerification(verificationId, userId) {
+            if (!confirm('Are you sure you want to approve this verification?')) {
+                return;
+            }
+
+            try {
+                // Update verification status
+                await window.bloodConnectDB.updateVerificationStatus(verificationId, 'approved', currentAdminId);
+                
+                // Update user verification status
+                await window.bloodConnectDB.updateUser(userId, {
+                    verificationStatus: 'approved',
+                    verifiedAt: new Date().toISOString(),
+                    verifiedBy: currentAdminId
+                });
+
+                // Create notification for donor
+                await window.bloodConnectDB.createNotification({
+                    userId: userId,
+                    type: 'verification',
+                    title: 'Verification Approved',
+                    message: 'Your profile verification has been approved! You can now access the donor dashboard.',
+                    priority: 'high',
+                    actionUrl: 'donor-dashboard.html',
+                    createdAt: new Date().toISOString()
+                });
+
+                alert('Verification approved successfully!');
+                loadVerifications();
+            } catch (error) {
+                console.error('Error approving verification:', error);
+                alert('Error approving verification. Please try again.');
+            }
+        }
+
+        async function rejectVerification(verificationId, userId) {
+            const rejectionReason = prompt('Please provide a reason for rejection:');
+            if (!rejectionReason || rejectionReason.trim() === '') {
+                alert('Rejection reason is required.');
+                return;
+            }
+
+            try {
+                // Update verification status
+                await window.bloodConnectDB.updateVerificationStatus(verificationId, 'rejected', currentAdminId, rejectionReason);
+                
+                // Update user verification status
+                await window.bloodConnectDB.updateUser(userId, {
+                    verificationStatus: 'rejected',
+                    verificationRejectedAt: new Date().toISOString(),
+                    verificationRejectedBy: currentAdminId,
+                    verificationRejectionReason: rejectionReason
+                });
+
+                // Create notification for donor
+                await window.bloodConnectDB.createNotification({
+                    userId: userId,
+                    type: 'verification',
+                    title: 'Verification Rejected',
+                    message: `Your verification was rejected. Reason: ${rejectionReason}. Please resubmit your documents.`,
+                    priority: 'high',
+                    actionUrl: 'donor-profile-verification.html',
+                    createdAt: new Date().toISOString()
+                });
+
+                alert('Verification rejected.');
+                loadVerifications();
+            } catch (error) {
+                console.error('Error rejecting verification:', error);
+                alert('Error rejecting verification. Please try again.');
+            }
+        };
+    </script>
+</body>
+</html>
+

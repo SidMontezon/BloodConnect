@@ -159,126 +159,99 @@
 </div>
 
 <!-- Firebase Scripts -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js"></script>
 
-<script>
-    // Firebase config
-    const firebaseConfig = {
-        apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
-        authDomain: "bloodconnect2-d094a.firebaseapp.com",
-        projectId: "bloodconnect2-d094a",
-        storageBucket: "bloodconnect2-d094a.firebasestorage.app",
-        messagingSenderId: "124251937624",
-        appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
-    };
-    
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+<script type="module">
+    import authManager from './auth-manager.js';
+    import bloodConnectDB from './bloodConnectDB.js';
 
     let allUsers = [];
 
-    // Check if user is admin
-    window.addEventListener('load', function() {
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                // Check if user is admin
-                db.collection("users").doc(user.uid).get()
-                    .then((doc) => {
-                        if (doc.exists && doc.data().role === "admin") {
-                            loadUsers();
-                        } else {
-                            showError("Access denied. Admin privileges required.");
-                            setTimeout(() => {
-                                window.location.href = "login.html";
-                            }, 2000);
-                        }
-                    });
-            } else {
-                window.location.href = "login.html";
-            }
-        });
+    // Verify user is admin before loading page
+    authManager.addAuthListener(async (user, userData) => {
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+        if (!userData || userData.role !== 'admin') {
+            console.warn('User is not an admin. Redirecting...');
+            await authManager.redirectByRole();
+            return;
+        }
+        // User is authenticated and is admin - load data
+        loadUsers();
     });
 
     // Add user form submission
-    document.getElementById("addUserForm").addEventListener("submit", function(event) {
-        event.preventDefault();
-        
-        const name = document.getElementById("userName").value;
-        const email = document.getElementById("userEmail").value;
-        const password = document.getElementById("userPassword").value;
-        const role = document.getElementById("userRole").value;
-        const phone = document.getElementById("userPhone").value;
-        const emailVerified = document.getElementById("emailVerified").checked;
-        const twoFactorEnabled = document.getElementById("twoFactorEnabled").checked;
+    const addUserForm = document.getElementById("addUserForm");
+    if (addUserForm) {
+        addUserForm.addEventListener("submit", async function(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById("userName").value;
+            const email = document.getElementById("userEmail").value;
+            const password = document.getElementById("userPassword").value;
+            const role = document.getElementById("userRole").value;
+            const phone = document.getElementById("userPhone").value;
 
-        // Create user with Firebase Auth
-        auth.createUserWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                const user = userCredential.user;
+            try {
+                // Create user with Firebase Auth
+                const response = await fetch('https://bloodconnect-b5142-default-rtdb.firebaseio.com/users.json');
+                const users = await response.json() || {};
                 
-                // Update user profile
-                user.updateProfile({
-                    displayName: name
-                });
-
-                // Set email verification status
-                if (emailVerified) {
-                    user.sendEmailVerification().then(() => {
-                        // Email verification sent, but we'll mark as verified in Firestore
-                    });
+                // Check if email already exists
+                const emailExists = Object.values(users).some(u => u.email === email);
+                if (emailExists) {
+                    showError("Email already exists!");
+                    return;
                 }
 
-                // Save user data to Firestore
+                // Create new user in Realtime Database
+                const newUserId = Date.now().toString();
                 const userData = {
-                    name: name,
+                    firstName: name,
                     email: email,
+                    password: password, // Note: In production, use hashed passwords
                     role: role,
-                    emailVerified: emailVerified,
-                    twoFactorEnabled: twoFactorEnabled,
-                    phoneNumber: phone ? '+63' + phone : '',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    createdBy: auth.currentUser.uid
+                    phone: phone || '',
+                    createdAt: new Date().toISOString()
                 };
 
-                return db.collection("users").doc(user.uid).set(userData);
-            })
-            .then(() => {
+                await bloodConnectDB.updateUser(newUserId, userData);
+                
                 showSuccess("User created successfully!");
-                document.getElementById("addUserForm").reset();
-                loadUsers(); // Refresh the users list
-            })
-            .catch((error) => {
+                addUserForm.reset();
+                loadUsers();
+            } catch (error) {
                 console.error("Error creating user:", error);
                 showError("Error creating user: " + error.message);
-            });
-    });
+            }
+        });
+    }
 
     // Load all users
-    function loadUsers() {
-        db.collection("users").orderBy("createdAt", "desc").get()
-            .then((querySnapshot) => {
+    async function loadUsers() {
+        try {
+            const users = await bloodConnectDB.getUsers();
+            if (!users) {
                 allUsers = [];
-                querySnapshot.forEach((doc) => {
-                    allUsers.push({
-                        id: doc.id,
-                        ...doc.data()
-                    });
-                });
-                displayUsers(allUsers);
-            })
-            .catch((error) => {
-                console.error("Error loading users:", error);
-                showError("Error loading users: " + error.message);
-            });
+            } else {
+                allUsers = Object.entries(users).map(([id, user]) => ({ id, ...user }));
+            }
+            displayUsers(allUsers);
+        } catch (error) {
+            console.error("Error loading users:", error);
+            showError("Error loading users: " + error.message);
+        }
     }
 
     // Display users
     function displayUsers(users) {
         const usersList = document.getElementById("usersList");
+        
+        if (!usersList) return;
         
         if (users.length === 0) {
             usersList.innerHTML = '<div class="text-center text-muted">No users found</div>';
@@ -286,34 +259,31 @@
         }
 
         usersList.innerHTML = users.map(user => `
-            <div class="user-card ${user.role}">
-                <div class="row align-items-center">
-                    <div class="col-md-3">
-                        <h6 class="mb-1">${user.name}</h6>
-                        <small class="text-muted">${user.email}</small>
-                    </div>
-                    <div class="col-md-2">
-                        <span class="badge bg-${getRoleColor(user.role)}">${user.role.toUpperCase()}</span>
-                    </div>
-                    <div class="col-md-2">
-                        <span class="status-badge ${user.emailVerified ? 'status-verified' : 'status-unverified'}">
-                            ${user.emailVerified ? 'Verified' : 'Unverified'}
-                        </span>
-                    </div>
-                    <div class="col-md-2">
-                        <span class="status-badge ${user.twoFactorEnabled ? 'status-enabled' : 'status-disabled'}">
-                            ${user.twoFactorEnabled ? '2FA On' : '2FA Off'}
-                        </span>
-                    </div>
-                    <div class="col-md-2">
-                        <small class="text-muted">
-                            ${user.phoneNumber || 'No phone'}
-                        </small>
-                    </div>
-                    <div class="col-md-1">
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('${user.id}')">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+            <div class="red-cross-card mb-3">
+                <div class="red-cross-card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <h6 class="mb-1">${user.firstName || user.name || 'Unknown'}</h6>
+                            <small class="text-muted">${user.email}</small>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="badge bg-${getRoleColor(user.role)}">${(user.role || 'user').toUpperCase()}</span>
+                        </div>
+                        <div class="col-md-2">
+                            <small class="text-muted">
+                                ${user.phone || 'No phone'}
+                            </small>
+                        </div>
+                        <div class="col-md-2">
+                            <small class="text-muted">
+                                ${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                            </small>
+                        </div>
+                        <div class="col-md-1 text-end">
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('${user.id}')">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -331,48 +301,66 @@
     }
 
     // Delete user
-    function deleteUser(userId) {
+    async function deleteUser(userId) {
         if (confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
-            // Delete from Firestore
-            db.collection("users").doc(userId).delete()
-                .then(() => {
-                    showSuccess("User deleted successfully!");
-                    loadUsers(); // Refresh the list
-                })
-                .catch((error) => {
-                    console.error("Error deleting user:", error);
-                    showError("Error deleting user: " + error.message);
-                });
+            try {
+                await bloodConnectDB.updateUser(userId, { deleted: true });
+                showSuccess("User deleted successfully!");
+                loadUsers();
+            } catch (error) {
+                console.error("Error deleting user:", error);
+                showError("Error deleting user: " + error.message);
+            }
         }
     }
 
+    // Make functions globally accessible
+    window.deleteUser = deleteUser;
+
     // Search users
-    document.getElementById("searchUsers").addEventListener("input", function(event) {
-        const searchTerm = event.target.value.toLowerCase();
-        const filteredUsers = allUsers.filter(user => 
-            user.name.toLowerCase().includes(searchTerm) || 
-            user.email.toLowerCase().includes(searchTerm)
-        );
-        displayUsers(filteredUsers);
-    });
+    const searchInput = document.getElementById("searchUsers");
+    if (searchInput) {
+        searchInput.addEventListener("input", function(event) {
+            const searchTerm = event.target.value.toLowerCase();
+            const filteredUsers = allUsers.filter(user => 
+                (user.firstName || user.name || '').toLowerCase().includes(searchTerm) || 
+                (user.email || '').toLowerCase().includes(searchTerm)
+            );
+            displayUsers(filteredUsers);
+        });
+    }
 
     function showError(message) {
         const errorElement = document.getElementById('error-message');
         const successElement = document.getElementById('success-message');
-        errorElement.textContent = message;
-        successElement.textContent = '';
-        errorElement.style.display = 'block';
-        successElement.style.display = 'none';
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+        if (successElement) {
+            successElement.style.display = 'none';
+        }
     }
 
     function showSuccess(message) {
-        const errorElement = document.getElementById('error-message');
         const successElement = document.getElementById('success-message');
-        successElement.textContent = message;
-        errorElement.textContent = '';
-        successElement.style.display = 'block';
-        errorElement.style.display = 'none';
+        const errorElement = document.getElementById('error-message');
+        if (successElement) {
+            successElement.textContent = message;
+            successElement.style.display = 'block';
+        }
+        if (errorElement) {
+            errorElement.style.display = 'none';
+        }
     }
+
+    // Handle logout button
+    document.addEventListener('click', (e) => {
+        if (e.target && e.target.id === 'logoutBtn') {
+            e.preventDefault();
+            authManager.logoutAndRedirect();
+        }
+    });
 </script>
 
 <!-- Bootstrap JS -->

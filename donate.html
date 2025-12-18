@@ -1,154 +1,369 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Blood Donation Form</title>
+    <title>Blood Donation Form - BloodConnect</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Firebase, Bootstrap & FontAwesome -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="red-cross-styles.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <style>
-        body { background-color: #f8f9fa; }
-        .form-container {
-            max-width: 600px;
-            margin: 50px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .btn i { margin-right: 5px; }
-        .navbar { background: #c0392b; }
-        .navbar-brand, .nav-link { color: white !important; }
-    </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
-        <div class="container">
-            <a class="navbar-brand" href="donatordashboard.html">
-                <i class="fa-solid fa-droplet"></i> BloodConnect
+<!-- Red Cross Header -->
+<header class="red-cross-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="donor-dashboard.html" class="red-cross-logo">
+                <div class="red-cross-icon">✚</div>
+                <div>
+                    <h1 class="red-cross-brand">BloodConnect</h1>
+                    <p class="red-cross-tagline">Medical Blood Management</p>
+                </div>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="donatordashboard.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="donate.html">Donate</a></li>
-                    <li class="nav-item"><a class="nav-link" href="requestblood.html">Request</a></li>
-                    <li class="nav-item"><a class="nav-link btn btn-light text-dark" href="logout.html">Logout</a></li>
-                </ul>
+            <div class="red-cross-nav">
+                <a href="donor-dashboard.html">Dashboard</a>
+                <a href="donate.html" class="active">Donate</a>
+                <a href="requestblood.html">Request Blood</a>
+                <a href="logout.html" class="btn-red-cross-outline">Logout</a>
             </div>
         </div>
-    </nav>
+    </div>
+</header>
 
-    <div class="container mt-4">
-        <div class="form-container">
-            <h2><i class="fa-solid fa-hand-holding-medical"></i> Blood Donation Form</h2>
+<!-- Blood Donation Form Section -->
+<section class="red-cross-donation">
+    <div class="container">
+        <div class="red-cross-page-header">
+            <div class="text-center">
+                <h1 class="red-cross-page-title">Blood Donation Form</h1>
+                <p class="red-cross-page-subtitle">Schedule your blood donation and help save lives</p>
+            </div>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="red-cross-card">
+                    <div class="red-cross-card-header">
+                        <i class="fa-solid fa-hand-holding-medical text-red-cross"></i>
+                        Donation Information
+                    </div>
+                    <div class="red-cross-card-body">
+                        <form id="donationForm">
+                            <!-- Donor Information -->
+                            <div class="red-cross-section-title">
+                                <h4><i class="fa-solid fa-user text-red-cross me-2"></i>Donor Information</h4>
+                            </div>
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="donorName" class="red-cross-form-label">Full Name</label>
+                                        <input type="text" class="red-cross-form-control" id="donorName" placeholder="Enter your full name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="donorAge" class="red-cross-form-label">Age</label>
+                                        <input type="number" class="red-cross-form-control" id="donorAge" placeholder="Enter your age" min="18" max="65" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="donorContact" class="red-cross-form-label">Contact Number</label>
+                                        <input type="tel" class="red-cross-form-control" id="donorContact" placeholder="Enter your contact number" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="bloodType" class="red-cross-form-label">Blood Type</label>
+                                        <select class="red-cross-form-control" id="bloodType" required>
+                                            <option value="">Select your blood type</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
 
-            <!-- Form to donate blood -->
-            <form id="donationForm">
-                <!-- Donor Information -->
-                <h4>Donor Information</h4>
-                <div class="mb-3">
-                    <label for="donorName" class="form-label">Full Name</label>
-                    <input type="text" class="form-control" id="donorName" placeholder="Enter your full name" required>
-                </div>
-                <div class="mb-3">
-                    <label for="donorAge" class="form-label">Age</label>
-                    <input type="number" class="form-control" id="donorAge" placeholder="Enter your age" required>
-                </div>
-                <div class="mb-3">
-                    <label for="donorContact" class="form-label">Contact Number</label>
-                    <input type="text" class="form-control" id="donorContact" placeholder="Enter your contact number" required>
-                </div>
+                            <!-- Hospital Information -->
+                            <div class="red-cross-section-title">
+                                <h4><i class="fa-solid fa-hospital text-red-cross me-2"></i>Preferred Hospital</h4>
+                            </div>
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-12">
+                                    <div class="red-cross-form-group">
+                                        <label for="hospitalName" class="red-cross-form-label">Select Hospital</label>
+                                        <select class="red-cross-form-control" id="hospitalName" required>
+                                            <option value="">Loading hospitals...</option>
+                                        </select>
+                                        <small class="text-muted">Select a hospital from the list or enter manually if not listed</small>
+                                    </div>
+                                </div>
+                            </div>
 
-                <!-- Blood Type -->
-                <div class="mb-3">
-                    <label for="bloodType" class="form-label">Blood Type</label>
-                    <select class="form-select" id="bloodType" required>
-                        <option value="A+">A+</option>
-                        <option value="A-">A-</option>
-                        <option value="B+">B+</option>
-                        <option value="B-">B-</option>
-                        <option value="AB+">AB+</option>
-                        <option value="AB-">AB-</option>
-                        <option value="O+">O+</option>
-                        <option value="O-">O-</option>
-                    </select>
-                </div>
+                            <!-- Donation Schedule -->
+                            <div class="red-cross-section-title">
+                                <h4><i class="fa-solid fa-calendar-check text-red-cross me-2"></i>Donation Schedule</h4>
+                            </div>
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="donationDate" class="red-cross-form-label">Preferred Donation Date</label>
+                                        <input type="date" class="red-cross-form-control" id="donationDate" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="red-cross-form-group">
+                                        <label for="donationTime" class="red-cross-form-label">Preferred Time</label>
+                                        <select class="red-cross-form-control" id="donationTime">
+                                            <option value="">Select preferred time</option>
+                                            <option value="08:00">8:00 AM</option>
+                                            <option value="09:00">9:00 AM</option>
+                                            <option value="10:00">10:00 AM</option>
+                                            <option value="11:00">11:00 AM</option>
+                                            <option value="14:00">2:00 PM</option>
+                                            <option value="15:00">3:00 PM</option>
+                                            <option value="16:00">4:00 PM</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
 
-                <!-- Hospital Information -->
-                <h4>Available Hospital</h4>
-                <div class="mb-3">
-                    <label for="hospitalName" class="form-label">Hospital Name</label>
-                    <input type="text" class="form-control" id="hospitalName" placeholder="Enter the hospital name" required>
+                            <div class="text-center">
+                                <button type="submit" class="btn-red-cross btn-lg">
+                                    <i class="fa-solid fa-hand-holding-medical me-2"></i>
+                                    Submit Donation Request
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label for="hospitalLocation" class="form-label">Hospital Location</label>
-                    <input type="text" class="form-control" id="hospitalLocation" placeholder="Enter the hospital location" required>
-                </div>
-
-                <!-- Donation Schedule (Date picker) -->
-                <h4>Donation Schedule</h4>
-                <div class="mb-3">
-                    <label for="donationDate" class="form-label">Donation Date</label>
-                    <input type="date" class="form-control" id="donationDate" required>
-                </div>
-
-                <button type="submit" class="btn btn-danger w-100 mt-3"><i class="fa-solid fa-hand-holding-medical"></i> Submit Donation</button>
-            </form>
+            </div>
         </div>
     </div>
+</section>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBElBKqa9ThPR1TbEXlCu-wGdi0vE943O4",
-            authDomain: "bloodconnect2-d094a.firebaseapp.com",
-            projectId: "bloodconnect2-d094a",
-            storageBucket: "bloodconnect2-d094a.firebasestorage.app",
-            messagingSenderId: "124251937624",
-            appId: "1:124251937624:web:a69830e6bd3ab62e66a32d"
-        };
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script type="module">
+        import authManager from './auth-manager.js';
+        import bloodConnectDB from './bloodConnectDB.js';
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        let currentUser = null;
+        let userData = null;
+        let hospitals = {};
 
-        document.getElementById("donationForm").addEventListener("submit", function(event) {
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('donationDate').setAttribute('min', today);
+
+        authManager.addAuthListener((user, data) => {
+                if (!user || !data) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                if (data.role !== 'donor') {
+                    authManager.redirectByRole();
+                    return;
+                }
+
+                currentUser = user;
+                userData = data;
+                loadUserData();
+                loadHospitals();
+
+        function loadUserData() {
+            // Pre-fill form with user data
+            if (userData) {
+                const fullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim();
+                if (fullName) document.getElementById('donorName').value = fullName;
+                if (userData.bloodType) document.getElementById('bloodType').value = userData.bloodType;
+                if (userData.phone) document.getElementById('donorContact').value = userData.phone;
+                
+                // Calculate age from date of birth if available
+                if (userData.dateOfBirth) {
+                    const birthDate = new Date(userData.dateOfBirth);
+                    const today = new Date();
+                    const age = today.getFullYear() - birthDate.getFullYear();
+                    const monthDiff = today.getMonth() - birthDate.getMonth();
+                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                        age--;
+                    }
+                    document.getElementById('donorAge').value = age;
+                }
+            }
+        }
+
+        async function loadHospitals() {
+            try {
+                hospitals = await bloodConnectDB.getHospitals();
+                const hospitalSelect = document.getElementById('hospitalName');
+                
+                // Clear existing options except the first one
+                hospitalSelect.innerHTML = '<option value="">Select a hospital</option>';
+                
+                // Add hospitals to select
+                Object.entries(hospitals).forEach(([id, hospital]) => {
+                    const option = document.createElement('option');
+                    option.value = id;
+                    option.textContent = `${hospital.name} - ${hospital.location || ''}`;
+                    hospitalSelect.appendChild(option);
+                });
+                    // Handle logout
+                    document.addEventListener('click', (e) => {
+                        if (e.target && (e.target.textContent === 'Logout' || e.target.href.includes('logout'))) {
+                            e.preventDefault();
+                            authManager.logoutAndRedirect();
+                        }
+                    });
+            } catch (error) {
+                console.error('Error loading hospitals:', error);
+            }
+        }
+
+        document.getElementById("donationForm").addEventListener("submit", async function(event) {
             event.preventDefault();
 
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Submitting...';
+
+            try {
             const donorName = document.getElementById("donorName").value;
             const donorAge = document.getElementById("donorAge").value;
             const donorContact = document.getElementById("donorContact").value;
             const bloodType = document.getElementById("bloodType").value;
-            const hospitalName = document.getElementById("hospitalName").value;
-            const hospitalLocation = document.getElementById("hospitalLocation").value;
+                const hospitalId = document.getElementById("hospitalName").value;
+                const hospitalName = hospitalId && hospitals[hospitalId] ? hospitals[hospitalId].name : document.getElementById("hospitalName").options[document.getElementById("hospitalName").selectedIndex].text;
             const donationDate = document.getElementById("donationDate").value;
+                const donationTime = document.getElementById("donationTime").value;
 
-            // Save donation data to Firestore
-            db.collection("donations").add({
-                donorName: donorName,
-                donorAge: donorAge,
+                // Validate date is not in the past
+                const selectedDate = new Date(donationDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                if (selectedDate < today) {
+                    alert('Please select a future date.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-hand-holding-medical me-2"></i>Submit Donation Request';
+                    return;
+                }
+
+                // Create donation schedule
+                const donationData = {
+                    donorId: currentUser.uid,
+                        donorName: donorName,
+                    donorAge: parseInt(donorAge),
                 donorContact: donorContact,
+                    donorEmail: userData.email,
                 bloodType: bloodType,
+                    hospitalId: hospitalId || null,
                 hospitalName: hospitalName,
-                hospitalLocation: hospitalLocation,
-                donationDate: donationDate
-            })
-            .then(() => {
-                alert("Thank you for donating! Your donation has been scheduled.");
-                window.location.href = "donatordashboard.html";  // Redirect to dashboard
-            })
-            .catch((error) => {
-                console.error("Error submitting donation:", error);
-                alert("An error occurred. Please try again.");
-            });
+                    donationDate: donationDate,
+                    donationTime: donationTime,
+                    status: 'pending_screening'
+                };
+
+                const scheduleResult = await window.bloodConnectDB.scheduleDonation(donationData);
+
+                if (!scheduleResult.success) {
+                    throw new Error(scheduleResult.message);
+                }
+
+                // Get all hospital users to notify
+                const users = await window.bloodConnectDB.getUsers();
+                const hospitalUsers = Object.entries(users)
+                    .filter(([id, user]) => user.role === 'hospital')
+                    .map(([id, user]) => ({ userId: id, hospitalData: user }));
+
+                // Notify the specific hospital if hospitalId matches a user's hospital
+                let notifiedHospital = false;
+                if (hospitalId) {
+                    // Find hospital user that matches this hospital
+                    const matchingHospitalUser = hospitalUsers.find(h => 
+                        h.hospitalData.hospitalId === hospitalId || h.userId === hospitalId
+                    );
+                    
+                    if (matchingHospitalUser) {
+                        await window.bloodConnectDB.createNotification({
+                            userId: matchingHospitalUser.userId,
+                            type: 'donation_scheduled',
+                            title: 'New Donation Scheduled',
+                            message: `${donorName} has scheduled a blood donation on ${new Date(donationDate).toLocaleDateString()} at ${donationTime || 'TBD'}. Screening required.`,
+                            priority: 'high',
+                            actionUrl: 'hospital-dashboard.html',
+                            relatedUserId: currentUser.uid,
+                            relatedScheduleId: scheduleResult.id,
+                            createdAt: new Date().toISOString()
+                        });
+                        notifiedHospital = true;
+                    }
+                }
+
+                // Notify all other hospital users (for awareness)
+                for (const hospitalUser of hospitalUsers) {
+                    if (!notifiedHospital || hospitalUser.userId !== hospitalId) {
+                        await window.bloodConnectDB.createNotification({
+                            userId: hospitalUser.userId,
+                            type: 'donation_scheduled',
+                            title: 'New Donation Scheduled',
+                            message: `${donorName} has scheduled a blood donation at ${hospitalName}.`,
+                            priority: 'medium',
+                            actionUrl: 'hospital-dashboard.html',
+                            relatedUserId: currentUser.uid,
+                            createdAt: new Date().toISOString()
+                        });
+                    }
+                }
+
+                // Notify admin
+                const adminUsers = Object.entries(users)
+                    .filter(([id, user]) => user.role === 'admin')
+                    .map(([id, user]) => id);
+
+                for (const adminId of adminUsers) {
+                    await window.bloodConnectDB.createNotification({
+                        userId: adminId,
+                        type: 'donation_scheduled',
+                        title: 'New Donation Scheduled',
+                        message: `${donorName} has scheduled a blood donation at ${hospitalName}.`,
+                        priority: 'medium',
+                        actionUrl: 'admin.html',
+                        relatedUserId: currentUser.uid,
+                        createdAt: new Date().toISOString()
+                    });
+                }
+
+                // Notify donor
+                await window.bloodConnectDB.createNotification({
+                    userId: currentUser.uid,
+                    type: 'donation_scheduled',
+                    title: 'Donation Scheduled Successfully',
+                    message: `Your donation has been scheduled for ${new Date(donationDate).toLocaleDateString()}. You will be contacted for screening.`,
+                    priority: 'high',
+                    actionUrl: 'donor-dashboard.html',
+                    createdAt: new Date().toISOString()
+                });
+
+                alert('Thank you for donating! Your donation has been scheduled. The hospital will contact you for screening.');
+                window.location.href = 'donor-dashboard.html';
+            } catch (error) {
+                console.error('Error submitting donation:', error);
+                alert('An error occurred. Please try again. ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-hand-holding-medical me-2"></i>Submit Donation Request';
+            }
         });
     </script>
 </body>
