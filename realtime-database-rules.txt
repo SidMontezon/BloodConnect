@@ -26,10 +26,20 @@
       ".write": "auth != null"
     },
     "notifications": {
-      "$uid": {
-        ".read": "auth != null && auth.uid == $uid",
-        ".write": "auth != null"
-      }
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "verifications": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "donationSchedules": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "hospitalEvents": {
+      ".read": "auth != null",
+      ".write": "auth != null"
     },
     "systemSettings": {
       ".read": "auth != null",

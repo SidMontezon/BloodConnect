@@ -1,0 +1,46 @@
+// Firebase Storage Security Rules for BloodConnect
+// Copy and paste these rules in Firebase Console → Storage → Rules
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Verification documents - users can upload to their own folder
+    match /verifications/{userId}/{allPaths=**} {
+      // Users can write (upload) to their own verification folder
+      allow write: if request.auth != null && request.auth.uid == userId
+                   && request.resource.size < 5 * 1024 * 1024 // 5MB limit
+                   && request.resource.contentType.matches('image/.*|application/pdf');
+      
+      // Users can read their own verification documents
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Admins can read all verification documents
+      allow read: if request.auth != null 
+                   && request.auth.token.email.matches('.*@.*'); // Simplified check
+    }
+    
+    // Donation documents - authenticated users can upload
+    match /donations/{userId}/{allPaths=**} {
+      allow write: if request.auth != null && request.auth.uid == userId
+                   && request.resource.size < 10 * 1024 * 1024 // 10MB limit
+                   && request.resource.contentType.matches('image/.*|application/pdf');
+      
+      allow read: if request.auth != null;
+    }
+    
+    // Profile pictures
+    match /profilePictures/{userId}/{allPaths=**} {
+      allow write: if request.auth != null && request.auth.uid == userId
+                   && request.resource.size < 2 * 1024 * 1024 // 2MB limit
+                   && request.resource.contentType.matches('image/.*');
+      
+      allow read: if request.auth != null;
+    }
+    
+    // Default deny all other paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

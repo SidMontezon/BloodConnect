@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Request Blood - Hospital</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="red-cross-styles.css">
+</head>
+<body>
+    <!-- Hospital Header -->
+    <header class="red-cross-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="hospital-dashboard.html" class="red-cross-logo">
+                    <div class="red-cross-icon">✚</div>
+                    <div>
+                        <h1 class="red-cross-brand">BloodConnect</h1>
+                        <p class="red-cross-tagline">Medical Blood Management</p>
+                    </div>
+                </a>
+                <div class="red-cross-nav">
+                    <a href="hospital-dashboard.html">Dashboard</a>
+                    <a href="hospital-request.html" class="active">Blood Requests</a>
+                    <a href="hospital-inventory.html">Inventory</a>
+                    <a href="hospital-patients.html">Patients</a>
+                    <button id="logoutBtn" class="btn-red-cross-outline" style="border:none; background:transparent; cursor:pointer;">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container py-5">
+        <div class="red-cross-page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="red-cross-page-title">Request Blood</h1>
+                    <p class="red-cross-page-subtitle">
+                        Submit a blood request to the central admin. Requests will appear in the admin hospital requests panel.
+                    </p>
+                </div>
+                <a href="hospital-dashboard.html" class="btn-red-cross-outline">
+                    <i class="fa-solid fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-7">
+                <div class="red-cross-card mb-4">
+                    <div class="red-cross-card-header">
+                        <i class="fa-solid fa-hand-holding-medical text-red-cross"></i>
+                        New Blood Request
+                    </div>
+                    <div class="red-cross-card-body">
+                        <form id="bloodRequestForm">
+                            <div class="mb-3">
+                                <label for="patientName" class="red-cross-form-label">Patient Name</label>
+                                <input type="text" id="patientName" class="red-cross-form-control" required>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="bloodType" class="red-cross-form-label">Blood Type</label>
+                                        <select id="bloodType" class="red-cross-form-control" required>
+                                            <option value="">Select</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="quantity" class="red-cross-form-label">Quantity (units)</label>
+                                        <input type="number" id="quantity" class="red-cross-form-control" min="0.5" step="0.5" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="urgency" class="red-cross-form-label">Urgency</label>
+                                        <select id="urgency" class="red-cross-form-control" required>
+                                            <option value="low">Low</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="high">High</option>
+                                            <option value="critical">Critical</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="requiredDate" class="red-cross-form-label">Required Date</label>
+                                        <input type="date" id="requiredDate" class="red-cross-form-control" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="contactPhone" class="red-cross-form-label">Contact Phone</label>
+                                        <input type="tel" id="contactPhone" class="red-cross-form-control" placeholder="+63..." required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reason" class="red-cross-form-label">Reason / Notes</label>
+                                <textarea id="reason" class="red-cross-form-control" rows="3"
+                                    placeholder="Reason for request, diagnosis, or any special instructions"></textarea>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn-red-cross" id="submitRequestBtn">
+                                    <i class="fa-solid fa-paper-plane me-2"></i>Submit Request
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="red-cross-card mb-4">
+                    <div class="red-cross-card-header">
+                        <i class="fa-solid fa-list text-red-cross"></i>
+                        Recent Requests
+                    </div>
+                    <div class="red-cross-card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-red-cross">
+                                <thead>
+                                    <tr>
+                                        <th>Patient</th>
+                                        <th>Blood</th>
+                                        <th>Qty</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentRequestsBody">
+                                    <tr>
+                                        <td colspan="4" class="text-center text-medical">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="red-cross-footer">
+        <div class="container">
+            <div class="red-cross-footer-bottom">
+                <p>&copy; 2025 BloodConnect. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import authManager from './auth-manager.js';
+        import bloodConnectDB from './bloodConnectDB.js';
+
+        let currentUser = null;
+        let currentUserData = null;
+
+        authManager.addAuthListener(async (user, userData) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            if (!userData || userData.role !== 'hospital') {
+                await authManager.redirectByRole();
+                return;
+            }
+            currentUser = user;
+            currentUserData = userData;
+            initPage();
+        });
+
+        function initPage() {
+            // Set min date for requiredDate
+            const requiredDateInput = document.getElementById('requiredDate');
+            if (requiredDateInput) {
+                const today = new Date().toISOString().split('T')[0];
+                requiredDateInput.setAttribute('min', today);
+            }
+
+            const form = document.getElementById('bloodRequestForm');
+            if (form) {
+                form.addEventListener('submit', handleSubmitRequest);
+            }
+
+            loadRecentRequests();
+
+            // Logout button
+            document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                authManager.logoutAndRedirect();
+            });
+        }
+
+        async function handleSubmitRequest(event) {
+            event.preventDefault();
+
+            const btn = document.getElementById('submitRequestBtn');
+            if (!btn) return;
+
+            const patientName = document.getElementById('patientName').value.trim();
+            const bloodType = document.getElementById('bloodType').value;
+            const quantity = parseFloat(document.getElementById('quantity').value);
+            const urgency = document.getElementById('urgency').value;
+            const requiredDate = document.getElementById('requiredDate').value;
+            const contactPhone = document.getElementById('contactPhone').value.trim();
+            const reason = document.getElementById('reason').value.trim();
+
+            if (!patientName || !bloodType || !quantity || !requiredDate || !contactPhone) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Submitting...';
+
+            try {
+                const hospitalName = currentUserData.hospitalName || currentUserData.firstName || 'Hospital';
+
+                const requestData = {
+                    requesterId: currentUser.uid,
+                    requesterType: 'hospital',
+                    requesterName: hospitalName,
+                    hospitalId: currentUser.uid,
+                    hospitalName: hospitalName,
+                    patientName,
+                    bloodType,
+                    quantity,
+                    urgency,
+                    reason,
+                    contactPhone,
+                    status: 'pending',
+                    requestedDate: new Date().toISOString(),
+                    requiredDate,
+                    createdAt: new Date().toISOString()
+                };
+
+                const result = await bloodConnectDB.createBloodRequest(requestData);
+                if (!result.success) {
+                    throw new Error(result.message || 'Failed to submit request');
+                }
+
+                alert('Blood request submitted successfully!');
+                document.getElementById('bloodRequestForm').reset();
+                loadRecentRequests();
+            } catch (error) {
+                console.error('Error submitting blood request:', error);
+                alert('Error submitting blood request: ' + (error.message || 'Please try again.'));
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i>Submit Request';
+            }
+        }
+
+        async function loadRecentRequests() {
+            try {
+                const tbody = document.getElementById('recentRequestsBody');
+                if (!tbody) return;
+
+                const requests = await bloodConnectDB.getBloodRequests();
+                const list = Object.entries(requests || {})
+                    .map(([id, r]) => ({ id, ...r }))
+                    .filter(r => r.hospitalId === currentUser.uid || r.requesterId === currentUser.uid)
+                    .sort((a, b) => new Date(b.requestedDate || b.createdAt || 0) - new Date(a.requestedDate || a.createdAt || 0))
+                    .slice(0, 10);
+
+                if (!list.length) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-medical">No requests yet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                list.forEach(r => {
+                    const status = (r.status || 'pending').toLowerCase();
+                    const badge =
+                        status === 'approved' ? 'success' :
+                        status === 'rejected' ? 'danger' : 'warning';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${r.patientName || 'N/A'}</td>
+                        <td>${r.bloodType || 'N/A'}</td>
+                        <td>${r.quantity || 0}</td>
+                        <td><span class="badge bg-${badge}">${status}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('Error loading recent requests:', error);
+                const tbody = document.getElementById('recentRequestsBody');
+                if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading requests</td></tr>';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+
+

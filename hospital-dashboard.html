@@ -25,9 +25,9 @@
                 </a>
                 <div class="red-cross-nav">
                     <a href="hospital-dashboard.html" class="active">Dashboard</a>
-                    <a href="hospital-requests.html">Blood Requests</a>
+                    <a href="hospital-request.html">Blood Requests</a>
                     <a href="hospital-inventory.html">Inventory</a>
-                    <a href="hospital-patients.html">Patients</a>
+                    <a href="hospital-donation-schedules.html">Donation Schedules</a>
                     <button id="logoutBtn" class="btn-red-cross-outline" style="border:none; background:transparent; cursor:pointer;">Logout</button>
                 </div>
             </div>
@@ -117,7 +117,7 @@
                             </div>
                             <h4 class="red-cross-action-title">Request Blood</h4>
                             <p class="red-cross-action-description">Submit a new blood request for patients</p>
-                            <a href="hospital-request-blood.html" class="btn-red-cross">Request Blood</a>
+                            <a href="hospital-request.html" class="btn-red-cross">Request Blood</a>
                         </div>
                     </div>
                 </div>
@@ -137,23 +137,11 @@
                     <div class="red-cross-card">
                         <div class="red-cross-card-body text-center">
                             <div class="red-cross-action-icon">
-                                <i class="fa-solid fa-user-injured"></i>
-                            </div>
-                            <h4 class="red-cross-action-title">Manage Patients</h4>
-                            <p class="red-cross-action-description">Track patient blood requirements</p>
-                            <a href="hospital-patients.html" class="btn-red-cross-outline">Manage Patients</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="red-cross-card">
-                        <div class="red-cross-card-body text-center">
-                            <div class="red-cross-action-icon">
                                 <i class="fa-solid fa-calendar-star"></i>
                             </div>
                             <h4 class="red-cross-action-title">Schedule Event</h4>
                             <p class="red-cross-action-description">Create a blood donation event</p>
-                            <button class="btn-red-cross" onclick="openEventModal()">Schedule Event</button>
+                            <button type="button" class="btn-red-cross" id="scheduleEventBtn">Schedule Event</button>
                         </div>
                     </div>
                 </div>
@@ -396,6 +384,16 @@
             // User is authenticated and is a hospital - load data
             currentUserData = userData;
             currentHospitalId = user.uid;
+
+            // Wire up Schedule Event button after auth
+            const scheduleBtn = document.getElementById('scheduleEventBtn');
+            if (scheduleBtn) {
+                scheduleBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openEventModal();
+                });
+            }
+
             loadHospitalDashboard(userData);
         });
 

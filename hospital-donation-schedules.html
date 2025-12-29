@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Donation Schedules - BloodConnect</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="red-cross-styles.css">
+    <script type="module" src="auth-manager.js"></script>
+    <script type="module" src="bloodConnectDB.js"></script>
+</head>
+<body>
+    <!-- Hospital Header -->
+    <header class="red-cross-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="hospital-dashboard.html" class="red-cross-logo">
+                    <div class="red-cross-icon">✚</div>
+                    <div>
+                        <h1 class="red-cross-brand">BloodConnect</h1>
+                        <p class="red-cross-tagline">Medical Blood Management</p>
+                    </div>
+                </a>
+                <div class="red-cross-nav">
+                    <a href="hospital-dashboard.html">Dashboard</a>
+                    <a href="hospital-request.html">Blood Requests</a>
+                    <a href="hospital-inventory.html">Inventory</a>
+                    <a href="hospital-donation-schedules.html" class="active">Donation Schedules</a>
+                    <button id="logoutBtn" class="btn-red-cross-outline" style="border:none; background:transparent; cursor:pointer;">Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Header -->
+    <section class="red-cross-hero">
+        <div class="container">
+            <div class="red-cross-page-header">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <h1 class="red-cross-page-title">Donation Schedules</h1>
+                        <p class="red-cross-page-subtitle">
+                            View all approved and scheduled donor appointments for your hospital.
+                        </p>
+                    </div>
+                    <a href="hospital-dashboard.html" class="btn-red-cross-outline">
+                        <i class="fa-solid fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container py-4">
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="red-cross-card mb-4">
+                    <div class="red-cross-card-header">
+                        <i class="fa-solid fa-calendar-check text-red-cross me-2"></i>
+                        Upcoming & Approved Donation Schedules
+                    </div>
+                    <div class="red-cross-card-body">
+                        <div class="row mb-3 g-2">
+                            <div class="col-md-4">
+                                <input type="text" id="searchInput" class="form-control" placeholder="Search by donor name, blood type, or status...">
+                            </div>
+                            <div class="col-md-3">
+                                <select id="statusFilter" class="form-select">
+                                    <option value="">All Status</option>
+                                    <option value="scheduled">Scheduled</option>
+                                    <option value="screening_scheduled">Screening Scheduled</option>
+                                    <option value="screening_passed">Eligible</option>
+                                    <option value="screening_failed">Not Eligible</option>
+                                    <option value="completed">Completed</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="dateFilter" class="form-select">
+                                    <option value="upcoming">Upcoming Only</option>
+                                    <option value="all">All Dates</option>
+                                    <option value="past30">Last 30 Days</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-red-cross">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Donor</th>
+                                        <th>Blood Type</th>
+                                        <th>Quantity</th>
+                                        <th>Status</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="schedulesTable">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-medical">
+                                            <div class="spinner-border text-red-cross" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="noResults" class="text-center text-medical" style="display:none;">
+                            No schedules found for the selected filters.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="red-cross-footer">
+        <div class="container">
+            <div class="red-cross-footer-bottom">
+                <p>&copy; 2025 BloodConnect. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import authManager from './auth-manager.js';
+        import bloodConnectDB from './bloodConnectDB.js';
+
+        let currentHospitalId = null;
+        let allSchedules = [];
+
+        // Auth check: only hospitals
+        authManager.addAuthListener(async (user, userData) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            if (!userData || userData.role !== 'hospital') {
+                console.warn('User is not a hospital. Redirecting...');
+                await authManager.redirectByRole();
+                return;
+            }
+            currentHospitalId = user.uid;
+            loadHospitalSchedules();
+        });
+
+        async function loadHospitalSchedules() {
+            try {
+                const schedules = await bloodConnectDB.getDonationSchedules();
+                const users = await bloodConnectDB.getUsers();
+
+                // Keep only schedules for this hospital
+                allSchedules = (schedules || []).filter(s => s.hospitalId === currentHospitalId);
+
+                // Attach donorName from users if missing
+                allSchedules = allSchedules.map(s => {
+                    if (!s.donorName && s.donorId && users && users[s.donorId]) {
+                        const u = users[s.donorId];
+                        const name = (u.firstName && u.lastName) ? `${u.firstName} ${u.lastName}` : (u.firstName || u.email || 'Donor');
+                        return { ...s, donorName: name };
+                    }
+                    return s;
+                });
+
+                setupFilters();
+                applyFilters();
+            } catch (error) {
+                console.error('Error loading hospital schedules:', error);
+                const tbody = document.getElementById('schedulesTable');
+                if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error loading schedules.</td></tr>';
+                }
+            }
+        }
+
+        function setupFilters() {
+            const searchInput = document.getElementById('searchInput');
+            const statusFilter = document.getElementById('statusFilter');
+            const dateFilter = document.getElementById('dateFilter');
+
+            searchInput.addEventListener('input', applyFilters);
+            statusFilter.addEventListener('change', applyFilters);
+            dateFilter.addEventListener('change', applyFilters);
+
+            // Logout button
+            document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                authManager.logoutAndRedirect();
+            });
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusValue = document.getElementById('statusFilter').value.toLowerCase();
+            const dateFilter = document.getElementById('dateFilter').value;
+
+            let filtered = [...allSchedules];
+            const now = new Date();
+
+            // Status filter
+            if (statusValue) {
+                filtered = filtered.filter(s => (s.status || '').toLowerCase() === statusValue);
+            }
+
+            // Date filter
+            filtered = filtered.filter(s => {
+                if (!s.donationDate) return false;
+                const d = new Date(s.donationDate);
+                if (dateFilter === 'upcoming') {
+                    return d >= now;
+                } else if (dateFilter === 'past30') {
+                    const diff = now - d;
+                    return diff >= 0 && diff <= 30 * 24 * 60 * 60 * 1000;
+                }
+                return true; // 'all'
+            });
+
+            // Search
+            if (searchTerm) {
+                filtered = filtered.filter(s =>
+                    (s.donorName || '').toLowerCase().includes(searchTerm) ||
+                    (s.bloodType || '').toLowerCase().includes(searchTerm) ||
+                    (s.status || '').toLowerCase().includes(searchTerm)
+                );
+            }
+
+            renderTable(filtered);
+        }
+
+        function renderTable(schedules) {
+            const tbody = document.getElementById('schedulesTable');
+            const noResultsEl = document.getElementById('noResults');
+
+            if (!schedules.length) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-medical">No donation schedules found for your hospital.</td></tr>';
+                noResultsEl.style.display = 'block';
+                return;
+            }
+
+            noResultsEl.style.display = 'none';
+            tbody.innerHTML = '';
+
+            schedules
+                .sort((a, b) => new Date(a.donationDate || a.createdAt || 0) - new Date(b.donationDate || b.createdAt || 0))
+                .forEach(s => {
+                    const tr = document.createElement('tr');
+                    const dateStr = s.donationDate ? new Date(s.donationDate).toLocaleDateString() : 'TBD';
+                    const timeStr = s.donationTime || s.screeningTime || 'TBD';
+                    const statusClass = getStatusClass(s.status);
+                    const statusText = formatStatus(s.status);
+
+                    tr.innerHTML = `
+                        <td>${dateStr}</td>
+                        <td>${timeStr}</td>
+                        <td>${s.donorName || 'Donor'}</td>
+                        <td><span class="badge bg-danger">${s.bloodType || 'N/A'}</span></td>
+                        <td>${s.quantity || 1} unit${(s.quantity || 1) > 1 ? 's' : ''}</td>
+                        <td><span class="badge bg-${statusClass}">${statusText}</span></td>
+                        <td>${s.screeningNotes || s.notes || ''}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+        }
+
+        function getStatusClass(status) {
+            switch ((status || '').toLowerCase()) {
+                case 'completed': return 'success';
+                case 'scheduled': return 'primary';
+                case 'screening_passed': return 'success';
+                case 'screening_failed': return 'danger';
+                case 'screening_scheduled': return 'info';
+                case 'pending': return 'warning';
+                case 'pending_screening': return 'warning';
+                default: return 'secondary';
+            }
+        }
+
+        function formatStatus(status) {
+            const map = {
+                'completed': 'Completed',
+                'scheduled': 'Scheduled',
+                'screening_passed': 'Eligible',
+                'screening_failed': 'Not Eligible',
+                'screening_scheduled': 'Screening Scheduled',
+                'pending': 'Pending',
+                'pending_screening': 'Pending Screening'
+            };
+            const key = (status || '').toLowerCase();
+            return map[key] || (status || 'Unknown');
+        }
+    </script>
+</body>
+</html>
+
+
