@@ -156,11 +156,23 @@
                 allSchedules = (schedules || []).filter(s => s.hospitalId === currentHospitalId);
 
                 // Attach donorName from users if missing
+                // users is an object with userId as keys
                 allSchedules = allSchedules.map(s => {
-                    if (!s.donorName && s.donorId && users && users[s.donorId]) {
-                        const u = users[s.donorId];
-                        const name = (u.firstName && u.lastName) ? `${u.firstName} ${u.lastName}` : (u.firstName || u.email || 'Donor');
-                        return { ...s, donorName: name };
+                    if (!s.donorName && s.donorId) {
+                        // Check if users is an object (from getUsers)
+                        if (users && typeof users === 'object' && users[s.donorId]) {
+                            const u = users[s.donorId];
+                            const name = (u.firstName && u.lastName) ? `${u.firstName} ${u.lastName}` : (u.firstName || u.email || 'Donor');
+                            return { ...s, donorName: name };
+                        }
+                        // If users is an array, find by donorId
+                        if (Array.isArray(users)) {
+                            const u = users.find(user => user.uid === s.donorId || user.id === s.donorId);
+                            if (u) {
+                                const name = (u.firstName && u.lastName) ? `${u.firstName} ${u.lastName}` : (u.firstName || u.email || 'Donor');
+                                return { ...s, donorName: name };
+                            }
+                        }
                     }
                     return s;
                 });

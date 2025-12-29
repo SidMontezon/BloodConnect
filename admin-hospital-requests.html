@@ -34,14 +34,18 @@
 </header>
 
 <div class="container py-4">
-    <h3 class="mb-3">Hospital Blood Requests</h3>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Hospital Blood Requests (Monitoring Only)</h3>
+        <small class="text-muted">Admin can monitor requests but cannot approve/reject</small>
+    </div>
     <div class="table-responsive">
         <table class="table table-bordered bg-white">
             <thead>
                 <tr>
-                    <th>Hospital</th>
+                    <th>Requesting Hospital</th>
+                    <th>Target Hospital</th>
                     <th>Blood Group</th>
-                    <th>Quantity (L)</th>
+                    <th>Quantity (units)</th>
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
@@ -79,34 +83,23 @@ function render(rows) {
         if (!r) return;
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${r.hospitalName || r.requesterName || 'Unknown'}</td>
+            <td>${r.requesterHospitalName || r.hospitalName || r.requesterName || 'Unknown'}</td>
+            <td>${r.targetHospitalName || 'N/A'}</td>
             <td>${r.bloodGroup || r.bloodType || 'N/A'}</td>
             <td>${r.quantity || 0}</td>
             <td>
-                <span class="badge bg-${r.status==='approved'?'success':r.status==='rejected'?'danger':'secondary'}">
+                <span class="badge bg-${r.status==='approved'?'success':r.status==='rejected'?'danger':r.status==='fulfilled'?'info':'secondary'}">
                     ${r.status || 'pending'}
                 </span>
             </td>
             <td>
-                <button class="btn btn-success btn-sm" data-action="approve" data-id="${id}">Approve</button>
-                <button class="btn btn-danger btn-sm ms-1" data-action="reject" data-id="${id}">Reject</button>
+                <span class="text-muted">View Only</span>
             </td>
         `;
         tbody.appendChild(tr);
     });
 
-    tbody.querySelectorAll('button').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            const id = e.target.dataset.id;
-            const status = e.target.dataset.action === 'approve' ? 'approved' : 'rejected';
-            try {
-                await bloodConnectDB.updateBloodRequestStatus(id, status, 'admin');
-                flash(`Request ${status}`, status === 'approved' ? 'success' : 'danger');
-            } catch {
-                flash('Error updating request', 'danger');
-            }
-        });
-    });
+    // Removed approval/rejection buttons - admin can only monitor
 }
 
 authManager.addAuthListener(async (user, userData) => {

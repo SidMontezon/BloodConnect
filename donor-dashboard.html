@@ -161,9 +161,16 @@
                         </div>
                         <div class="red-cross-card-body">
                             <p class="text-medical mb-4">
-                                Apply for an eligibility check. A hospital will review your application and schedule a screening appointment if approved.
+                                Apply for an eligibility check. Select your preferred hospital and they will review your application and schedule a screening appointment if approved.
                             </p>
-                            <button class="btn-red-cross" onclick="applyForEligibility()">
+                            <div class="mb-3">
+                                <label for="eligibilityHospitalSelect" class="red-cross-form-label">Preferred Hospital</label>
+                                <select class="red-cross-form-control" id="eligibilityHospitalSelect" required>
+                                    <option value="">Loading hospitals...</option>
+                                </select>
+                                <small class="text-muted">Select the hospital where you want to apply for eligibility</small>
+                            </div>
+                            <button class="btn-red-cross" id="applyEligibilityBtn">
                                 <i class="fa-solid fa-clipboard-check me-2"></i>Apply for Eligibility Check
                             </button>
                         </div>
@@ -317,6 +324,9 @@
         import authManager from './auth-manager.js';
         import bloodConnectDB from './bloodConnectDB.js';
 
+        let currentDonorUser = null;
+        let currentDonorUserData = null;
+
         // Verify user is donor before loading dashboard
         authManager.addAuthListener(async (user, userData) => {
             if (!user) {
@@ -328,6 +338,9 @@
                 await authManager.redirectByRole();
                 return;
             }
+            // Store current user for use in other functions
+            currentDonorUser = user;
+            currentDonorUserData = userData;
             // User is authenticated and is a donor - load data
             loadDonorDashboard(user, userData);
         });
@@ -345,6 +358,7 @@
                 checkEligibility(userData);
                 loadDonationSchedules(userData);
                 loadHospitalEvents(userData);
+                loadHospitalsForEligibility();
             } catch (error) {
                 console.error('Error loading donor dashboard:', error);
             }
@@ -523,6 +537,145 @@
         }
 
 
+
+        async function loadHospitalsForEligibility() {
+            try {
+                const users = await bloodConnectDB.getUsers();
+                const hospitalSelect = document.getElementById('eligibilityHospitalSelect');
+                if (!hospitalSelect) return;
+
+                // Clear existing options
+                hospitalSelect.innerHTML = '<option value="">Select a hospital</option>';
+
+                // Filter hospitals from users
+                const hospitalUsers = Object.entries(users || {})
+                    .filter(([id, user]) => user.role === 'hospital')
+                    .map(([id, user]) => ({
+                        id,
+                        name: user.hospitalName || user.firstName || 'Hospital',
+                        email: user.email || '',
+                        address: user.address || ''
+                    }));
+
+                // Add hospitals to select
+                hospitalUsers.forEach(hospital => {
+                    const option = document.createElement('option');
+                    option.value = hospital.id;
+                    option.textContent = `${hospital.name}${hospital.address ? ' - ' + hospital.address : ''}`;
+                    hospitalSelect.appendChild(option);
+                });
+
+                if (hospitalUsers.length === 0) {
+                    hospitalSelect.innerHTML = '<option value="">No hospitals available</option>';
+                }
+            } catch (error) {
+                console.error('Error loading hospitals for eligibility:', error);
+            }
+        }
+
+        async function applyForEligibility() {
+            const hospitalSelect = document.getElementById('eligibilityHospitalSelect');
+            const selectedHospitalId = hospitalSelect ? hospitalSelect.value : null;
+
+            if (!selectedHospitalId) {
+                alert('Please select a hospital first.');
+                return;
+            }
+
+            if (!confirm('Apply for eligibility check? The selected hospital will review your application and schedule a screening if approved.')) {
+                return;
+            }
+
+            try {
+                if (!currentDonorUser || !currentDonorUserData) {
+                    alert('You must be logged in to apply for eligibility.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Get hospital name
+                const users = await bloodConnectDB.getUsers();
+                const selectedHospital = users[selectedHospitalId];
+                const hospitalName = selectedHospital 
+                    ? (selectedHospital.hospitalName || selectedHospital.firstName || 'Hospital')
+                    : 'Hospital';
+
+                // Create eligibility application
+                const eligibilityData = {
+                    donorId: currentDonorUser.uid,
+                    donorName: currentDonorUserData.firstName && currentDonorUserData.lastName 
+                        ? `${currentDonorUserData.firstName} ${currentDonorUserData.lastName}` 
+                        : currentDonorUserData.email || 'Donor',
+                    bloodType: currentDonorUserData.bloodType || 'Unknown',
+                    status: 'pending',
+                    appliedAt: new Date().toISOString(),
+                    createdAt: new Date().toISOString()
+                };
+
+                // Create a donation schedule with pending_screening status
+                const scheduleData = {
+                    donorId: currentDonorUser.uid,
+                    donorName: eligibilityData.donorName,
+                    bloodType: eligibilityData.bloodType,
+                    hospitalId: selectedHospitalId,
+                    hospitalName: hospitalName,
+                    status: 'pending_screening',
+                    createdAt: new Date().toISOString()
+                };
+
+                const result = await bloodConnectDB.scheduleDonation(scheduleData);
+                if (!result.success) {
+                    throw new Error(result.message || 'Failed to submit eligibility application');
+                }
+
+                // Notify the selected hospital only
+                await bloodConnectDB.createNotification({
+                    userId: selectedHospitalId,
+                    type: 'eligibility',
+                    title: 'New Eligibility Application',
+                    message: `${eligibilityData.donorName} has applied for eligibility check. Please review and schedule screening.`,
+                    priority: 'high',
+                    actionUrl: 'hospital-dashboard.html',
+                    relatedScheduleId: result.id,
+                    createdAt: new Date().toISOString()
+                });
+
+                // Notify admins (for monitoring only)
+                const allUsers = await bloodConnectDB.getUsers();
+                const adminIds = Object.entries(allUsers || {})
+                    .filter(([id, u]) => u.role === 'admin')
+                    .map(([id]) => id);
+
+                for (const adminId of adminIds) {
+                    await bloodConnectDB.createNotification({
+                        userId: adminId,
+                        type: 'eligibility',
+                        title: 'New Eligibility Application',
+                        message: `${eligibilityData.donorName} has applied for eligibility check.`,
+                        priority: 'low',
+                        actionUrl: 'admin.html',
+                        relatedScheduleId: result.id,
+                        createdAt: new Date().toISOString()
+                    });
+                }
+
+                alert('Eligibility application submitted successfully! Hospitals will review your application and schedule a screening appointment.');
+                
+                // Reload dashboard to show updated status
+                window.location.reload();
+            } catch (error) {
+                console.error('Error applying for eligibility:', error);
+                alert('Error submitting eligibility application. Please try again.');
+            }
+        }
+
+        // Setup apply eligibility button
+        document.addEventListener('DOMContentLoaded', () => {
+            const applyBtn = document.getElementById('applyEligibilityBtn');
+            if (applyBtn) {
+                applyBtn.addEventListener('click', applyForEligibility);
+            }
+        });
 
         // Handle logout button
         document.addEventListener('click', (e) => {

@@ -39,7 +39,7 @@
       <div>
         <h1 class="red-cross-page-title">Approval Notifications</h1>
         <p class="red-cross-page-subtitle">
-          Review and manage all pending approvals and notifications
+          Monitor all notifications and approvals (View Only)
         </p>
       </div>
       <a href="admin.html" class="btn-red-cross-outline">
@@ -164,17 +164,12 @@
               <strong>Type:</strong> ${n.type || 'N/A'}
             </small>
 
-            <!-- ACCEPT / DECLINE (ADDED ONLY HERE) -->
+            <!-- Admin can only view, not approve/reject -->
             <div class="mt-3">
-              <button class="btn btn-success btn-sm me-2"
-                onclick="approveNotification('${n.id}','${n.userId}','${n.type}')">
-                Accept
-              </button>
-
-              <button class="btn btn-danger btn-sm"
-                onclick="rejectNotification('${n.id}','${n.userId}','${n.type}')">
-                Decline
-              </button>
+              <small class="text-muted">
+                <i class="fa-solid fa-info-circle me-1"></i>
+                Admin monitoring only - No approval actions available
+              </small>
             </div>
           </div>
         </div>`;
@@ -218,21 +213,7 @@
     });
   }
 
-  window.approveNotification = async (id, userId, type) => {
-    if (!confirm('Accept this request?')) return;
-    await bloodConnectDB.updateNotification(id, { status: 'approved' });
-    loadNotifications();
-  };
-
-  window.rejectNotification = async (id, userId, type) => {
-    const reason = prompt('Reason for decline:');
-    if (!reason) return;
-    await bloodConnectDB.updateNotification(id, {
-      status: 'rejected',
-      reason
-    });
-    loadNotifications();
-  };
+  // Approval/rejection functions removed - admin can only monitor
 
   document.getElementById('logoutBtn').onclick =
     () => authManager.logoutAndRedirect();

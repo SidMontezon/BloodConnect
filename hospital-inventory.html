@@ -21,8 +21,10 @@
                 </a>
                 <div class="red-cross-nav">
                     <a href="hospital-dashboard.html">Dashboard</a>
+                    <a href="hospital-request.html">Blood Requests</a>
                     <a href="hospital-inventory.html" class="active">Inventory</a>
-                    <a href="logout.html" class="btn-red-cross-outline">Logout</a>
+                    <a href="hospital-donation-schedules.html">Donation Schedules</a>
+                    <button id="logoutBtn" class="btn-red-cross-outline" style="border:none; background:transparent; cursor:pointer;">Logout</button>
                 </div>
             </div>
         </div>
@@ -85,7 +87,7 @@
                     <div class="red-cross-card-header">
                         <i class="fa-solid fa-warehouse text-red-cross"></i>
                         Blood Inventory by Type
-                        <button class="btn-red-cross btn-sm float-end" onclick="openAddInventoryModal()">
+                        <button class="btn-red-cross btn-sm float-end" id="openAddInventoryBtn">
                             <i class="fa-solid fa-plus me-1"></i>Add Blood Unit
                         </button>
                     </div>
@@ -165,7 +167,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn-red-cross" onclick="submitAddInventory()">Add Blood Unit</button>
+                    <button type="button" class="btn-red-cross" id="submitAddInventoryBtn">Add Blood Unit</button>
                 </div>
             </div>
         </div>
@@ -185,6 +187,32 @@
             }
             currentHospitalId = user.uid;
             currentHospitalData = userData;
+            
+            // Setup button handlers
+            const openAddInventoryBtn = document.getElementById('openAddInventoryBtn');
+            if (openAddInventoryBtn) {
+                openAddInventoryBtn.addEventListener('click', openAddInventoryModal);
+            }
+
+            const submitAddInventoryBtn = document.getElementById('submitAddInventoryBtn');
+            if (submitAddInventoryBtn) {
+                submitAddInventoryBtn.addEventListener('click', submitAddInventory);
+            }
+
+            // Setup update inventory buttons (delegated event listener)
+            document.addEventListener('click', (e) => {
+                if (e.target && e.target.classList.contains('update-inventory-btn')) {
+                    const bloodType = e.target.dataset.bloodType;
+                    updateInventory(bloodType);
+                }
+            });
+
+            // Logout button
+            document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                authManager.logoutAndRedirect();
+            });
+
             loadInventory();
         });
 
@@ -244,7 +272,7 @@
                                    value="${qty.toFixed(1)}" min="0" step="0.1" style="width: 100px;">
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-success" onclick="updateInventory('${bloodType}')">
+                            <button class="btn btn-sm btn-success update-inventory-btn" data-blood-type="${bloodType}">
                                 <i class="fa-solid fa-save me-1"></i>Update
                             </button>
                         </td>

@@ -24,7 +24,7 @@
                     <a href="hospital-dashboard.html">Dashboard</a>
                     <a href="hospital-request.html" class="active">Blood Requests</a>
                     <a href="hospital-inventory.html">Inventory</a>
-                    <a href="hospital-patients.html">Patients</a>
+                    <a href="hospital-donation-schedules.html">Donation Schedules</a>
                     <button id="logoutBtn" class="btn-red-cross-outline" style="border:none; background:transparent; cursor:pointer;">
                         Logout
                     </button>
@@ -39,7 +39,7 @@
                 <div>
                     <h1 class="red-cross-page-title">Request Blood</h1>
                     <p class="red-cross-page-subtitle">
-                        Submit a blood request to the central admin. Requests will appear in the admin hospital requests panel.
+                        Request blood from another hospital. The request will be sent directly to the selected hospital.
                     </p>
                 </div>
                 <a href="hospital-dashboard.html" class="btn-red-cross-outline">
@@ -57,6 +57,13 @@
                     </div>
                     <div class="red-cross-card-body">
                         <form id="bloodRequestForm">
+                            <div class="mb-3">
+                                <label for="targetHospital" class="red-cross-form-label">Request From Hospital</label>
+                                <select id="targetHospital" class="red-cross-form-control" required>
+                                    <option value="">Loading hospitals...</option>
+                                </select>
+                                <small class="text-muted">Select the hospital you want to request blood from</small>
+                            </div>
                             <div class="mb-3">
                                 <label for="patientName" class="red-cross-form-label">Patient Name</label>
                                 <input type="text" id="patientName" class="red-cross-form-control" required>
@@ -137,8 +144,9 @@
                                 <thead>
                                     <tr>
                                         <th>Patient</th>
-                                        <th>Blood</th>
+                                        <th>Blood Type</th>
                                         <th>Qty</th>
+                                        <th>From/To</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
@@ -170,6 +178,7 @@
 
         let currentUser = null;
         let currentUserData = null;
+        let allHospitals = {};
 
         authManager.addAuthListener(async (user, userData) => {
             if (!user) {
@@ -182,8 +191,42 @@
             }
             currentUser = user;
             currentUserData = userData;
+            await loadHospitals();
             initPage();
         });
+
+        async function loadHospitals() {
+            try {
+                const users = await bloodConnectDB.getUsers();
+                const hospitalSelect = document.getElementById('targetHospital');
+                
+                // Filter hospitals (exclude current hospital)
+                const hospitals = Object.entries(users || {})
+                    .filter(([id, user]) => user.role === 'hospital' && id !== currentUser.uid)
+                    .map(([id, user]) => ({
+                        id,
+                        name: user.hospitalName || user.firstName || 'Hospital',
+                        email: user.email || '',
+                        phone: user.phone || ''
+                    }));
+
+                hospitalSelect.innerHTML = '<option value="">Select a hospital</option>';
+                
+                hospitals.forEach(hospital => {
+                    allHospitals[hospital.id] = hospital;
+                    const option = document.createElement('option');
+                    option.value = hospital.id;
+                    option.textContent = `${hospital.name}${hospital.email ? ' - ' + hospital.email : ''}`;
+                    hospitalSelect.appendChild(option);
+                });
+
+                if (hospitals.length === 0) {
+                    hospitalSelect.innerHTML = '<option value="">No other hospitals available</option>';
+                }
+            } catch (error) {
+                console.error('Error loading hospitals:', error);
+            }
+        }
 
         function initPage() {
             // Set min date for requiredDate
@@ -230,14 +273,24 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Submitting...';
 
             try {
-                const hospitalName = currentUserData.hospitalName || currentUserData.firstName || 'Hospital';
+                const targetHospitalId = document.getElementById('targetHospital').value;
+                if (!targetHospitalId) {
+                    alert('Please select a hospital to request from.');
+                    return;
+                }
+
+                const requesterHospitalName = currentUserData.hospitalName || currentUserData.firstName || 'Hospital';
+                const targetHospital = allHospitals[targetHospitalId];
+                const targetHospitalName = targetHospital ? targetHospital.name : 'Hospital';
 
                 const requestData = {
                     requesterId: currentUser.uid,
                     requesterType: 'hospital',
-                    requesterName: hospitalName,
-                    hospitalId: currentUser.uid,
-                    hospitalName: hospitalName,
+                    requesterName: requesterHospitalName,
+                    requesterHospitalId: currentUser.uid,
+                    requesterHospitalName: requesterHospitalName,
+                    targetHospitalId: targetHospitalId,
+                    targetHospitalName: targetHospitalName,
                     patientName,
                     bloodType,
                     quantity,
@@ -255,8 +308,21 @@
                     throw new Error(result.message || 'Failed to submit request');
                 }
 
-                alert('Blood request submitted successfully!');
+                // Notify target hospital
+                await bloodConnectDB.createNotification({
+                    userId: targetHospitalId,
+                    type: 'blood_request',
+                    title: 'New Blood Request',
+                    message: `${requesterHospitalName} is requesting ${quantity} unit(s) of ${bloodType} blood. Patient: ${patientName}. Urgency: ${urgency}.`,
+                    priority: urgency === 'critical' || urgency === 'high' ? 'high' : 'medium',
+                    actionUrl: 'hospital-request.html',
+                    relatedRequestId: result.id,
+                    createdAt: new Date().toISOString()
+                });
+
+                alert(`Blood request sent successfully to ${targetHospitalName}! They will be notified.`);
                 document.getElementById('bloodRequestForm').reset();
+                await loadHospitals(); // Reload hospitals dropdown
                 loadRecentRequests();
             } catch (error) {
                 console.error('Error submitting blood request:', error);
@@ -275,12 +341,15 @@
                 const requests = await bloodConnectDB.getBloodRequests();
                 const list = Object.entries(requests || {})
                     .map(([id, r]) => ({ id, ...r }))
-                    .filter(r => r.hospitalId === currentUser.uid || r.requesterId === currentUser.uid)
+                    .filter(r => 
+                        r.targetHospitalId === currentUser.uid || // Requests sent to this hospital
+                        r.requesterId === currentUser.uid // Requests sent by this hospital
+                    )
                     .sort((a, b) => new Date(b.requestedDate || b.createdAt || 0) - new Date(a.requestedDate || a.createdAt || 0))
                     .slice(0, 10);
 
                 if (!list.length) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-medical">No requests yet</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-medical">No requests yet</td></tr>';
                     return;
                 }
 
@@ -289,13 +358,22 @@
                     const status = (r.status || 'pending').toLowerCase();
                     const badge =
                         status === 'approved' ? 'success' :
-                        status === 'rejected' ? 'danger' : 'warning';
+                        status === 'rejected' ? 'danger' :
+                        status === 'fulfilled' ? 'info' : 'warning';
 
                     const tr = document.createElement('tr');
+                    const isIncoming = r.targetHospitalId === currentUser.uid;
+                    const otherHospital = isIncoming ? (r.requesterHospitalName || r.requesterName) : (r.targetHospitalName || 'N/A');
                     tr.innerHTML = `
                         <td>${r.patientName || 'N/A'}</td>
                         <td>${r.bloodType || 'N/A'}</td>
                         <td>${r.quantity || 0}</td>
+                        <td>
+                            ${isIncoming ? 
+                                `<span class="badge bg-info">From: ${otherHospital}</span>` : 
+                                `<span class="badge bg-secondary">To: ${otherHospital}</span>`
+                            }
+                        </td>
                         <td><span class="badge bg-${badge}">${status}</span></td>
                     `;
                     tbody.appendChild(tr);

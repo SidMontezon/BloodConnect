@@ -104,7 +104,7 @@
                                         <select class="red-cross-form-control" id="hospitalName" required>
                                             <option value="">Loading hospitals...</option>
                                         </select>
-                                        <small class="text-muted">Select a hospital from the list or enter manually if not listed</small>
+                                        <small class="text-muted">Select your preferred hospital from the list</small>
                                     </div>
                                 </div>
                             </div>
@@ -167,22 +167,6 @@
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('donationDate').setAttribute('min', today);
 
-        authManager.addAuthListener((user, data) => {
-                if (!user || !data) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                if (data.role !== 'donor') {
-                    authManager.redirectByRole();
-                    return;
-                }
-
-                currentUser = user;
-                userData = data;
-                loadUserData();
-                loadHospitals();
-
         function loadUserData() {
             // Pre-fill form with user data
             if (userData) {
@@ -207,30 +191,118 @@
 
         async function loadHospitals() {
             try {
-                hospitals = await bloodConnectDB.getHospitals();
+                console.log('Loading hospitals...');
                 const hospitalSelect = document.getElementById('hospitalName');
                 
-                // Clear existing options except the first one
-                hospitalSelect.innerHTML = '<option value="">Select a hospital</option>';
+                if (!hospitalSelect) {
+                    console.error('Hospital select element not found!');
+                    return;
+                }
+
+                // Clear existing options
+                hospitalSelect.innerHTML = '<option value="">Loading hospitals...</option>';
                 
+                // Get hospitals from users database
+                const users = await bloodConnectDB.getUsers();
+                console.log('Users retrieved:', users);
+                
+                if (!users || Object.keys(users).length === 0) {
+                    console.warn('No users found in database');
+                    hospitalSelect.innerHTML = '<option value="">No hospitals available</option>';
+                    return;
+                }
+                
+                // Filter hospitals from users
+                const hospitalUsers = Object.entries(users)
+                    .filter(([id, user]) => {
+                        const isHospital = user && user.role === 'hospital';
+                        if (!isHospital) {
+                            console.log(`User ${id} is not a hospital. Role: ${user?.role}`);
+                        }
+                        return isHospital;
+                    })
+                    .map(([id, user]) => ({
+                        id,
+                        name: user.hospitalName || user.firstName || user.name || 'Hospital',
+                        email: user.email || '',
+                        phone: user.phone || '',
+                        address: user.address || user.location || ''
+                    }));
+
+                console.log('Hospital users found:', hospitalUsers.length, hospitalUsers);
+
+                // Clear and add default option
+                hospitalSelect.innerHTML = '<option value="">Select a hospital</option>';
+
                 // Add hospitals to select
-                Object.entries(hospitals).forEach(([id, hospital]) => {
+                hospitalUsers.forEach(hospital => {
+                    hospitals[hospital.id] = hospital;
                     const option = document.createElement('option');
-                    option.value = id;
-                    option.textContent = `${hospital.name} - ${hospital.location || ''}`;
+                    option.value = hospital.id;
+                    option.textContent = `${hospital.name}${hospital.address ? ' - ' + hospital.address : ''}`;
                     hospitalSelect.appendChild(option);
                 });
-                    // Handle logout
-                    document.addEventListener('click', (e) => {
-                        if (e.target && (e.target.textContent === 'Logout' || e.target.href.includes('logout'))) {
-                            e.preventDefault();
-                            authManager.logoutAndRedirect();
-                        }
-                    });
+
+                if (hospitalUsers.length === 0) {
+                    hospitalSelect.innerHTML = '<option value="">No hospitals available</option>';
+                    console.warn('No hospitals found in database');
+                } else {
+                    console.log(`Successfully loaded ${hospitalUsers.length} hospitals`);
+                }
             } catch (error) {
                 console.error('Error loading hospitals:', error);
+                const hospitalSelect = document.getElementById('hospitalName');
+                if (hospitalSelect) {
+                    hospitalSelect.innerHTML = '<option value="">Error loading hospitals. Please refresh the page.</option>';
+                }
             }
         }
+
+        // Handle logout (set up once)
+        document.addEventListener('click', (e) => {
+            if (e.target && (e.target.textContent === 'Logout' || e.target.href && e.target.href.includes('logout'))) {
+                e.preventDefault();
+                authManager.logoutAndRedirect();
+            }
+        });
+
+        // Wait for DOM to be ready
+        function waitForElement(selector, callback, maxAttempts = 50) {
+            let attempts = 0;
+            const checkElement = () => {
+                attempts++;
+                const element = document.querySelector(selector);
+                if (element) {
+                    callback();
+                } else if (attempts < maxAttempts) {
+                    setTimeout(checkElement, 100);
+                } else {
+                    console.error(`Element ${selector} not found after ${maxAttempts} attempts`);
+                }
+            };
+            checkElement();
+        }
+
+        authManager.addAuthListener(async (user, data) => {
+            if (!user || !data) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (data.role !== 'donor') {
+                authManager.redirectByRole();
+                return;
+            }
+
+            currentUser = user;
+            userData = data;
+            
+            // Wait for hospital select element to exist before loading
+            waitForElement('#hospitalName', () => {
+                loadUserData();
+                loadHospitals();
+            });
+        });
 
         document.getElementById("donationForm").addEventListener("submit", async function(event) {
             event.preventDefault();
@@ -245,7 +317,13 @@
             const donorContact = document.getElementById("donorContact").value;
             const bloodType = document.getElementById("bloodType").value;
                 const hospitalId = document.getElementById("hospitalName").value;
-                const hospitalName = hospitalId && hospitals[hospitalId] ? hospitals[hospitalId].name : document.getElementById("hospitalName").options[document.getElementById("hospitalName").selectedIndex].text;
+                if (!hospitalId) {
+                    alert('Please select a hospital.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-hand-holding-medical me-2"></i>Submit Donation Request';
+                    return;
+                }
+                const hospitalName = hospitals[hospitalId] ? hospitals[hospitalId].name : document.getElementById("hospitalName").options[document.getElementById("hospitalName").selectedIndex].text;
             const donationDate = document.getElementById("donationDate").value;
                 const donationTime = document.getElementById("donationTime").value;
 
@@ -287,44 +365,19 @@
                     .filter(([id, user]) => user.role === 'hospital')
                     .map(([id, user]) => ({ userId: id, hospitalData: user }));
 
-                // Notify the specific hospital if hospitalId matches a user's hospital
-                let notifiedHospital = false;
+                // Notify the specific chosen hospital
                 if (hospitalId) {
-                    // Find hospital user that matches this hospital
-                    const matchingHospitalUser = hospitalUsers.find(h => 
-                        h.hospitalData.hospitalId === hospitalId || h.userId === hospitalId
-                    );
-                    
-                    if (matchingHospitalUser) {
-                        await window.bloodConnectDB.createNotification({
-                            userId: matchingHospitalUser.userId,
-                            type: 'donation_scheduled',
-                            title: 'New Donation Scheduled',
-                            message: `${donorName} has scheduled a blood donation on ${new Date(donationDate).toLocaleDateString()} at ${donationTime || 'TBD'}. Screening required.`,
-                            priority: 'high',
-                            actionUrl: 'hospital-dashboard.html',
-                            relatedUserId: currentUser.uid,
-                            relatedScheduleId: scheduleResult.id,
-                            createdAt: new Date().toISOString()
-                        });
-                        notifiedHospital = true;
-                    }
-                }
-
-                // Notify all other hospital users (for awareness)
-                for (const hospitalUser of hospitalUsers) {
-                    if (!notifiedHospital || hospitalUser.userId !== hospitalId) {
-                        await window.bloodConnectDB.createNotification({
-                            userId: hospitalUser.userId,
-                            type: 'donation_scheduled',
-                            title: 'New Donation Scheduled',
-                            message: `${donorName} has scheduled a blood donation at ${hospitalName}.`,
-                            priority: 'medium',
-                            actionUrl: 'hospital-dashboard.html',
-                            relatedUserId: currentUser.uid,
-                            createdAt: new Date().toISOString()
-                        });
-                    }
+                    await window.bloodConnectDB.createNotification({
+                        userId: hospitalId,
+                        type: 'donation_scheduled',
+                        title: 'New Donation Scheduled',
+                        message: `${donorName} has scheduled a blood donation on ${new Date(donationDate).toLocaleDateString()} at ${donationTime || 'TBD'}. Screening required.`,
+                        priority: 'high',
+                        actionUrl: 'hospital-dashboard.html',
+                        relatedUserId: currentUser.uid,
+                        relatedScheduleId: scheduleResult.id,
+                        createdAt: new Date().toISOString()
+                    });
                 }
 
                 // Notify admin

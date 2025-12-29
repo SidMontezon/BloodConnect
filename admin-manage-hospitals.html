@@ -103,6 +103,14 @@
                 return;
             }
             // User is authenticated and is admin - load data
+            // Setup view hospital button handlers
+            document.addEventListener('click', (e) => {
+                if (e.target && e.target.classList.contains('view-hospital-btn')) {
+                    const hospitalId = e.target.dataset.hospitalId;
+                    viewHospitalDetails(hospitalId);
+                }
+            });
+
             loadHospitals();
         });
 
@@ -161,7 +169,7 @@
                                 </div>
                             </div>
                             <div class="col-md-2 text-end">
-                                <button class="btn-red-cross btn-sm" onclick="viewHospitalDetails('${hospital.id}')">
+                                <button class="btn-red-cross btn-sm view-hospital-btn" data-hospital-id="${hospital.id}">
                                     <i class="fa-solid fa-eye me-1"></i>View
                                 </button>
                             </div>

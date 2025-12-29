@@ -320,7 +320,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn-red-cross" onclick="submitEvent()">Schedule Event</button>
+                    <button type="button" class="btn-red-cross" id="submitEventBtn">Schedule Event</button>
                 </div>
             </div>
         </div>
@@ -356,7 +356,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn-red-cross" onclick="submitScreening()">Schedule Screening</button>
+                    <button type="button" class="btn-red-cross" id="submitScreeningBtn">Schedule Screening</button>
                 </div>
             </div>
         </div>
@@ -393,6 +393,9 @@
                     openEventModal();
                 });
             }
+
+            // Setup dynamic button handlers
+            setupDynamicButtons();
 
             loadHospitalDashboard(userData);
         });
@@ -452,7 +455,7 @@
                         <td>${request.quantity} units</td>
                         <td><span class="badge badge-${getRequestStatusClass(request.status)}">${request.status}</span></td>
                         <td>${new Date(request.requestedDate || request.createdAt).toLocaleDateString()}</td>
-                        <td><button class="btn-red-cross-outline btn-sm" onclick="viewRequestDetails('${key}')">View</button></td>
+                        <td><button class="btn-red-cross-outline btn-sm view-request-btn" data-request-id="${key}">View</button></td>
                     `;
                     tableBody.appendChild(row);
                 });
@@ -538,10 +541,10 @@
                         <td><span class="badge badge-${getScreeningStatusClass(schedule.status)}">${formatScreeningStatus(schedule.status)}</span></td>
                         <td>
                             ${schedule.status === 'pending_screening' ? 
-                                `<button class="btn btn-sm btn-primary" onclick="openScreeningModal('${schedule.id}', '${donorName}')">Schedule Screening</button>` :
+                                `<button class="btn btn-sm btn-primary" data-schedule-id="${schedule.id}" data-donor-name="${donorName.replace(/"/g, '&quot;')}">Schedule Screening</button>` :
                                 schedule.status === 'screening_scheduled' ?
-                                `<button class="btn btn-sm btn-success" onclick="markEligible('${schedule.id}', '${schedule.donorId}')">Mark Eligible</button>
-                                 <button class="btn btn-sm btn-danger" onclick="markIneligible('${schedule.id}', '${schedule.donorId}')">Mark Ineligible</button>` :
+                                `<button class="btn btn-sm btn-success mark-eligible-btn" data-schedule-id="${schedule.id}" data-donor-id="${schedule.donorId}">Mark Eligible</button>
+                                 <button class="btn btn-sm btn-danger mark-ineligible-btn" data-schedule-id="${schedule.id}" data-donor-id="${schedule.donorId}">Mark Ineligible</button>` :
                                 '<span class="text-muted">-</span>'
                             }
                         </td>
@@ -613,8 +616,8 @@
         }
 
         function viewRequestDetails(requestId) {
-            // Implement request details modal or redirect
-            alert('Request details for ID: ' + requestId);
+            // Redirect to request page or show modal
+            window.location.href = `hospital-request.html?requestId=${requestId}`;
         }
 
         function getScreeningStatusClass(status) {
@@ -638,6 +641,51 @@
                 'completed': 'Completed'
             };
             return statusMap[status] || status;
+        }
+
+        // Setup event listeners for dynamically created buttons
+        function setupDynamicButtons() {
+            // Screening modal buttons
+            document.addEventListener('click', (e) => {
+                if (e.target && e.target.classList.contains('btn-primary') && e.target.dataset.scheduleId) {
+                    const scheduleId = e.target.dataset.scheduleId;
+                    const donorName = e.target.dataset.donorName || 'Donor';
+                    openScreeningModal(scheduleId, donorName);
+                }
+            });
+
+            // Mark eligible/ineligible buttons
+            document.addEventListener('click', async (e) => {
+                if (e.target && e.target.classList.contains('mark-eligible-btn')) {
+                    const scheduleId = e.target.dataset.scheduleId;
+                    const donorId = e.target.dataset.donorId;
+                    await markEligible(scheduleId, donorId);
+                } else if (e.target && e.target.classList.contains('mark-ineligible-btn')) {
+                    const scheduleId = e.target.dataset.scheduleId;
+                    const donorId = e.target.dataset.donorId;
+                    await markIneligible(scheduleId, donorId);
+                }
+            });
+
+            // View request button
+            document.addEventListener('click', (e) => {
+                if (e.target && e.target.classList.contains('view-request-btn')) {
+                    const requestId = e.target.dataset.requestId;
+                    viewRequestDetails(requestId);
+                }
+            });
+
+            // Submit screening button
+            const submitScreeningBtn = document.getElementById('submitScreeningBtn');
+            if (submitScreeningBtn) {
+                submitScreeningBtn.addEventListener('click', submitScreening);
+            }
+
+            // Submit event button
+            const submitEventBtn = document.getElementById('submitEventBtn');
+            if (submitEventBtn) {
+                submitEventBtn.addEventListener('click', submitEvent);
+            }
         }
 
         function openScreeningModal(scheduleId, donorName) {
